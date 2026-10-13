@@ -9,3 +9,5 @@ app/.well-known/
 .DS_Store
 coverage/
 artifacts/local-*
+/.swc
+.vercel

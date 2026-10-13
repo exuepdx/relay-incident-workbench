@@ -1,31 +1,121 @@
 {
   "checkout": {
-    "scenario": "checkout", "synthetic": true, "window": "2026-10-13T14:00:00Z / 2026-10-13T14:30:00Z",
+    "scenario": "checkout",
+    "synthetic": true,
+    "window": "2026-10-13T14:00:00Z / 2026-10-13T14:30:00Z",
     "evidence": [
-      {"id":"E1","kind":"metric","title":"Checkout latency and errors rose","detail":"From 14:15 to 14:30 UTC, checkout-api p95 increased from 420ms baseline to 2840ms; error rate rose from 0.3% to 6.8%. Request rate stayed near 120 requests/second. This is API error rate, not measured lost orders or revenue.","source":"Metrics · checkout-api"},
-      {"id":"E2","kind":"trace","title":"Most sampled time is waiting for a DB connection","detail":"Representative trace trc_checkout_241: POST /checkout 2840ms; inventory.reserve 2520ms; db.pool.acquire 2190ms; SELECT inventory 180ms; payments.authorize 130ms. 18 of 20 slow sampled traces have pool waits above 1800ms. Samples do not prove all requests behave the same way.","source":"Traces · inventory-api"},
-      {"id":"E3","kind":"change","title":"Pool limit changed during the release","detail":"At 14:12 UTC checkout release 8f2c1d changed the inventory client connection pool maximum from 20 to 5. The latency increase starts at 14:15. Temporal correlation supports a hypothesis but does not establish causality.","source":"Changes · release 8f2c1d"},
-      {"id":"E4","kind":"metric","title":"Database CPU and payment time stayed stable","detail":"Database CPU is 36%, baseline 34%. Payment authorization p95 is 140ms, baseline 135ms. Pool pending requests rose from 0 to 84. These observations favor pool contention over a payment-provider slowdown or database CPU saturation.","source":"Metrics · dependencies"},
-      {"id":"E5","kind":"coverage","title":"No controlled mitigation has been measured","detail":"There has been no rollback, load test, pool-size experiment, or measured revenue-impact analysis. No writes or remediation are authorized. A human must approve any operational change.","source":"Incident record"}
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "Checkout latency and errors rose",
+        "detail": "From 14:15 to 14:30 UTC, checkout-api p95 increased from 420ms baseline to 2840ms; error rate rose from 0.3% to 6.8%. Request rate stayed near 120 requests/second. This is API error rate, not measured lost orders or revenue.",
+        "source": "Metrics · checkout-api"
+      },
+      {
+        "id": "E2",
+        "kind": "trace",
+        "title": "Most sampled time is waiting for a DB connection",
+        "detail": "Representative trace trc_checkout_241: POST /checkout 2840ms; inventory.reserve 2520ms; db.pool.acquire 2190ms; SELECT inventory 180ms; payments.authorize 130ms. 18 of 20 slow sampled traces have pool waits above 1800ms. Samples do not prove all requests behave the same way.",
+        "source": "Traces · inventory-api"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "Pool limit changed during the release",
+        "detail": "At 14:12 UTC checkout release 8f2c1d changed the inventory client connection pool maximum from 20 to 5. The latency increase starts at 14:15. Temporal correlation supports a hypothesis but does not establish causality.",
+        "source": "Changes · release 8f2c1d"
+      },
+      {
+        "id": "E4",
+        "kind": "metric",
+        "title": "Database CPU and payment time stayed stable",
+        "detail": "Database CPU is 36%, baseline 34%. Payment authorization p95 is 140ms, baseline 135ms. Pool pending requests rose from 0 to 84. These observations favor pool contention over a payment-provider slowdown or database CPU saturation.",
+        "source": "Metrics · dependencies"
+      },
+      {
+        "id": "E5",
+        "kind": "coverage",
+        "title": "No controlled mitigation has been measured",
+        "detail": "There has been no rollback, load test, pool-size experiment, or measured revenue-impact analysis. No writes or remediation are authorized. A human must approve any operational change.",
+        "source": "Incident record"
+      }
     ]
   },
   "provider": {
-    "scenario":"provider","synthetic":true,"window":"2026-10-13T15:00:00Z / 2026-10-13T15:30:00Z",
-    "evidence":[
-      {"id":"E1","kind":"metric","title":"Payment errors rose across both release cohorts","detail":"Checkout p95 increased from 460ms to 3210ms and errors from 0.4% to 8.2% at 15:18 UTC. Old and new application versions show similar error rates and latency. Request rate is stable.","source":"Metrics · checkout cohorts"},
-      {"id":"E2","kind":"trace","title":"Payment authorization dominates the slow trace","detail":"Trace trc_payment_242: checkout 3210ms; inventory.reserve 150ms; db.pool.acquire 18ms; payments.authorize 2880ms with upstream HTTP 504. 17 of 20 slow sampled traces have slow payment authorization.","source":"Traces · payments"},
-      {"id":"E3","kind":"change","title":"A deploy occurred before the alert","detail":"At 15:10 UTC a presentation-only release changed the checkout receipt label. Errors begin at 15:18 and affect the old release too. A nearby deploy alone is not sufficient evidence of a regression.","source":"Changes · release 9a7e3b"},
-      {"id":"E4","kind":"metric","title":"Inventory and DB pool metrics are normal","detail":"Pool pending requests are 0; database CPU is 33%; inventory latency is 150ms, baseline 145ms. The external payment provider has not yet confirmed an incident.","source":"Metrics · dependencies"},
-      {"id":"E5","kind":"coverage","title":"Provider-side evidence is unavailable","detail":"No provider-side traces or confirmed provider status report. Do not claim a confirmed root cause, recommend blindly retrying charges, or claim that a rollback will solve the problem.","source":"Incident record"}
+    "scenario": "provider",
+    "synthetic": true,
+    "window": "2026-10-13T15:00:00Z / 2026-10-13T15:30:00Z",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "Payment errors rose across both release cohorts",
+        "detail": "Checkout p95 increased from 460ms to 3210ms and errors from 0.4% to 8.2% at 15:18 UTC. Old and new application versions show similar error rates and latency. Request rate is stable.",
+        "source": "Metrics · checkout cohorts"
+      },
+      {
+        "id": "E2",
+        "kind": "trace",
+        "title": "Payment authorization dominates the slow trace",
+        "detail": "Trace trc_payment_242: checkout 3210ms; inventory.reserve 150ms; db.pool.acquire 18ms; payments.authorize 2880ms with upstream HTTP 504. 17 of 20 slow sampled traces have slow payment authorization.",
+        "source": "Traces · payments"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "A deploy occurred before the alert",
+        "detail": "At 15:10 UTC a presentation-only release changed the checkout receipt label. Errors begin at 15:18 and affect the old release too. A nearby deploy alone is not sufficient evidence of a regression.",
+        "source": "Changes · release 9a7e3b"
+      },
+      {
+        "id": "E4",
+        "kind": "metric",
+        "title": "Inventory and DB pool metrics are normal",
+        "detail": "Pool pending requests are 0; database CPU is 33%; inventory latency is 150ms, baseline 145ms. The external payment provider has not yet confirmed an incident.",
+        "source": "Metrics · dependencies"
+      },
+      {
+        "id": "E5",
+        "kind": "coverage",
+        "title": "Provider-side evidence is unavailable",
+        "detail": "No provider-side traces or confirmed provider status report. Do not claim a confirmed root cause, recommend blindly retrying charges, or claim that a rollback will solve the problem.",
+        "source": "Incident record"
+      }
     ]
   },
   "incomplete": {
-    "scenario":"incomplete","synthetic":true,"window":"2026-10-13T16:00:00Z / 2026-10-13T16:30:00Z",
-    "evidence":[
-      {"id":"E1","kind":"metric","title":"The checkout symptom is real","detail":"Checkout p95 increased from 440ms to 1920ms; API error rate increased from 0.4% to 4.1%. Only aggregate checkout metrics are available.","source":"Metrics · checkout-api"},
-      {"id":"E2","kind":"coverage","title":"Downstream trace coverage is missing","detail":"A collector sampling/configuration fault omitted child spans for inventory, database, and payments. The root span is present but does not identify which dependency is slow.","source":"Collector health"},
-      {"id":"E3","kind":"change","title":"Two simultaneous changes are uncorroborated","detail":"Both a checkout release and a network-policy update occurred at 16:12 UTC. There are no per-cohort metrics or dependency measurements to distinguish them. The evidence is insufficient to select a cause.","source":"Changes · audit log"},
-      {"id":"E4","kind":"coverage","title":"Impact has not been translated into revenue","detail":"There are no order-completion or revenue measurements. Do not invent financial loss. Restore telemetry and collect comparative evidence before recommending a specific mitigation.","source":"Incident record"}
+    "scenario": "incomplete",
+    "synthetic": true,
+    "window": "2026-10-13T16:00:00Z / 2026-10-13T16:30:00Z",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "The checkout symptom is real",
+        "detail": "Checkout p95 increased from 440ms to 1920ms; API error rate increased from 0.4% to 4.1%. Only aggregate checkout metrics are available.",
+        "source": "Metrics · checkout-api"
+      },
+      {
+        "id": "E2",
+        "kind": "coverage",
+        "title": "Downstream trace coverage is missing",
+        "detail": "A collector sampling/configuration fault omitted child spans for inventory, database, and payments. The root span is present but does not identify which dependency is slow.",
+        "source": "Collector health"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "Two simultaneous changes are uncorroborated",
+        "detail": "Both a checkout release and a network-policy update occurred at 16:12 UTC. There are no per-cohort metrics or dependency measurements to distinguish them. The evidence is insufficient to select a cause.",
+        "source": "Changes · audit log"
+      },
+      {
+        "id": "E4",
+        "kind": "coverage",
+        "title": "Impact has not been translated into revenue",
+        "detail": "There are no order-completion or revenue measurements. Do not invent financial loss. Restore telemetry and collect comparative evidence before recommending a specific mitigation.",
+        "source": "Incident record"
+      }
     ]
   }
 }

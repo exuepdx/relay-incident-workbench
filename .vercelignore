@@ -1,0 +1,10 @@
+.env*
+!.env.example
+.git/
+node_modules/
+.next/
+.workflow-data/
+artifacts/local-*
+mock/.vercel/
+mock/.env*
+mock/node_modules/

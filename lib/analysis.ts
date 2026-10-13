@@ -32,7 +32,14 @@ export async function analyzeBundle(bundle: Bundle) {
     model,
     inputTokens: result.usage.inputTokens ?? null,
     outputTokens: result.usage.outputTokens ?? null,
-    costUsd: metadata && (typeof metadata.cost === "string" || typeof metadata.cost === "number") ? String(metadata.cost) : null,
-    gatewayRequestId: metadata && typeof metadata.generationId === "string" ? metadata.generationId : null,
+    costUsd:
+      metadata &&
+      (typeof metadata.cost === "string" || typeof metadata.cost === "number")
+        ? String(metadata.cost)
+        : null,
+    gatewayRequestId:
+      metadata && typeof metadata.generationId === "string"
+        ? metadata.generationId
+        : null,
   };
 }

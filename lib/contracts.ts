@@ -2,11 +2,13 @@ import { z } from "zod";
 
 export const scenarioIds = ["checkout", "provider", "incomplete"] as const;
 export type ScenarioId = (typeof scenarioIds)[number];
-export const requestSchema = z.object({
-  scenario: z.enum(scenarioIds),
-  mode: z.enum(["live", "sample"]),
-  fault: z.enum(["none", "transient", "outage"]).default("none"),
-}).strict();
+export const requestSchema = z
+  .object({
+    scenario: z.enum(scenarioIds),
+    mode: z.enum(["live", "sample"]),
+    fault: z.enum(["none", "transient", "outage"]).default("none"),
+  })
+  .strict();
 export type InvestigationInput = z.infer<typeof requestSchema>;
 
 export const evidenceSchema = z.object({
@@ -16,12 +18,14 @@ export const evidenceSchema = z.object({
   detail: z.string().max(2000),
   source: z.string().max(100),
 });
-export const bundleSchema = z.object({
-  scenario: z.enum(scenarioIds),
-  synthetic: z.literal(true),
-  window: z.string(),
-  evidence: z.array(evidenceSchema).min(1).max(12),
-}).strict();
+export const bundleSchema = z
+  .object({
+    scenario: z.enum(scenarioIds),
+    synthetic: z.literal(true),
+    window: z.string(),
+    evidence: z.array(evidenceSchema).min(1).max(12),
+  })
+  .strict();
 export type Evidence = z.infer<typeof evidenceSchema>;
 export type Bundle = z.infer<typeof bundleSchema>;
 
@@ -63,11 +67,15 @@ export function validateReport(value: unknown, bundle: Bundle): Report {
   const report = reportSchema.parse(value);
   const ids = new Set(bundle.evidence.map((e) => e.id));
   for (const item of report.findings) {
-    if (item.citations.some((id) => !ids.has(id))) throw new Error("Unknown evidence citation");
+    if (item.citations.some((id) => !ids.has(id)))
+      throw new Error("Unknown evidence citation");
   }
   // A deliberately incomplete case must not produce a confident diagnosis.
   // This validates a known fixture constraint; it does not prove semantic truth.
-  if (bundle.scenario === "incomplete" && report.assessment !== "insufficient-evidence") {
+  if (
+    bundle.scenario === "incomplete" &&
+    report.assessment !== "insufficient-evidence"
+  ) {
     throw new Error("Evidence coverage does not support a diagnosis");
   }
   return report;

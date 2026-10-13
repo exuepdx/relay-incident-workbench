@@ -7,9 +7,12 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "mock": "tsx mock/server.ts",
-    "eval": "tsx scripts/evaluate.ts"
+    "eval": "node --env-file=.env.local --import tsx scripts/evaluate.ts",
+    "smoke": "node --import tsx scripts/smoke.ts",
+    "format": "prettier --write app components lib workflows mock tests scripts docs README.md",
+    "typecheck:mock": "tsc -p mock/tsconfig.json --noEmit"
   },
   "engines": {
     "node": "22.x"
@@ -27,9 +30,9 @@
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "prettier": "3.9.10",
     "tsx": "4.23.15",
-    "typescript": "7.0.2",
-    "vercel": "64.0.2"
+    "typescript": "7.0.2"
   },
   "overrides": {
     "@workflow/core": {
