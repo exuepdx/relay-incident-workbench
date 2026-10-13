@@ -7,25 +7,41 @@ verification from pending work.
 
 - Production Next.js build passed and generated static workbench/proposal shells
   plus dynamic API and workflow handlers.
-- TypeScript checking passed.
-- Eleven contract/access tests passed: finite inputs, valid citations, insufficient
+- TypeScript checking passed for the app and standalone mock service.
+- Twelve contract/access tests passed: finite inputs, valid citations, insufficient
   evidence, reviewer session expiry, scoped run tokens, service authentication,
-  rejected writes, rejected inherited property names, and actual 503 behavior.
+  rejected writes, rejected inherited property names, actual 503 behavior, and
+  same-origin validation when the framework normalizes the internal hostname.
 - HTTP smoke: healthy sample run completed; first-request 503 recovered on attempt
   two; persistent 503 exhausted retries and failed without a report.
 - Fresh HTTP requests retrieved identical persisted output. Unauthorized reads,
   invalid inputs, and cross-origin requests were rejected.
-- Runtime dependency audit: zero known runtime vulnerabilities after compatible
+- Dependency audit: zero known vulnerabilities in the locked dependency tree after compatible
   `devalue` and `nanoid` overrides for Workflow's transitive dependencies.
 - The separately deployed mock returned HTTP 200 with the server credential after
   correcting its ESM configuration. It does not represent real AWS infrastructure.
+
+## Completed on Vercel and in the browser
+
+- The public production app passed the HTTP smoke suite: successful sample,
+  transient recovery on attempt two, persistent outage with no report, retained
+  output, and denied unauthorized/invalid/cross-origin requests. Recorded in
+  `artifacts/deployment-smoke.json`.
+- A separate preview deployment built successfully on Vercel with Node.js 22.
+- Automatic GitHub deployments are pending the owner's GitHub Login Connection;
+  the current deployments were created through the Vercel CLI.
+- Browser checks covered starting an investigation, opening evidence citations,
+  refreshing, and reconnecting to a retained result through Saved investigations.
+- Workbench and proposal were reviewed at desktop and 390-pixel mobile viewports.
+  Both mobile pages fit the document width without horizontal overflow.
+- The public GitHub repository preserves four incremental implementation commits;
+  subsequent handoff corrections are recorded as additional commits.
 
 ## Pending / not claimed
 
 - Live model quality evaluation is pending account activation. The first Gateway
   request was rejected because a card on file was required to unlock free credits.
   `artifacts/evaluation-probe.json` records that failure.
-- Deployed end-to-end smoke and final responsive browser review are in progress.
 - No production customer data, load test, MTTR improvement, revenue effect,
   private VPC integration, or region-constrained model behavior has been verified.
 - No statistically representative model eval or professional security audit.

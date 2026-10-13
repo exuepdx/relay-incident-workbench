@@ -150,6 +150,10 @@ Use preview → contract/AI validation → small responder cohort → expansion.
 Native traffic-percentage Rolling Releases are not part of this Hobby demo.
 Before promoting a preview, verify its environment configuration and access.
 
+These deployments were created with the Vercel CLI. Automatic GitHub deployments
+are not connected: Vercel requires the account owner to add a GitHub Login
+Connection before the repository can be linked. CLI previews remain available.
+
 For rollback, restore the previous compatible application deployment or remove
 pilot access. Restoring application code does not undo workflow results, database
 changes, or external side effects. This demo performs no operational writes.

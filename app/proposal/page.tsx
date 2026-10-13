@@ -432,8 +432,13 @@ export default function Proposal() {
           Fictional customer and synthetic telemetry throughout.
         </span>
         <span>
-          Source documentation: <a href="https://vercel.com/docs">Vercel</a> ·{" "}
-          <a href="https://workflow-sdk.dev/docs">Workflow SDK</a> ·{" "}
+          <a href="https://github.com/exuepdx/relay-incident-workbench">
+            Explore the implementation
+          </a>
+          <br />
+          Source documentation: <a href="https://vercel.com/docs">
+            Vercel
+          </a> · <a href="https://workflow-sdk.dev/docs">Workflow SDK</a> ·{" "}
           <a href="https://ai-sdk.dev/docs">AI SDK</a>
         </span>
       </footer>
