@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.vercel/
+.env*
+!.env.example
+*.tsbuildinfo
+.workflow-data/
+app/.well-known/
+.DS_Store
+coverage/
+artifacts/local-*

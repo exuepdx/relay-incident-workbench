@@ -1,0 +1,24 @@
+{
+  "name": "relay-incident-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "mock": "tsx mock/server.ts",
+    "eval": "tsx scripts/evaluate.ts"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "ai": "7.0.139",
+    "@ai-sdk/gateway": "4.0.112",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {}
+}
