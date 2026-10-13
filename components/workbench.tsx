@@ -740,7 +740,7 @@ export function Workbench() {
                         className={`badge ${result.mode === "live" ? "violet" : "neutral"}`}
                       >
                         {result.mode === "live"
-                          ? "Live AI report"
+                          ? "Live AI · review required"
                           : "Authored sample"}
                       </span>
                       <button
@@ -783,6 +783,13 @@ export function Workbench() {
                       <p>{result.report.uncertainty}</p>
                     </div>
                     <h4>Recommended next steps</h4>
+                    {result.mode === "live" && (
+                      <p className="review-note">
+                        Check the cited evidence before sharing this draft.
+                        Operational changes require the service owner’s
+                        approval.
+                      </p>
+                    )}
                     <ol className="next-steps">
                       {result.report.nextSteps.map((step) => (
                         <li key={step}>{step}</li>

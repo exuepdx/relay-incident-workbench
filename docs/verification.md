@@ -44,11 +44,18 @@ verification from pending work.
   subsequent handoff corrections are recorded as additional commits.
   Its public URL returned HTTP 200 without credentials.
 
+## Live evaluation
+
+- Gateway inference succeeded after account activation. The final four-case GPT-5.2
+  evaluation passed structural/citation checks and the injection-marker check.
+  Assistant semantic review and measured cost/latency are in `evaluation-review.md`;
+  independent candidate review remains pending. Earlier failing outputs are preserved.
+- Limited visual/accessibility review improved text contrast and checked desktop
+  workbench/proposal layouts, mobile reflow, keyboard tabs, modal focus, labels, and
+  failure states. This is not a complete WCAG audit or screen-reader certification.
+
 ## Pending / not claimed
 
-- Live model quality evaluation is pending account activation. The first Gateway
-  request was rejected because a card on file was required to unlock free credits.
-  `artifacts/evaluation-probe.json` records that failure.
 - No production customer data, load test, MTTR improvement, revenue effect,
   private VPC integration, or region-constrained model behavior has been verified.
 - No statistically representative model eval or professional security audit.

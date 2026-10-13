@@ -2,7 +2,8 @@
 
 ## Customer and problem
 
-Northstar Commerce is a fictional enterprise customer. Its checkout runs on AWS,
+Northstar Commerce is a fictional enterprise customer. Its checkout and inventory
+services run on AWS EKS, with RDS Postgres and an external payments provider,
 and an existing observability platform already stores metrics, traces, and change
 events. During incidents, responders manually connect evidence across views before
 they can explain business impact and choose the next diagnostic step.
@@ -12,7 +13,7 @@ This scenario applies that perspective; it is not a claimed customer engagement.
 
 ## Boundary
 
-Vercel augments the response experience. The application reads a narrow,
+Vercel's primary role is Connect, augmenting the response experience. The application reads a narrow,
 authenticated telemetry API. AWS services, databases, telemetry storage, retention,
 alerting, and operational permissions stay with the customer. The model receives
 only a bounded synthetic evidence bundle in this demo. It cannot execute arbitrary

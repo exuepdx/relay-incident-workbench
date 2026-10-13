@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { analyzeBundle } from "../lib/analysis";
+import { createHash } from "node:crypto";
+import { analyzeBundle, systemPrompt } from "../lib/analysis";
 import { bundleSchema, type Bundle } from "../lib/contracts";
 import fixtures from "../mock/data.json";
 
@@ -87,7 +88,8 @@ async function main() {
     JSON.stringify(
       {
         evaluatedAt: new Date().toISOString(),
-        model: process.env.AI_MODEL || "google/gemini-2.5-flash",
+        model: process.env.AI_MODEL || "openai/gpt-5.2",
+        promptSha256: createHash("sha256").update(systemPrompt).digest("hex"),
         results,
       },
       null,

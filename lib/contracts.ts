@@ -38,7 +38,7 @@ export const reportSchema = z.object({
   assessment: z.enum(["supported-hypothesis", "insufficient-evidence"]),
   summary: z.string().min(1).max(1000),
   findings: z.array(finding).min(2).max(4),
-  nextSteps: z.array(z.string().min(1).max(400)).min(2).max(4),
+  nextSteps: z.array(z.string().min(20).max(400)).min(2).max(3),
   uncertainty: z.string().min(1).max(600),
   customerUpdate: z.string().min(1).max(700),
 });

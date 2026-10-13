@@ -75,7 +75,11 @@ model; retained step inputs and outputs are also data that must be governed.
 | Functions / Fluid Compute | API routes and workflow steps                     | External service capacity and cross-cloud latency still matter |
 | Preview Deployments       | Review deployment changes                         | Preview environment must not expose production data            |
 
-No automatic model fallback is configured. `AI_MODEL` is a server setting; rerun
+No cross-model fallback is configured. Gateway can route/fail over among providers
+of the same model under its default policy; SDK and workflow retry settings do not
+disable that service-level routing. We did not inject a Gateway provider outage.
+See [Gateway routing](https://vercel.com/docs/ai-gateway/models-and-providers/provider-options).
+`AI_MODEL` is a server setting; rerun
 the evaluation rubric when changing it. Retrieval retries twice with a delay;
 model generation does not automatically retry because a lost response may still
 be billed. The project has a $1 non-refreshing Gateway budget; budgets are not a
@@ -107,7 +111,7 @@ Required production configuration:
 | `SESSION_SECRET`      | Random secret for session and run capabilities           |
 | `DEMO_ACCESS_CODE`    | Shared reviewer gate for live inference                  |
 | `ENABLE_LIVE_AI`      | Explicit live inference switch                           |
-| `AI_MODEL`            | Gateway model ID (default `google/gemini-2.5-flash`)     |
+| `AI_MODEL`            | Gateway model ID (default `openai/gpt-5.2`)              |
 
 Vercel deployments use OIDC for Gateway; a provider key is not shipped to the
 browser. Production and preview configuration are distinct Vercel targets. The
@@ -124,6 +128,8 @@ npm run build
 npm run smoke
 # Live AI eval; consumes model allowance:
 npm run eval
+# Hosted live integration test; uses the reviewer code from your local secret file:
+DEMO_URL=https://relay-incident-workbench.vercel.app node --env-file=.env.deploy --import tsx scripts/live-smoke.ts
 ```
 
 `scripts/smoke.ts` supports `DEMO_URL` for deployed checks. It verifies a successful
@@ -136,7 +142,10 @@ an untrusted log. It validates structure and citations and saves reports for hum
 review. Review source support, appropriate uncertainty, counter-evidence, and safe
 next steps. A small test set is not a statistically robust evaluation.
 
-See [verification](docs/verification.md), [presentation notes](docs/presentation.md),
+The default model is `openai/gpt-5.2`. See the preserved comparison failures and
+[evaluation review](docs/evaluation-review.md) for the choice and its limits.
+
+See [assessment coverage](docs/brief-audit.md), [verification](docs/verification.md), [presentation notes](docs/presentation.md),
 [architectural decisions](docs/decisions.md), and [product feedback](docs/product-feedback.md).
 
 ## Deployment and rollout

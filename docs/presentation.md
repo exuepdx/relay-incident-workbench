@@ -4,6 +4,22 @@ Use `/proposal` as the customer-facing asset. These are speaker notes, not a scr
 to read verbatim. Replace fictional discovery assumptions with your own language
 and experience; do not imply that Northstar is a real customer you supported.
 
+## Your opening, grounded in the experience you described
+
+“In enterprise observability conversations, I saw a retailer repeatedly pull
+application, infrastructure, and network teams into war rooms for customer-facing
+outages. They had telemetry, but it lived across disparate systems. Cascading
+symptoms made it hard to scope the blast radius and identify the next team to
+engage. Several teams spent time proving their system wasn't the source. Relay
+explores whether a shared, evidence-backed investigation can shorten that triage
+and reduce total responder effort while preserving the existing systems.”
+
+Then disclose: “Northstar and the incidents shown here are synthetic. They
+illustrate that pattern; they are not the real retailer's architecture or data.”
+
+Ask: “Is assembling evidence and agreeing ownership still a material delay for
+your responders? What does your existing vendor already do well here?”
+
 ## A 12-minute flow
 
 | Time        | Show                               | Say / establish                                                                                                                               |
@@ -80,6 +96,38 @@ do not treat persistence as a blanket guarantee that incompatible code can resum
 5. `lib/analysis.ts`: model call, prompt policy, structured output, selected accounting fields.
 6. `lib/access.ts` and `app/api`: reviewer session, scoped run access, origin checks.
 7. `components/workbench.tsx`: poll/reconnect, evidence inspection, browser-local history.
+
+## Technical details to own
+
+- **Rendering:** The workbench and proposal shells are prerendered at build time.
+  Client interactions fetch dynamic API state. Investigation/session responses
+  are `no-store`; personalized results must not enter a shared cache. There is no
+  ISR or Cache Components dependency, and the final validated report is not token
+  streamed. Polling shows progress without displaying incomplete, unvalidated claims.
+- **Model and tools:** The workflow chooses a fixed read-only retrieval operation;
+  the model does not choose arbitrary tools or URLs. `maxRetries: 0` disables SDK
+  retries; the inference step also has zero retries. Gateway's default routing can
+  still use multiple providers of the same model. No cross-model fallback chain or
+  provider outage test is configured. Never equate SDK retries with Gateway routing.
+- **Compute and connectivity:** Browser → Next API → durable steps → authenticated
+  HTTPS mock and Gateway. External calls spend time waiting on I/O; Fluid Compute
+  supports concurrent work, but the demo has no global admission limiter. Its
+  5-second telemetry timeout, two retries, fixed input, 45-second model timeout,
+  output-token bound, reviewer gate, and project budget are separate controls.
+  Active CPU is only one billing dimension; memory and invocations also matter.
+- **Production boundary:** Replace the synthetic adapter with an approved telemetry
+  integration, scoped service identity, redaction, tenant authorization, and a
+  reviewed private network path where necessary. Region selection for Functions
+  alone does not constrain model routing, state storage, or logs.
+- **State and rollout:** A completed run was retrieved after redeployment. That
+  does not prove arbitrary in-flight or incompatible workflow upgrades. Keep
+  function identity/serialized contracts compatible, canary with a responder
+  cohort, and test active runs before promoting. Rolling back code does not
+  reverse stored results or any external operation.
+
+References: [Gateway routing](https://vercel.com/docs/ai-gateway/models-and-providers/provider-options),
+[Fluid Compute](https://vercel.com/docs/fluid-compute),
+[Secure Compute](https://vercel.com/docs/networking/secure-compute).
 
 ## Small live changes to practice
 

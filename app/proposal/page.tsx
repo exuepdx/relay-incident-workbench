@@ -11,7 +11,7 @@ const choices = [
   [
     "AI Gateway",
     "One model boundary with request accounting and a configurable model.",
-    "Model quality, availability, data handling, and cost remain design constraints. No automatic fallback is enabled in this demo.",
+    "No cross-model fallback is configured. Gateway can route between providers of the same model; provider placement still needs approval.",
     "https://vercel.com/docs/ai-gateway",
   ],
   [
@@ -52,16 +52,16 @@ export default function Proposal() {
           <em>Make the next step clear.</em>
         </h1>
         <p>
-          Give your incident responders an evidence-backed starting point, a
-          durable investigation, and a clear customer update—while keeping your
-          existing observability investment.
+          Help the right teams find the affected boundary sooner. Bring
+          telemetry, release context, and uncertainty into one investigation
+          while keeping your existing observability investment.
         </p>
         <div className="proposal-meta">
           <div>
             THE CUSTOMER<strong>Fictional enterprise retailer</strong>
           </div>
           <div>
-            THE APPROACH<strong>Augment & connect</strong>
+            THE APPROACH<strong>Connect · augment response</strong>
           </div>
           <div>
             THE FIRST SLICE<strong>Checkout incident response</strong>
@@ -74,10 +74,14 @@ export default function Proposal() {
           <div>
             <h2>The gap is between seeing and deciding.</h2>
             <p>
-              Northstar runs its checkout on AWS. Metrics, traces, and release
-              events already exist. During an incident, responders still
-              assemble them manually before they can explain what is happening
-              and choose a defensible next check.
+              In this scenario, Northstar runs checkout and inventory services
+              on AWS EKS with RDS Postgres and an external payments provider.
+              Its existing release pipeline and observability platform already
+              produce deployment events, metrics, and traces. During an
+              incident, responders still assemble them manually to scope the
+              blast radius and choose which team should investigate next.
+              Cascading symptoms pull application, database, infrastructure, and
+              network teams into the same war room.
             </p>
           </div>
         </div>
@@ -89,7 +93,8 @@ export default function Proposal() {
               A responder moves between alerts, trace views, deployment logs,
               and a status draft. The evidence can be incomplete or
               contradictory. The business consequence is time spent coordinating
-              while checkout remains degraded.
+              while checkout remains degraded. Multiple teams spend responder
+              hours establishing whether their system is involved.
             </p>
           </div>
           <div className="proposal-block highlight">
@@ -97,18 +102,47 @@ export default function Proposal() {
             <h3>One investigation. Inspectable evidence.</h3>
             <p>
               Relay retrieves the relevant slice, separates observations from
-              hypotheses, and prepares an update. A service owner chooses and
-              approves operational action. The existing platform continues
-              collecting, storing, and alerting on telemetry.
+              hypotheses, and prepares an update. Stable dependency signals help
+              prioritize the next team to engage without declaring other teams
+              cleared. A service owner chooses and approves operational action.
+              The existing platform continues collecting, storing, and alerting
+              on telemetry.
             </p>
           </div>
         </div>
         <p className="proposal-footnote">
-          Discovery assumptions to validate: time spent assembling evidence,
-          permission to process selected telemetry, incident volume, and which
-          teams own response. This is a synthetic scenario, not a claimed
-          customer engagement.
+          Inspired by enterprise retail incident-response experience; Northstar,
+          its architecture, and all evidence are fictional. Discovery
+          assumptions to validate: time spent assembling evidence, permission to
+          process selected telemetry, incident volume, and which teams own
+          response. This is a synthetic scenario, not a claimed customer
+          engagement.
         </p>
+        <div className="proposal-comparison">
+          <div className="proposal-block">
+            <span className="mini-label">WHY BUILD THIS</span>
+            <h3>A customer workflow worth owning.</h3>
+            <p>
+              The proposed gap is a shared investigation and communication
+              experience across telemetry, release evidence, and incident
+              context. Validate it with the platform lead and incident
+              responders. If the existing vendor already solves that workflow
+              well, use its capability; a new application needs to earn its
+              operating cost.
+            </p>
+          </div>
+          <div className="proposal-block highlight">
+            <span className="mini-label">WHY VERCEL</span>
+            <h3>A smaller application platform to assemble.</h3>
+            <p>
+              Vercel brings the Next.js experience, preview deployments, durable
+              execution, and model access together. An AWS-native application is
+              also viable; compare delivery effort and data requirements. The
+              reason to choose Vercel is a faster path to this approved
+              workflow, not a requirement to move the customer’s backend.
+            </p>
+          </div>
+        </div>
       </section>
       <section className="proposal-section" id="architecture">
         <div className="section-intro">
@@ -126,6 +160,17 @@ export default function Proposal() {
             </p>
           </div>
         </div>
+        <div className="proposal-block">
+          <span className="mini-label">
+            CURRENT STATE · MANUAL INVESTIGATION
+          </span>
+          <p>
+            EKS services + RDS + payment dependency → existing observability
+            platform ← release pipeline → responder correlates evidence across
+            views → service owner approves action → customer update.
+          </p>
+        </div>
+        <p className="mini-label">TARGET STATE · CONNECT THE EXISTING ESTATE</p>
         <div className="architecture-map">
           <div className="architecture-zone">
             <span className="mini-label">VERCEL · APPLICATION LAYER</span>
@@ -158,8 +203,8 @@ export default function Proposal() {
               <small>Metrics · traces · change events · retention</small>
             </div>
             <div className="architecture-node">
-              <b>AWS services & database</b>
-              <small>Checkout · inventory · payments · Postgres</small>
+              <b>AWS EKS + RDS Postgres</b>
+              <small>Checkout · inventory · external payment dependency</small>
             </div>
             <div className="architecture-node">
               <b>Customer operational controls</b>
@@ -176,6 +221,14 @@ export default function Proposal() {
           commercial observability integration. The application and mock deploy
           in iad1. This does not establish end-to-end data residency for model
           inference, workflow state, or logs.
+        </p>
+        <p className="proposal-footnote">
+          What stays and why: EKS services keep their tested business rules and
+          operational ownership; RDS keeps transactional data and existing
+          controls; observability keeps ingestion, retention, and alerts; the
+          release pipeline keeps deploying those backend services. Relay reads
+          through a narrow adapter. Production private access would require an
+          approved network path, service identity, and tenant authorization.
         </p>
       </section>
       <section className="proposal-section">
@@ -328,26 +381,32 @@ export default function Proposal() {
             <h3>No unsupported critical claims</h3>
             <p>
               Human reviewers check source support, counter-evidence,
-              uncertainty, and actionable next steps. All known incomplete cases
-              must withhold a diagnosis.
+              uncertainty, and actionable next steps across 20 sanitized pilot
+              cases. Gate expansion on zero unsupported critical claims and
+              correct abstention on every known incomplete case.
             </p>
           </div>
           <div>
             <span className="mini-label">OPERATIONS</span>
-            <h3>Faster to a useful hypothesis</h3>
+            <h3>Faster to the affected boundary</h3>
             <p>
-              Compare median investigation time with the existing manual
-              workflow. Agree on a target after measuring the baseline;
-              separately track retrieval and inference latency.
+              Start with a proposed 30% reduction in median time to an
+              evidence-backed affected-system hypothesis against paired manual
+              investigations. Track retrieval and inference separately; propose
+              a 30-second p95 report target and less than $0.02 model cost per
+              run.
             </p>
           </div>
           <div>
             <span className="mini-label">BUSINESS</span>
             <h3>Less incident coordination effort</h3>
             <p>
-              Measure responder minutes and time to an approved customer update.
-              Attribute model cost per run and test a sustainable budget.
-              Revenue impact requires separate business data.
+              Propose 20% fewer total responder minutes across all teams spent
+              scoping the incident, assembling evidence, and drafting an update.
+              Track teams engaged and time to agreed ownership. Use the same
+              incident set and responders, review order effects, and agree
+              targets after a baseline. Revenue impact requires separate
+              business data.
             </p>
           </div>
         </div>

@@ -23,5 +23,15 @@ actual build, not claims about production operation at scale.
   is easy to show. Data retention, version compatibility, and application rollback
   versus workflow state require a more careful customer conversation.
 
-After live inference is enabled, add observations on response quality, structured
-output behavior, accounting metadata, and model latency from measured runs.
+- **Model eligibility should be visible before the first request.** After card
+  activation, some catalog models still rejected free-credit requests. The filtered
+  web directory exposed eligibility more clearly than the SDK catalog. A capability
+  field or preflight check would make model selection less error-prone.
+- **Structured output is useful, but valid JSON can still make a poor report.**
+  Evaluation caught unsupported generalizations and clipped recommendations that
+  schema checks accepted. Shorter word budgets and evidence-specific instructions
+  improved the final four cases; they do not remove the need for human review.
+- **Gateway accounting made the quality/cost choice concrete.** The final GPT-5.2
+  development run returned request IDs, tokens, and per-call cost. Calls took
+  7.7–10.2 seconds and cost $0.0086–$0.0105 each in these four cases, which is useful
+  for a pilot budget discussion without pretending it is a performance benchmark.
