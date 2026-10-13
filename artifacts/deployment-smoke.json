@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-13T23:10:45.753Z",
+  "testedAt": "2026-10-13T23:17:22.742Z",
   "base": "https://relay-incident-workbench.vercel.app",
   "invalidInput": "rejected",
   "crossOrigin": "rejected",
@@ -8,8 +8,8 @@
       "scenario": "checkout",
       "fault": "none",
       "status": "completed",
-      "runId": "wrun_41M4VRG4010GK5T5XM2FP8AF7E",
-      "elapsedMs": 5412,
+      "runId": "wrun_41M4VRW8SP0GMZTTAGB846SREK",
+      "elapsedMs": 5355,
       "attempts": 1,
       "unauthorizedRead": "denied"
     },
@@ -17,8 +17,8 @@
       "scenario": "provider",
       "fault": "transient",
       "status": "completed",
-      "runId": "wrun_41M4VRG88R0GT3TAZTHPEGMFE0",
-      "elapsedMs": 5430,
+      "runId": "wrun_41M4VRWD5D0GNHAN16B7F6S2GX",
+      "elapsedMs": 4355,
       "attempts": 2,
       "unauthorizedRead": "denied"
     },
@@ -26,8 +26,8 @@
       "scenario": "checkout",
       "fault": "outage",
       "status": "failed",
-      "runId": "wrun_41M4VRGEG20GHHHWDA87HG8F72",
-      "elapsedMs": 9181,
+      "runId": "wrun_41M4VRWJ6H0GXS0YEWNXAKRCEX",
+      "elapsedMs": 9541,
       "attempts": null,
       "unauthorizedRead": "denied"
     }

@@ -27,15 +27,22 @@ verification from pending work.
   transient recovery on attempt two, persistent outage with no report, retained
   output, and denied unauthorized/invalid/cross-origin requests. Recorded in
   `artifacts/deployment-smoke.json`.
+- The final deployment also accepted browser-style same-origin requests. A
+  completed run from the earlier deployment remained readable after redeployment.
+- The production reviewer gate rejected an invalid code and issued a working
+  `HttpOnly`, `Secure`, `SameSite=strict` session for the configured code. No secret
+  or session token is included in `artifacts/deployment-access.json`.
 - A separate preview deployment built successfully on Vercel with Node.js 22.
 - Automatic GitHub deployments are pending the owner's GitHub Login Connection;
   the current deployments were created through the Vercel CLI.
 - Browser checks covered starting an investigation, opening evidence citations,
   refreshing, and reconnecting to a retained result through Saved investigations.
+  A fresh public production browser run completed without console errors.
 - Workbench and proposal were reviewed at desktop and 390-pixel mobile viewports.
   Both mobile pages fit the document width without horizontal overflow.
 - The public GitHub repository preserves four incremental implementation commits;
   subsequent handoff corrections are recorded as additional commits.
+  Its public URL returned HTTP 200 without credentials.
 
 ## Pending / not claimed
 

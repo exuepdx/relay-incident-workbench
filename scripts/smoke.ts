@@ -10,7 +10,10 @@ async function run(
   const started = Date.now();
   const response = await fetch(`${base}/api/investigations`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: new URL(base).origin,
+    },
     body: JSON.stringify({ scenario, mode: "sample", fault }),
   });
   assert.equal(response.status, 202, await response.clone().text());

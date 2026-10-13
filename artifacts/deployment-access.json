@@ -1,0 +1,10 @@
+{
+  "testedAt": "2026-10-13T23:17:07.971Z",
+  "base": "https://relay-incident-workbench.vercel.app",
+  "retainedRunFromPreviousDeployment": "wrun_41M4VRG4010GK5T5XM2FP8AF7E",
+  "retainedResult": "completed",
+  "invalidReviewerCode": "rejected",
+  "reviewerSession": "authenticated",
+  "cookieAttributes": "HttpOnly, Secure, SameSite=strict",
+  "liveEnabled": false
+}
