@@ -46,10 +46,31 @@ verification from pending work.
 
 ## Live evaluation
 
+- Production deployment `dpl_7grKpuJZzydKefRjrSfHj9U7kEUa` uses source `951b279`,
+  `ENABLE_LIVE_AI=true`, and `AI_MODEL=openai/gpt-5.2`. Local and Vercel production
+  builds passed; app and mock typechecks and all 12 tests passed.
+- The hosted live suite completed all three scenarios with real Gateway usage.
+  Provider retrieval recovered on attempt two. Fresh requests returned identical
+  retained reports; unauthenticated live calls, invalid reviewer codes, and
+  unscoped run reads were denied. Secure reviewer-session attributes were verified.
+  Evidence: `artifacts/deployment-live.json`.
+- The final budget read reported $0.23206155 model spend against the active $1
+  non-refreshing project cap. No credits were purchased; platform costs are separate.
+  Evidence: `artifacts/deployment-budget.json`.
+- Public app, proposal, and GitHub repository all returned HTTP 200 without account
+  cookies after deployment.
+- The deployed sample smoke suite passed again, including permanent upstream 503
+  failure with no report, invalid inputs, and cross-origin rejection.
+- A browser live checkout run completed after refresh/history reconnect. Its
+  citations displayed the fetched evidence; customer-update copy matched the draft;
+  JSON export contained live mode, the selected model, and all four findings.
 - Gateway inference succeeded after account activation. The final four-case GPT-5.2
   evaluation passed structural/citation checks and the injection-marker check.
   Assistant semantic review and measured cost/latency are in `evaluation-review.md`;
   independent candidate review remains pending. Earlier failing outputs are preserved.
+- Hosted repetition still exposed one provider-summary generalization (plural
+  504s from a single observed response). It is documented, not counted as perfect
+  semantic accuracy. Human review is required before using the draft.
 - Limited visual/accessibility review improved text contrast and checked desktop
   workbench/proposal layouts, mobile reflow, keyboard tabs, modal focus, labels, and
   failure states. This is not a complete WCAG audit or screen-reader certification.

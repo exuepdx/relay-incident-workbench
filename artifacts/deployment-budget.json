@@ -1,0 +1,10 @@
+{
+  "source": "Vercel CLI ai-gateway budgets list",
+  "active": true,
+  "limitUsd": 1,
+  "refreshPeriod": "none",
+  "reportedModelSpendUsd": 0.23206155,
+  "byokSpendUsd": 0,
+  "note": "Snapshot of reported project model spend; excludes other platform usage. No credits purchased.",
+  "checkedOn": "2026-10-13"
+}

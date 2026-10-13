@@ -55,6 +55,22 @@ repeat runs, include more missing/contradictory evidence and adversarial content
 and measure unsupported claims and abstention explicitly. Keep human review before
 sharing an update or taking an operational action. Do not advertise "100% accuracy."
 
-Hosted integration runs are recorded separately in `artifacts/deployment-live.json`
-after deployment; they exercise authentication, external retrieval, durable state,
-and live generation together.
+## Hosted integration review
+
+`artifacts/deployment-live.json` records three successful live runs on deployment
+`dpl_7grKpuJZzydKefRjrSfHj9U7kEUa` (source `951b279`). They exercise reviewer
+authentication, external retrieval, durable state, and live generation together.
+End-to-end elapsed times were 13.602, 14.511, and 11.176 seconds, including a
+first-request 503 retry in the provider case. Model costs totaled $0.02829400.
+
+Assistant review found a residual wording issue in the hosted provider result:
+the summary/customer update use plural "504s" even though only one representative
+504 is supplied. The cited finding correctly says one, and the uncertainty field
+explicitly says frequency is unknown. This still requires editing before sharing
+the draft with a customer. It is a concrete example of why passing structural
+checks and one development evaluation does not establish perfect semantic accuracy.
+The other hosted cases retained the intended hypothesis/abstention behavior.
+
+The browser's additional live checkout run also completed, survived refresh and
+history reconnect, exposed source citations and accounting, and exported a valid
+JSON report. All reports remain subject to candidate/human review.
