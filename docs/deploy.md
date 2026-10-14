@@ -29,18 +29,18 @@ copy its connection string as `DATABASE_URL`. The table is created on first use.
 Import the repository, framework Next.js, region `iad1` (from `vercel.json`).
 Environment variables:
 
-| Variable | Value |
-| --- | --- |
-| `TELEMETRY_API_URL` | the Lambda function URL |
-| `TELEMETRY_API_TOKEN` | the token from step 1 |
-| `DATABASE_URL` | from step 2 |
-| `DEMO_ACCESS_CODE` | the reviewer code you will put in the submission email |
-| `SESSION_SECRET` | `openssl rand -hex 32` |
-| `DEMO_CONTROLS` | `true` |
-| `AI_MODEL` | `openai/gpt-5.2` |
-| `AI_FALLBACK_MODELS` | `anthropic/claude-sonnet-5,google/gemini-2.5-flash` |
-| `NEXT_PUBLIC_DEMO_URL` | the production URL (for the proposal page) |
-| `NEXT_PUBLIC_REPO_URL` | the GitHub URL |
+| Variable               | Value                                                  |
+| ---------------------- | ------------------------------------------------------ |
+| `TELEMETRY_API_URL`    | the Lambda function URL                                |
+| `TELEMETRY_API_TOKEN`  | the token from step 1                                  |
+| `DATABASE_URL`         | from step 2                                            |
+| `DEMO_ACCESS_CODE`     | the reviewer code you will put in the submission email |
+| `SESSION_SECRET`       | `openssl rand -hex 32`                                 |
+| `DEMO_CONTROLS`        | `true`                                                 |
+| `AI_MODEL`             | `openai/gpt-5.2`                                       |
+| `AI_FALLBACK_MODELS`   | `anthropic/claude-sonnet-5,google/gemini-2.5-flash`    |
+| `NEXT_PUBLIC_DEMO_URL` | the production URL (for the proposal page)             |
+| `NEXT_PUBLIC_REPO_URL` | the GitHub URL                                         |
 
 AI Gateway authenticates with the project's OIDC token; no provider key is
 needed. Enable AI Gateway for the team, add a card to unlock credit, and set

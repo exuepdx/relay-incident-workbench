@@ -15,7 +15,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const from = Number(new URL(request.url).searchParams.get("from") ?? "0");
   const run = getRun(id);
   if (!(await run.exists)) return new Response("not found", { status: 404 });
-  const source = run.getReadable<ProgressEvent>({ namespace: "progress", startIndex: Number.isFinite(from) ? from : 0 });
+  const source = run.getReadable<ProgressEvent>({
+    namespace: "progress",
+    startIndex: Number.isFinite(from) ? from : 0,
+  });
   const reader = source.getReader();
   const encoder = new TextEncoder();
   let closed = false;
@@ -65,6 +68,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   });
 
   return new Response(body, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no" },
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Accel-Buffering": "no",
+    },
   });
 }

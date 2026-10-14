@@ -21,7 +21,13 @@ export function TraceWaterfall({ incident }: { incident: Incident }) {
             </div>
           </div>
           <div className="span-track">
-            <div className={`bar ${span.color}`} style={{ left: `${(span.start / scale) * 100}%`, width: `${Math.max(0.5, (span.duration / scale) * 100)}%` }} />
+            <div
+              className={`bar ${span.color}`}
+              style={{
+                left: `${(span.start / scale) * 100}%`,
+                width: `${Math.max(0.5, (span.duration / scale) * 100)}%`,
+              }}
+            />
           </div>
           <span className="span-ms">{span.duration.toLocaleString()} ms</span>
         </div>

@@ -44,7 +44,9 @@ async function main() {
       const checks = {
         structuralValidation: "passed",
         assessmentPassed: report.assessment === item.expectedAssessment,
-        allToolsCalled: ["getServiceMetrics", "getSlowTraces", "getRecentChanges"].every((t) => toolsCalled.includes(t)),
+        allToolsCalled: ["getServiceMetrics", "getSlowTraces", "getRecentChanges"].every((t) =>
+          toolsCalled.includes(t),
+        ),
         regressionFailures: evaluationRegressions(item, report),
       };
       if (!checks.assessmentPassed || !checks.allToolsCalled || checks.regressionFailures.length) failures++;
@@ -60,7 +62,9 @@ async function main() {
         ...totals(modelSteps),
         modelSteps,
       });
-      console.log(`${item.name}: ok · assessment ${report.assessment} · tools ${toolsCalled.join(",")} · $${totals(modelSteps).totalCostUsd ?? "n/a"} · ${Date.now() - started}ms`);
+      console.log(
+        `${item.name}: ok · assessment ${report.assessment} · tools ${toolsCalled.join(",")} · $${totals(modelSteps).totalCostUsd ?? "n/a"} · ${Date.now() - started}ms`,
+      );
     } catch (error) {
       failures++;
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -70,7 +74,11 @@ async function main() {
     }
   }
   await mkdir("artifacts", { recursive: true });
-  const path = only ? `artifacts/evaluation-${only}.json` : process.argv.includes("--first") ? "artifacts/evaluation-probe.json" : "artifacts/evaluation.json";
+  const path = only
+    ? `artifacts/evaluation-${only}.json`
+    : process.argv.includes("--first")
+      ? "artifacts/evaluation-probe.json"
+      : "artifacts/evaluation.json";
   await writeFile(
     path,
     JSON.stringify(

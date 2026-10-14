@@ -3,9 +3,30 @@ import assert from "node:assert/strict";
 import { allowedOrigin, mintSession, validAccessCode, validSession } from "../lib/access";
 
 test("origin checks use the Host the browser requested", () => {
-  assert.equal(allowedOrigin(new Request("http://localhost:3000/api/session", { headers: { Host: "127.0.0.1:3000", Origin: "http://127.0.0.1:3000" } })), true);
-  assert.equal(allowedOrigin(new Request("https://relay.example/api/session", { headers: { Host: "relay.example", Origin: "https://evil.example" } })), false);
-  assert.equal(allowedOrigin(new Request("https://relay.example/api/session", { headers: { Host: "relay.example", Origin: "https://relay.example", "sec-fetch-site": "cross-site" } })), false);
+  assert.equal(
+    allowedOrigin(
+      new Request("http://localhost:3000/api/session", {
+        headers: { Host: "127.0.0.1:3000", Origin: "http://127.0.0.1:3000" },
+      }),
+    ),
+    true,
+  );
+  assert.equal(
+    allowedOrigin(
+      new Request("https://relay.example/api/session", {
+        headers: { Host: "relay.example", Origin: "https://evil.example" },
+      }),
+    ),
+    false,
+  );
+  assert.equal(
+    allowedOrigin(
+      new Request("https://relay.example/api/session", {
+        headers: { Host: "relay.example", Origin: "https://relay.example", "sec-fetch-site": "cross-site" },
+      }),
+    ),
+    false,
+  );
 });
 
 test("a reviewer session expires and cannot be extended by editing the timestamp", () => {

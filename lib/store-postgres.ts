@@ -78,8 +78,10 @@ class PostgresStore implements Store {
   async list({ incidentId, limit = 12 }: { incidentId?: string; limit?: number } = {}) {
     await this.init();
     const rows = incidentId
-      ? await this.sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations WHERE incident_id = ${incidentId} ORDER BY created_at DESC LIMIT ${limit}`
-      : await this.sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations ORDER BY created_at DESC LIMIT ${limit}`;
+      ? await this
+          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations WHERE incident_id = ${incidentId} ORDER BY created_at DESC LIMIT ${limit}`
+      : await this
+          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations ORDER BY created_at DESC LIMIT ${limit}`;
     return rows.map((r) => this.row({ ...r, result: null }));
   }
 }

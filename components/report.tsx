@@ -27,7 +27,11 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
         </button>
       </div>
       <div>
-        <span className="assessment">{report.assessment === "insufficient-evidence" ? "Insufficient evidence" : "Supported hypothesis · not confirmed"}</span>
+        <span className="assessment">
+          {report.assessment === "insufficient-evidence"
+            ? "Insufficient evidence"
+            : "Supported hypothesis · not confirmed"}
+        </span>
         <h3>{report.title}</h3>
       </div>
       <p className="summary">{report.summary}</p>
@@ -79,7 +83,10 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
         <p>{report.customerUpdate}</p>
       </div>
       <details className="accounting">
-        <summary>Run accounting · {accounting.servedBy ?? "model"} · {accounting.totalCostUsd ? `$${Number(accounting.totalCostUsd).toFixed(4)}` : "cost n/a"}</summary>
+        <summary>
+          Run accounting · {accounting.servedBy ?? "model"} ·{" "}
+          {accounting.totalCostUsd ? `$${Number(accounting.totalCostUsd).toFixed(4)}` : "cost n/a"}
+        </summary>
         <dl>
           <dt>Served by</dt>
           <dd>
@@ -97,7 +104,11 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
           <dt>Gateway cost</dt>
           <dd>{accounting.totalCostUsd ? `$${accounting.totalCostUsd}` : "not returned"}</dd>
           <dt>Elapsed</dt>
-          <dd>{Math.round((new Date(accounting.completedAt).getTime() - new Date(accounting.startedAt).getTime()) / 100) / 10} s</dd>
+          <dd>
+            {Math.round((new Date(accounting.completedAt).getTime() - new Date(accounting.startedAt).getTime()) / 100) /
+              10}{" "}
+            s
+          </dd>
           <dt>Run</dt>
           <dd>{runId}</dd>
         </dl>
@@ -106,7 +117,8 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
             {accounting.modelSteps.flatMap((s, i) =>
               s.modelAttempts.map((a, j) => (
                 <div key={`${i}-${j}`} className={a.success ? "ok" : "fail"}>
-                  step {i + 1} · {a.model} via {a.provider ?? "?"} · {a.success ? "ok" : `failed: ${a.error ?? "unavailable"}`}
+                  step {i + 1} · {a.model} via {a.provider ?? "?"} ·{" "}
+                  {a.success ? "ok" : `failed: ${a.error ?? "unavailable"}`}
                 </div>
               )),
             )}

@@ -6,7 +6,12 @@ import { evidenceListSchema, incidentListSchema, incidentSchema } from "../lib/c
 
 const env = { token: "secret", data: data as Dataset };
 const get = (path: string, headers: Record<string, string> = {}) =>
-  handleTelemetry(new Request(`https://telemetry.northstar.example${path}`, { headers: { authorization: "Bearer secret", ...headers } }), env);
+  handleTelemetry(
+    new Request(`https://telemetry.northstar.example${path}`, {
+      headers: { authorization: "Bearer secret", ...headers },
+    }),
+    env,
+  );
 
 test("health needs no auth; everything else does", async () => {
   assert.equal(handleTelemetry(new Request("https://x/health"), env).status, 200);
@@ -17,11 +22,23 @@ test("health needs no auth; everything else does", async () => {
 });
 
 test("missing service configuration fails closed", () => {
-  assert.equal(handleTelemetry(new Request("https://x/incidents", { headers: { authorization: "Bearer secret" } }), { token: undefined, data: env.data }).status, 503);
+  assert.equal(
+    handleTelemetry(new Request("https://x/incidents", { headers: { authorization: "Bearer secret" } }), {
+      token: undefined,
+      data: env.data,
+    }).status,
+    503,
+  );
 });
 
 test("the API is read-only and ignores inherited property names", () => {
-  assert.equal(handleTelemetry(new Request("https://x/incidents/INC-0244", { method: "POST", headers: { authorization: "Bearer secret" } }), env).status, 405);
+  assert.equal(
+    handleTelemetry(
+      new Request("https://x/incidents/INC-0244", { method: "POST", headers: { authorization: "Bearer secret" } }),
+      env,
+    ).status,
+    405,
+  );
   assert.equal(get("/incidents/__proto__").status, 404);
   assert.equal(get("/incidents/INC-9999").status, 404);
   assert.equal(get("/incidents/INC-0244/secrets").status, 404);
@@ -42,7 +59,12 @@ test("responses are non-cacheable and match the consumer contracts", async () =>
     assert.equal(incident.id, id);
     // The briefing carries only coverage notes; measurements come from tools.
     assert.ok(incident.coverage.every((e) => e.kind === "coverage"));
-    for (const [path, kind] of [["metrics", "metric"], ["traces", "trace"], ["changes", "change"], ["evidence", "all"]] as const) {
+    for (const [path, kind] of [
+      ["metrics", "metric"],
+      ["traces", "trace"],
+      ["changes", "change"],
+      ["evidence", "all"],
+    ] as const) {
       const body = evidenceListSchema.parse(await get(`/incidents/${id}/${path}`).json());
       assert.equal(body.kind, kind);
       if (kind !== "all") assert.ok(body.evidence.every((e) => e.kind === kind));
@@ -51,7 +73,10 @@ test("responses are non-cacheable and match the consumer contracts", async () =>
 });
 
 test("the full register is the union of the tool endpoints and the briefing", async () => {
-  const all = evidenceListSchema.parse(await get("/incidents/INC-0244/evidence").json()).evidence.map((e) => e.id).sort();
+  const all = evidenceListSchema
+    .parse(await get("/incidents/INC-0244/evidence").json())
+    .evidence.map((e) => e.id)
+    .sort();
   const parts: string[] = [];
   for (const path of ["metrics", "traces", "changes"]) {
     parts.push(...evidenceListSchema.parse(await get(`/incidents/INC-0244/${path}`).json()).evidence.map((e) => e.id));

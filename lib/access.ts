@@ -15,7 +15,10 @@ export function allowedOrigin(request: Request) {
   if (!origin) return true; // non-browser clients still need the session cookie
   try {
     const source = new URL(origin);
-    return ["http:", "https:"].includes(source.protocol) && source.host === (request.headers.get("host") || new URL(request.url).host);
+    return (
+      ["http:", "https:"].includes(source.protocol) &&
+      source.host === (request.headers.get("host") || new URL(request.url).host)
+    );
   } catch {
     return false;
   }

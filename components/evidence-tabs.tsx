@@ -21,7 +21,11 @@ export function EvidenceTabs({
 }) {
   const tabs: Tab[] = hasTopology ? ["topology", "overview", "register"] : ["overview", "register"];
   const [tab, setTab] = useState<Tab>(tabs[0]);
-  const labels: Record<Tab, string> = { topology: "Blast radius & owners", overview: "Overview", register: "Evidence register" };
+  const labels: Record<Tab, string> = {
+    topology: "Blast radius & owners",
+    overview: "Overview",
+    register: "Evidence register",
+  };
 
   useEffect(() => {
     function onCite(event: Event) {
@@ -43,7 +47,16 @@ export function EvidenceTabs({
     <div>
       <div className="tabs" role="tablist" aria-label="Evidence view">
         {tabs.map((t) => (
-          <button key={t} role="tab" id={`tab-${t}`} className="tab" aria-selected={tab === t} aria-controls="evidence-panel" tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}>
+          <button
+            key={t}
+            role="tab"
+            id={`tab-${t}`}
+            className="tab"
+            aria-selected={tab === t}
+            aria-controls="evidence-panel"
+            tabIndex={tab === t ? 0 : -1}
+            onClick={() => setTab(t)}
+          >
             {labels[t]}
           </button>
         ))}

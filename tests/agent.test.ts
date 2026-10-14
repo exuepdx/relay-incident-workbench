@@ -9,7 +9,19 @@ test("accounting reduces gateway metadata into served model, cost, and fallback 
       toolCalls: [{ toolName: "getServiceMetrics" }, { toolName: "getSlowTraces" }],
       usage: { inputTokens: 1000, outputTokens: 50 },
       response: { modelId: "openai/gpt-5.2" },
-      providerMetadata: { gateway: { cost: "0.0100", generationId: "gen_1", modelAttempts: [{ canonicalSlug: "openai/gpt-5.2", success: true, providerAttempts: [{ provider: "openai", success: true }] }] } },
+      providerMetadata: {
+        gateway: {
+          cost: "0.0100",
+          generationId: "gen_1",
+          modelAttempts: [
+            {
+              canonicalSlug: "openai/gpt-5.2",
+              success: true,
+              providerAttempts: [{ provider: "openai", success: true }],
+            },
+          ],
+        },
+      },
     },
     {
       toolCalls: [],
@@ -20,8 +32,16 @@ test("accounting reduces gateway metadata into served model, cost, and fallback 
           cost: 0.02,
           generationId: "gen_2",
           modelAttempts: [
-            { canonicalSlug: "openai/gpt-5.2", success: false, providerAttempts: [{ provider: "bedrock", success: false, error: "no provider" }] },
-            { canonicalSlug: "anthropic/claude-sonnet-5", success: true, providerAttempts: [{ provider: "bedrock", success: true }] },
+            {
+              canonicalSlug: "openai/gpt-5.2",
+              success: false,
+              providerAttempts: [{ provider: "bedrock", success: false, error: "no provider" }],
+            },
+            {
+              canonicalSlug: "anthropic/claude-sonnet-5",
+              success: true,
+              providerAttempts: [{ provider: "bedrock", success: true }],
+            },
           ],
         },
       },
@@ -49,4 +69,3 @@ test("the tool set exposes exactly three read-only tools with no free-form input
   for (const name of toolNames) await tools[name].execute?.({}, { toolCallId: "x", messages: [] } as never);
   assert.deepEqual(calls.sort(), ["c", "m", "t"]);
 });
-

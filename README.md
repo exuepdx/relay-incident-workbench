@@ -57,15 +57,15 @@ npm run probe:fallback   # verifies the provider-outage drill before a live demo
 
 ## Layout
 
-| Path | What |
-| --- | --- |
-| `app/incidents/[id]` | the workbench route: static shell, cached incident segment, streamed run |
-| `app/api/investigations` | start, status, list, and the NDJSON progress stream |
-| `workflows/` | the durable investigation and its steps |
-| `lib/agent.ts`, `lib/tools.ts`, `lib/gateway.ts` | instructions, tool boundary, Gateway routing and accounting |
-| `lib/contracts.ts` | every schema that crosses a boundary, plus report validation |
-| `lib/store.ts`, `lib/store-postgres.ts` | the investigation index |
-| `lib/config.ts` | every knob a live change might touch |
-| `customer-api/` | the customer's telemetry API: handler, Lambda and Vercel adapters, deploy script |
-| `scripts/` | eval, smoke, fallback probe, fake Gateway |
-| `artifacts/` | evaluation and smoke results with hashes |
+| Path                                             | What                                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `app/incidents/[id]`                             | the workbench route: static shell, cached incident segment, streamed run         |
+| `app/api/investigations`                         | start, status, list, and the NDJSON progress stream                              |
+| `workflows/`                                     | the durable investigation and its steps                                          |
+| `lib/agent.ts`, `lib/tools.ts`, `lib/gateway.ts` | instructions, tool boundary, Gateway routing and accounting                      |
+| `lib/contracts.ts`                               | every schema that crosses a boundary, plus report validation                     |
+| `lib/store.ts`, `lib/store-postgres.ts`          | the investigation index                                                          |
+| `lib/config.ts`                                  | every knob a live change might touch                                             |
+| `customer-api/`                                  | the customer's telemetry API: handler, Lambda and Vercel adapters, deploy script |
+| `scripts/`                                       | eval, smoke, fallback probe, fake Gateway                                        |
+| `artifacts/`                                     | evaluation and smoke results with hashes                                         |

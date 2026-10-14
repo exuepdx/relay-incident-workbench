@@ -11,4 +11,3 @@ test("gateway routing carries fallbacks, and the outage drill pins the primary t
   assert.deepEqual(drill.gateway.only, [config.outageDrillProviderOnly]);
   assert.deepEqual(drill.gateway.models, config.fallbackModels);
 });
-

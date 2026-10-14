@@ -17,7 +17,19 @@ type Fault = InvestigationInput["fault"];
  * persisted stream (replayed on reconnect) and status from the index, so a
  * refresh, a new tab, or another device can pick the run up mid-flight.
  */
-export function Investigator({ incidentId, question, demoControls, model, fallbackModels }: { incidentId: string; question: string; demoControls: boolean; model: string; fallbackModels: string[] }) {
+export function Investigator({
+  incidentId,
+  question,
+  demoControls,
+  model,
+  fallbackModels,
+}: {
+  incidentId: string;
+  question: string;
+  demoControls: boolean;
+  model: string;
+  fallbackModels: string[];
+}) {
   const router = useRouter();
   const search = useSearchParams();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -51,9 +63,14 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
       // 1. Replay and follow the persisted progress stream.
       (async () => {
         try {
-          const response = await fetch(`/api/investigations/${id}/events`, { signal: controller.signal, cache: "no-store" });
+          const response = await fetch(`/api/investigations/${id}/events`, {
+            signal: controller.signal,
+            cache: "no-store",
+          });
           if (response.status === 404) {
-            setStreamNote("Step timeline is no longer retained by Workflows for this run; the report below was loaded from the investigation index.");
+            setStreamNote(
+              "Step timeline is no longer retained by Workflows for this run; the report below was loaded from the investigation index.",
+            );
             return;
           }
           if (!response.ok || !response.body) return;
@@ -89,7 +106,9 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
           }
           if (body.status === "failed" || body.status === "cancelled") {
             setPhase("failed");
-            setError("The run stopped without a diagnosis. The timeline shows which step failed; nothing was substituted.");
+            setError(
+              "The run stopped without a diagnosis. The timeline shows which step failed; nothing was substituted.",
+            );
             controller.abort();
             router.refresh();
             return;
@@ -101,7 +120,9 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
       }
       if (ticket === generation.current) {
         setPhase("failed");
-        setError("This run is taking longer than expected. It remains in saved investigations; open it there to reconnect.");
+        setError(
+          "This run is taking longer than expected. It remains in saved investigations; open it there to reconnect.",
+        );
         controller.abort();
       }
     },
@@ -135,7 +156,11 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
   async function unlock(event: React.FormEvent) {
     event.preventDefault();
     setError("");
-    const response = await fetch("/api/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) });
+    const response = await fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
     const body = await response.json();
     if (!response.ok) {
       setError(body.error ?? "Could not unlock.");
@@ -189,7 +214,15 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
                   <Icon name="lock" size={13} /> Enter the reviewer code once to start investigations for 24 hours.
                 </p>
                 <form onSubmit={unlock}>
-                  <input type="password" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Reviewer access code" aria-label="Reviewer access code" required />
+                  <input
+                    type="password"
+                    autoComplete="off"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Reviewer access code"
+                    aria-label="Reviewer access code"
+                    required
+                  />
                   <button className="btn btn-primary" type="submit">
                     Unlock
                   </button>
@@ -200,7 +233,8 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
               <Icon name="spark" size={16} /> Run investigation <Icon name="arrow" size={16} />
             </button>
             <p className="note">
-              {model} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}. Read-only. About 15 seconds.
+              {model} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}. Read-only.
+              About 15 seconds.
             </p>
             {demoControls && (
               <details className="controls">
@@ -215,7 +249,9 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
                     <option value="outage">Telemetry API is down (run fails, no model call)</option>
                     <option value="provider-outage">Primary model unavailable (Gateway falls back)</option>
                   </select>
-                  <span className="help">Faults are injected at the customer API or at Gateway routing, never in the agent.</span>
+                  <span className="help">
+                    Faults are injected at the customer API or at Gateway routing, never in the agent.
+                  </span>
                 </div>
               </details>
             )}
@@ -228,7 +264,8 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
             {streamNote && <p className="note">{streamNote}</p>}
             {phase === "running" && (
               <p className="note">
-                <span className="pulse" /> You can refresh or close this tab. The run continues and is listed under saved investigations.
+                <span className="pulse" /> You can refresh or close this tab. The run continues and is listed under
+                saved investigations.
               </p>
             )}
           </>
@@ -251,7 +288,8 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
       {phase === "idle" && (
         <div className="steps-explainer">
           <div>
-            <span>01</span> The agent reads the incident record and asks your telemetry for metrics, traces, and changes.
+            <span>01</span> The agent reads the incident record and asks your telemetry for metrics, traces, and
+            changes.
           </div>
           <div>
             <span>02</span> Every tool call is a durable step: retried on 503, resumed after a crash or deploy.

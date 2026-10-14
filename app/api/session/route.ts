@@ -5,7 +5,12 @@ import { config } from "@/lib/config";
 export async function GET() {
   const token = (await cookies()).get(sessionCookie)?.value;
   return Response.json(
-    { authenticated: validSession(token), demoControls: config.demoControls, model: config.model, fallbackModels: config.fallbackModels },
+    {
+      authenticated: validSession(token),
+      demoControls: config.demoControls,
+      model: config.model,
+      fallbackModels: config.fallbackModels,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

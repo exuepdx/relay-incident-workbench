@@ -48,7 +48,9 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
       <main id="main" className="page">
         <div className="incident-head">
           <div>
-            <span className="eyebrow">{incident.id} · {incident.window.replace(" / ", " → ")}</span>
+            <span className="eyebrow">
+              {incident.id} · {incident.window.replace(" / ", " → ")}
+            </span>
             <h1>{incident.title}</h1>
             <p>{incident.subtitle}</p>
           </div>
@@ -121,13 +123,32 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
                   </div>
                 </div>
               }
-              register={<EvidenceRegister evidence={incident.coverage} note="The agent is briefed with these coverage notes only. Metrics, traces, and changes are fetched through its tools during a run and appear here when it completes." />}
+              register={
+                <EvidenceRegister
+                  evidence={incident.coverage}
+                  note="The agent is briefed with these coverage notes only. Metrics, traces, and changes are fetched through its tools during a run and appear here when it completes."
+                />
+              }
             />
           </section>
           <aside className="investigator" aria-label="Investigation">
-            <Investigator incidentId={incident.id} question={incident.question} demoControls={config.demoControls} model={config.model} fallbackModels={config.fallbackModels} />
+            <Investigator
+              incidentId={incident.id}
+              question={incident.question}
+              demoControls={config.demoControls}
+              model={config.model}
+              fallbackModels={config.fallbackModels}
+            />
             <div style={{ height: 16 }} />
-            <Suspense fallback={<div className="panel"><div className="panel-body"><div className="skeleton" style={{ height: 60 }} /></div></div>}>
+            <Suspense
+              fallback={
+                <div className="panel">
+                  <div className="panel-body">
+                    <div className="skeleton" style={{ height: 60 }} />
+                  </div>
+                </div>
+              }
+            >
               <SavedRuns incidentId={incident.id} />
             </Suspense>
           </aside>

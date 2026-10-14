@@ -46,7 +46,8 @@ export function handleTelemetry(request: Request, env: HandlerEnv): Response {
   if (!env.token) return json({ error: "Service not configured" }, 503);
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
-  if (path === "/health") return json({ ok: true, service: "northstar-telemetry", incidents: Object.keys(env.data).length });
+  if (path === "/health")
+    return json({ ok: true, service: "northstar-telemetry", incidents: Object.keys(env.data).length });
   if (!authorized(request, env.token)) return json({ error: "Unauthorized" }, 401);
   if (request.method !== "GET") return json({ error: "Read only" }, 405);
   // Fault injection is confined to this synthetic service and requires auth.
@@ -54,7 +55,13 @@ export function handleTelemetry(request: Request, env: HandlerEnv): Response {
 
   if (path === "/incidents") {
     return json(
-      Object.values(env.data).map((i) => ({ id: i.id, short: i.short, title: i.title, severity: i.severity, window: i.window })),
+      Object.values(env.data).map((i) => ({
+        id: i.id,
+        short: i.short,
+        title: i.title,
+        severity: i.severity,
+        window: i.window,
+      })),
     );
   }
   const match = /^\/incidents\/(INC-\d{4})(?:\/(metrics|traces|changes|evidence))?$/.exec(path);
@@ -70,7 +77,8 @@ export function handleTelemetry(request: Request, env: HandlerEnv): Response {
     const { evidence, ...rest } = incident;
     return json({ ...rest, coverage: evidence.filter((e) => e.kind === "coverage") });
   }
-  const kind = resource === "metrics" ? "metric" : resource === "traces" ? "trace" : resource === "changes" ? "change" : "all";
+  const kind =
+    resource === "metrics" ? "metric" : resource === "traces" ? "trace" : resource === "changes" ? "change" : "all";
   const evidence = kind === "all" ? incident.evidence : incident.evidence.filter((e) => e.kind === kind);
   return json({ incidentId: id, kind, evidence });
 }

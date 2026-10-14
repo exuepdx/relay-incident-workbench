@@ -16,7 +16,8 @@ export async function SavedRuns({ incidentId }: { incidentId: string }) {
         <div>
           <h3>Saved investigations</h3>
           <p>
-            {runs.length ? `${runs.length} on record` : "None yet"} · index in {store.kind === "postgres" ? "Postgres" : store.kind === "file" ? "a local file" : "memory"}
+            {runs.length ? `${runs.length} on record` : "None yet"} · index in{" "}
+            {store.kind === "postgres" ? "Postgres" : store.kind === "file" ? "a local file" : "memory"}
           </p>
         </div>
         <Icon name="clock" size={16} />
@@ -29,14 +30,25 @@ export async function SavedRuns({ incidentId }: { incidentId: string }) {
             {runs.map((run) => (
               <Link key={run.runId} className="run-row" href={`/incidents/${incidentId}?run=${run.runId}`}>
                 <div>
-                  <strong>{run.title ?? (run.status === "running" ? "In progress…" : run.status === "failed" ? "Did not complete" : "Investigation")}</strong>
+                  <strong>
+                    {run.title ??
+                      (run.status === "running"
+                        ? "In progress…"
+                        : run.status === "failed"
+                          ? "Did not complete"
+                          : "Investigation")}
+                  </strong>
                   <small>
                     {new Date(run.createdAt).toLocaleString()} · {run.model ?? "model pending"}
                     {run.costUsd ? ` · $${Number(run.costUsd).toFixed(4)}` : ""}
                     {run.fault !== "none" ? ` · drill: ${run.fault}` : ""}
                   </small>
                 </div>
-                <span className={`chip ${run.status === "completed" ? "green" : run.status === "failed" ? "red" : "violet"}`}>{run.status}</span>
+                <span
+                  className={`chip ${run.status === "completed" ? "green" : run.status === "failed" ? "red" : "violet"}`}
+                >
+                  {run.status}
+                </span>
               </Link>
             ))}
           </div>

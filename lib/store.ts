@@ -97,7 +97,8 @@ export function getStore(): Store {
   if (instance) return instance;
   const url = process.env.DATABASE_URL;
   if (url && postgresFactory) instance = postgresFactory(url);
-  else if (process.env.NODE_ENV !== "production") instance = new FileStore(join(process.cwd(), ".data", "investigations.json"));
+  else if (process.env.NODE_ENV !== "production")
+    instance = new FileStore(join(process.cwd(), ".data", "investigations.json"));
   else {
     console.warn("DATABASE_URL is not set; saved investigations will not persist across function instances.");
     instance = new MemoryStore();

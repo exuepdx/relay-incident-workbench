@@ -15,15 +15,15 @@ session and keep that run id in the saved list.
 
 ## The twelve minutes
 
-| Time | Show | Say |
-| --- | --- | --- |
-| 0:00–1:00 | One slide, or the proposal hero | A sev-1 pulls five teams onto a bridge. The first twenty minutes go to assembling evidence by hand. The tooling team's helper on Lambda timed out at 29 seconds, retried by hand, had one provider, and no cost line. |
-| 1:00–2:30 | `/proposal#architecture` | What stays: the telemetry API, EKS and RDS, the Postgres index, identity, Bedrock as a provider. What Vercel adds: the app, a durable agent, one model boundary. The boundary is one read-only HTTPS call with a scoped token. |
-| 2:30–6:00 | `/incidents/INC-0244`, Run | Watch the steps: incident record, three tool calls, model phase, validation. Each is a durable step. Click a citation. Open "Blast radius & owners", copy a handoff. |
-| 6:00–8:00 | Test resilience | "Telemetry API returns 503 once": the tool step retries, the model never sees an error. "Primary model unavailable": Gateway falls back; open Run accounting and read the model attempts. Refresh the page mid-run: it continues. |
-| 8:00–9:30 | Run accounting, then the dashboard | Served model, tokens, dollars. Observability → Workflows: the trace of this run. AI Gateway → Generations: the same call with cost. |
-| 9:30–11:00 | Deployments | Preview URL on the open PR. Merge, then Instant Rollback. The earlier run is still readable. Rolling Releases on Pro: 10 percent with Skew Protection. |
-| 11:00–12:00 | `/proposal#measures` | Three gates. "Which of these is the right first metric for your rotation?" |
+| Time        | Show                               | Say                                                                                                                                                                                                                               |
+| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00–1:00   | One slide, or the proposal hero    | A sev-1 pulls five teams onto a bridge. The first twenty minutes go to assembling evidence by hand. The tooling team's helper on Lambda timed out at 29 seconds, retried by hand, had one provider, and no cost line.             |
+| 1:00–2:30   | `/proposal#architecture`           | What stays: the telemetry API, EKS and RDS, the Postgres index, identity, Bedrock as a provider. What Vercel adds: the app, a durable agent, one model boundary. The boundary is one read-only HTTPS call with a scoped token.    |
+| 2:30–6:00   | `/incidents/INC-0244`, Run         | Watch the steps: incident record, three tool calls, model phase, validation. Each is a durable step. Click a citation. Open "Blast radius & owners", copy a handoff.                                                              |
+| 6:00–8:00   | Test resilience                    | "Telemetry API returns 503 once": the tool step retries, the model never sees an error. "Primary model unavailable": Gateway falls back; open Run accounting and read the model attempts. Refresh the page mid-run: it continues. |
+| 8:00–9:30   | Run accounting, then the dashboard | Served model, tokens, dollars. Observability → Workflows: the trace of this run. AI Gateway → Generations: the same call with cost.                                                                                               |
+| 9:30–11:00  | Deployments                        | Preview URL on the open PR. Merge, then Instant Rollback. The earlier run is still readable. Rolling Releases on Pro: 10 percent with Skew Protection.                                                                            |
+| 11:00–12:00 | `/proposal#measures`               | Three gates. "Which of these is the right first metric for your rotation?"                                                                                                                                                        |
 
 ## Curveballs
 

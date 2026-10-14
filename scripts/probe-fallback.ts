@@ -12,7 +12,12 @@ import { gatewayOptions } from "../lib/gateway";
 async function main() {
   const providerOptions = gatewayOptions("provider-outage");
   console.log("primary", config.model, "routing", JSON.stringify(providerOptions.gateway));
-  const result = await generateText({ model: config.model, prompt: "Reply with the single word: ready.", maxOutputTokens: 20, providerOptions });
+  const result = await generateText({
+    model: config.model,
+    prompt: "Reply with the single word: ready.",
+    maxOutputTokens: 20,
+    providerOptions,
+  });
   const gateway = result.providerMetadata?.gateway as Record<string, unknown> | undefined;
   console.log("served by", result.response.modelId);
   console.log("attempts", JSON.stringify(gateway?.modelAttempts ?? "(no modelAttempts in metadata)", null, 2));

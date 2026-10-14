@@ -86,6 +86,8 @@ export function totals(modelSteps: ModelStep[]) {
     totalOutputTokens: sum((s) => s.outputTokens),
     totalCostUsd: costs.length ? costs.reduce((acc, c) => acc + Number(c), 0).toFixed(6) : null,
     servedBy,
-    fallbackUsed: modelSteps.some((s) => s.modelAttempts.some((a) => !a.success)) || (servedBy !== null && servedBy !== config.model),
+    fallbackUsed:
+      modelSteps.some((s) => s.modelAttempts.some((a) => !a.success)) ||
+      (servedBy !== null && servedBy !== config.model),
   };
 }

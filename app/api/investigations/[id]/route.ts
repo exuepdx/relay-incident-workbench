@@ -22,14 +22,22 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   try {
     const run = getRun<InvestigationResult>(id);
     if (!(await run.exists)) {
-      if (record) return Response.json({ status: record.status, record, result: null, retained: false }, { headers: noStore });
+      if (record)
+        return Response.json({ status: record.status, record, result: null, retained: false }, { headers: noStore });
       return Response.json({ error: "Investigation not found or no longer retained" }, { status: 404 });
     }
     const status = await run.status;
     // Never await returnValue for a running workflow: keep the request short.
     const result = status === "completed" ? await run.returnValue : null;
     if (result && record && !record.result) {
-      await store.update(id, { status: "completed", result, title: result.report.title, model: result.accounting.servedBy, costUsd: result.accounting.totalCostUsd, completedAt: result.accounting.completedAt });
+      await store.update(id, {
+        status: "completed",
+        result,
+        title: result.report.title,
+        model: result.accounting.servedBy,
+        costUsd: result.accounting.totalCostUsd,
+        completedAt: result.accounting.completedAt,
+      });
     }
     return Response.json({ status, record: record ?? null, result }, { headers: noStore });
   } catch (error) {

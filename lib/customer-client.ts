@@ -37,7 +37,11 @@ function baseUrl() {
   return { url, token };
 }
 
-export async function customerGet<T>(path: string, schema: z.ZodType<T>, options: CustomerFetchOptions = {}): Promise<T> {
+export async function customerGet<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  options: CustomerFetchOptions = {},
+): Promise<T> {
   const { url, token } = baseUrl();
   const target = new URL(path.replace(/^\//, ""), url.href.endsWith("/") ? url.href : url.href + "/");
   let response: Response;
@@ -53,15 +57,21 @@ export async function customerGet<T>(path: string, schema: z.ZodType<T>, options
       signal: options.signal ?? AbortSignal.timeout(config.telemetryTimeoutMs),
     });
   } catch (error) {
-    throw new CustomerApiError(`Telemetry connection failed: ${error instanceof Error ? error.message : "unknown"}`, 0, true);
+    throw new CustomerApiError(
+      `Telemetry connection failed: ${error instanceof Error ? error.message : "unknown"}`,
+      0,
+      true,
+    );
   }
   if (response.status >= 500 || response.status === 429) {
     throw new CustomerApiError(`Telemetry service unavailable (${response.status})`, response.status, true);
   }
-  if (!response.ok) throw new CustomerApiError(`Telemetry request rejected (${response.status})`, response.status, false);
+  if (!response.ok)
+    throw new CustomerApiError(`Telemetry request rejected (${response.status})`, response.status, false);
   const text = await response.text();
   if (text.length > 64_000) throw new CustomerApiError("Telemetry response exceeds the evidence budget", 200, false);
   const parsed = schema.safeParse(JSON.parse(text));
-  if (!parsed.success) throw new CustomerApiError(`Telemetry contract mismatch: ${parsed.error.issues[0]?.message}`, 200, false);
+  if (!parsed.success)
+    throw new CustomerApiError(`Telemetry contract mismatch: ${parsed.error.issues[0]?.message}`, 200, false);
   return parsed.data;
 }

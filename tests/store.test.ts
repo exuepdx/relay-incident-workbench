@@ -8,7 +8,16 @@ import { createFileStore } from "../lib/store";
 test("the file store round-trips records and lists newest first without results", async () => {
   const store = createFileStore(join(mkdtempSync(join(tmpdir(), "relay-")), "investigations.json"));
   assert.equal(store.kind, "file");
-  const base = { incidentId: "INC-0244", status: "running" as const, fault: "none" as const, completedAt: null, model: null, costUsd: null, title: null, result: null };
+  const base = {
+    incidentId: "INC-0244",
+    status: "running" as const,
+    fault: "none" as const,
+    completedAt: null,
+    model: null,
+    costUsd: null,
+    title: null,
+    result: null,
+  };
   await store.create({ ...base, runId: "wrun_test_old", createdAt: "2026-10-13T10:00:00.000Z" });
   await store.create({ ...base, runId: "wrun_test_new", createdAt: "2026-10-13T11:00:00.000Z" });
   await store.update("wrun_test_new", { status: "completed", title: "Done", result: { ok: true } });

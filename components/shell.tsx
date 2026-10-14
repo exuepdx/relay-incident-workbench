@@ -22,7 +22,12 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
         <nav className="nav-group" aria-label="Incidents">
           <span className="eyebrow nav-label">Open incidents</span>
           {customer.incidents.map((i) => (
-            <Link key={i.id} className="nav-item" href={`/incidents/${i.id}`} aria-current={i.id === current ? "page" : undefined}>
+            <Link
+              key={i.id}
+              className="nav-item"
+              href={`/incidents/${i.id}`}
+              aria-current={i.id === current ? "page" : undefined}
+            >
               <Icon name="pulse" size={16} />
               <span>
                 <span className="mono">{i.id}</span> · {i.short}

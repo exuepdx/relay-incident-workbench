@@ -15,7 +15,8 @@ const noStore = { "Cache-Control": "no-store" };
 export async function POST(request: Request) {
   if (!allowedOrigin(request)) return Response.json({ error: "Origin rejected" }, { status: 403 });
   const session = (await cookies()).get(sessionCookie)?.value;
-  if (!validSession(session)) return Response.json({ error: "Enter the reviewer access code to start an investigation." }, { status: 401 });
+  if (!validSession(session))
+    return Response.json({ error: "Enter the reviewer access code to start an investigation." }, { status: 401 });
 
   const body = await request.text();
   if (body.length > 1024) return Response.json({ error: "Request too large" }, { status: 413 });
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const input = investigationInputSchema.safeParse(value);
-  if (!input.success) return Response.json({ error: "Choose a known incident and a supported fault setting." }, { status: 400 });
+  if (!input.success)
+    return Response.json({ error: "Choose a known incident and a supported fault setting." }, { status: 400 });
   if (input.data.fault !== "none" && !config.demoControls) {
     return Response.json({ error: "Demo controls are disabled in this environment." }, { status: 403 });
   }

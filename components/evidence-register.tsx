@@ -5,7 +5,11 @@ import { Icon } from "./icons";
 export function EvidenceRegister({ evidence, note }: { evidence: Evidence[]; note?: string }) {
   return (
     <div className="register">
-      {note && <p className="muted" style={{ fontSize: "var(--text-sm)" }}>{note}</p>}
+      {note && (
+        <p className="muted" style={{ fontSize: "var(--text-sm)" }}>
+          {note}
+        </p>
+      )}
       {evidence.map((item) => (
         <article id={`evidence-${item.id}`} className="panel evidence" key={item.id}>
           <div className="evidence-top">

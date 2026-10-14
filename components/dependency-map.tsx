@@ -7,7 +7,14 @@ import { cite } from "./evidence-tabs";
 
 const statusLabel = { affected: "Affected", baseline: "Within baseline", unknown: "Unknown" } as const;
 // Fixed positions for the curated six-node scene.
-const positions: Record<string, [number, number]> = { checkout: [25, 12], payments: [75, 12], inventory: [25, 38], network: [25, 65], database: [75, 65], underlay: [25, 91] };
+const positions: Record<string, [number, number]> = {
+  checkout: [25, 12],
+  payments: [75, 12],
+  inventory: [25, 38],
+  network: [25, 65],
+  database: [75, 65],
+  underlay: [25, 91],
+};
 
 export function handoffText(incident: Incident, topology: Topology, index: number) {
   const h = topology.handoffs[index];
@@ -65,7 +72,15 @@ export function DependencyMap({ incident }: { incident: Incident }) {
           <div className="map" role="group" aria-label="Dependency map; arrows show dependency direction">
             <svg viewBox="0 0 600 440" preserveAspectRatio="none" aria-hidden="true" className="map-lines">
               <defs>
-                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <marker
+                  id="arrow"
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#a89fb8" />
                 </marker>
               </defs>
@@ -106,7 +121,10 @@ export function DependencyMap({ incident }: { incident: Incident }) {
               </button>
             ))}
           </div>
-          <p className="map-caption">Arrows are catalog dependencies, not proven fault propagation. "Within baseline" describes the supplied measurements only.</p>
+          <p className="map-caption">
+            Arrows are catalog dependencies, not proven fault propagation. "Within baseline" describes the supplied
+            measurements only.
+          </p>
           <div className="node-detail" aria-live="polite">
             <span className="eyebrow">Accountable team</span>
             <h4>{node.owner}</h4>
@@ -115,8 +133,12 @@ export function DependencyMap({ incident }: { incident: Incident }) {
             <div className="links">
               <span className="eyebrow">Connected systems</span>
               {related.map((edge) => (
-                <button key={`${edge.from}-${edge.to}`} onClick={() => setSelected(edge.from === node.id ? edge.to : edge.from)}>
-                  {topology.nodes.find((n) => n.id === edge.from)?.label} <span>→ {edge.label} →</span> {topology.nodes.find((n) => n.id === edge.to)?.label}
+                <button
+                  key={`${edge.from}-${edge.to}`}
+                  onClick={() => setSelected(edge.from === node.id ? edge.to : edge.from)}
+                >
+                  {topology.nodes.find((n) => n.id === edge.from)?.label} <span>→ {edge.label} →</span>{" "}
+                  {topology.nodes.find((n) => n.id === edge.to)?.label}
                 </button>
               ))}
             </div>
@@ -144,7 +166,9 @@ export function DependencyMap({ incident }: { incident: Incident }) {
                 <div className="handoff-top">
                   <span className="handoff-n">0{i + 1}</span>
                   <div>
-                    <small>{i === 0 ? "START HERE" : "IN PARALLEL"} · {owner.owner}</small>
+                    <small>
+                      {i === 0 ? "START HERE" : "IN PARALLEL"} · {owner.owner}
+                    </small>
                     <h4>{h.action}</h4>
                   </div>
                 </div>

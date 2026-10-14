@@ -15,7 +15,10 @@ export const evidenceSchema = z.object({
 });
 export type Evidence = z.infer<typeof evidenceSchema>;
 
-const citations = z.array(z.string().regex(/^E[1-9][0-9]*$/)).min(1).max(6);
+const citations = z
+  .array(z.string().regex(/^E[1-9][0-9]*$/))
+  .min(1)
+  .max(6);
 
 export const topologySchema = z.object({
   scope: z.string().min(1).max(300),
@@ -132,7 +135,12 @@ export type Report = z.infer<typeof reportSchema>;
 
 /** Progress events written to the run's stream by workflow steps. */
 export const progressEventSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("run"), status: z.enum(["started", "completed", "failed"]), at: z.string(), detail: z.string().optional() }),
+  z.object({
+    type: z.literal("run"),
+    status: z.enum(["started", "completed", "failed"]),
+    at: z.string(),
+    detail: z.string().optional(),
+  }),
   z.object({
     type: z.literal("tool"),
     tool: z.string(),
@@ -142,7 +150,13 @@ export const progressEventSchema = z.discriminatedUnion("type", [
     summary: z.string().optional(),
     at: z.string(),
   }),
-  z.object({ type: z.literal("model"), status: z.enum(["started", "completed"]), model: z.string().optional(), ms: z.number().optional(), at: z.string() }),
+  z.object({
+    type: z.literal("model"),
+    status: z.enum(["started", "completed"]),
+    model: z.string().optional(),
+    ms: z.number().optional(),
+    at: z.string(),
+  }),
 ]);
 export type ProgressEvent = z.infer<typeof progressEventSchema>;
 
@@ -201,7 +215,8 @@ export function validateReport(value: unknown, evidence: Evidence[], policy: Inc
   const report = reportSchema.parse(value);
   const ids = new Set(evidence.map((e) => e.id));
   for (const item of report.findings) {
-    if (item.citations.some((id) => !ids.has(id))) throw new Error(`Unknown evidence citation in finding: ${item.citations.join(",")}`);
+    if (item.citations.some((id) => !ids.has(id)))
+      throw new Error(`Unknown evidence citation in finding: ${item.citations.join(",")}`);
   }
   if (policy.diagnosis === "withhold" && report.assessment !== "insufficient-evidence") {
     throw new Error("Evidence coverage does not support a diagnosis");
@@ -216,17 +231,27 @@ export function validateReport(value: unknown, evidence: Evidence[], policy: Inc
  * general semantic verifier; the eval harness and human review cover that.
  */
 export function validateObservationScope(report: Report, policy: Incident["reportPolicy"]) {
-  const fields = [report.title, report.summary, report.uncertainty, report.customerUpdate, ...report.findings.map((f) => f.text), ...report.nextSteps];
+  const fields = [
+    report.title,
+    report.summary,
+    report.uncertainty,
+    report.customerUpdate,
+    ...report.findings.map((f) => f.text),
+    ...report.nextSteps,
+  ];
   for (const code of policy.singleObservedHttpCodes ?? []) {
     for (const field of fields) {
       if (!new RegExp(`\\b${code}\\b`).test(field)) continue;
       for (const sentence of field.split(/(?<=[.!?])\s+/).filter((s) => new RegExp(`\\b${code}\\b`).test(s))) {
         const explicitlySingle = /\b(one|single|a representative|a sampled)\b/i.test(sentence);
-        const plural = new RegExp(`\\b${code}s\\b|\\b${code}\\s+(errors|responses|timeouts|traces)\\b`, "i").test(sentence);
+        const plural = new RegExp(`\\b${code}s\\b|\\b${code}\\s+(errors|responses|timeouts|traces)\\b`, "i").test(
+          sentence,
+        );
         const frequency = /\b(frequently|often|repeated|repeatedly|multiple|widespread)\b/i.test(sentence);
         if (!explicitlySingle || plural || frequency) throw new Error(`Observation scope rejected for HTTP ${code}`);
       }
     }
-    if (fields.some((s) => new RegExp(`\\b${code}s\\b`, "i").test(s))) throw new Error(`Observation scope rejected for HTTP ${code}`);
+    if (fields.some((s) => new RegExp(`\\b${code}s\\b`, "i").test(s)))
+      throw new Error(`Observation scope rejected for HTTP ${code}`);
   }
 }
