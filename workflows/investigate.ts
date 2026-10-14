@@ -3,7 +3,7 @@ import { Output, WorkflowAgent } from "@ai-sdk/workflow";
 import { config } from "@/lib/config";
 import { reportSchema, type Incident, type InvestigationInput, type InvestigationResult } from "@/lib/contracts";
 import { briefing, instructions } from "@/lib/agent";
-import { gatewayOptions, summarizeSteps } from "@/lib/gateway";
+import { gatewayOptions, resolveModel, summarizeSteps } from "@/lib/gateway";
 import { buildTools } from "@/lib/tools";
 import {
   fetchIncidentStep,
@@ -39,7 +39,7 @@ export async function investigate(input: InvestigationInput): Promise<Investigat
   }
 
   const agent = new WorkflowAgent({
-    model: config.model,
+    model: resolveModel(),
     instructions,
     tools: buildTools({
       getServiceMetrics: () => getServiceMetricsStep(input),

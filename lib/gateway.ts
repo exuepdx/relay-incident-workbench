@@ -1,15 +1,42 @@
-import type { StepResult, ToolSet } from "ai";
+import type { LanguageModel, StepResult, ToolSet } from "ai";
+import { createGateway } from "@ai-sdk/gateway";
 import { config } from "./config";
 import type { InvestigationInput, ModelStep } from "./contracts";
 
 /**
- * Everything that touches Vercel AI Gateway: routing options for a run and
- * the reduction of Gateway's per-call metadata into the accounting we store.
+ * Everything that touches Vercel AI Gateway: which model to call, how the
+ * Gateway should route and fail over, and how its per-call metadata turns
+ * into the accounting we store and show.
  */
 
-/** Gateway routing for this run. */
-export function gatewayOptions(_fault: InvestigationInput["fault"]) {
+/**
+ * The model for a run. A Gateway slug in every real environment (the
+ * Gateway authenticates with the project's OIDC token on Vercel or
+ * AI_GATEWAY_API_KEY locally). For offline tests a fake Gateway URL can be
+ * supplied; the instance serializes across workflow steps by configuration.
+ */
+export function resolveModel(): LanguageModel {
+  const fake = process.env.RELAY_FAKE_GATEWAY_URL;
+  if (fake && process.env.NODE_ENV !== "production") {
+    return createGateway({ baseURL: fake, apiKey: "fake-gateway-key" }).languageModel(config.model);
+  }
+  return config.model;
+}
+
+/**
+ * Gateway routing for this run.
+ *
+ * - models: ordered fallbacks tried when the primary has no healthy provider
+ * - order / only: provider preference and allow-list (the "stay on Bedrock" story)
+ * - provider-outage drill: pin the primary to a provider that does not serve
+ *   it, so the request takes the same failover path as a real outage.
+ */
+export function gatewayOptions(fault: InvestigationInput["fault"]) {
   const gateway: Record<string, string[]> = {};
+  if (config.fallbackModels.length) gateway.models = config.fallbackModels;
+  if (config.providerOrder.length) gateway.order = config.providerOrder;
+  if (config.providerOnly.length) gateway.only = config.providerOnly;
+  if (fault === "provider-outage") gateway.only = [config.outageDrillProviderOnly];
   return { gateway };
 }
 
