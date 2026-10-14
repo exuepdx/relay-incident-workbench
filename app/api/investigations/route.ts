@@ -5,6 +5,7 @@ import { investigationInputSchema } from "@/lib/contracts";
 import { allowedOrigin, sessionCookie, validSession } from "@/lib/access";
 import { config } from "@/lib/config";
 import { getStore } from "@/lib/store";
+import "@/lib/store-postgres";
 
 export const maxDuration = 30;
 

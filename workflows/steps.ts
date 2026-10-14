@@ -5,6 +5,7 @@ import { fetchEvidence, fetchIncident, summarizeEvidence } from "@/lib/tools";
 import { validateReport, type Accounting, type EvidenceList, type Incident, type InvestigationInput, type InvestigationResult, type ModelStep, type ProgressEvent } from "@/lib/contracts";
 import { totals } from "@/lib/gateway";
 import { getStore } from "@/lib/store";
+import "@/lib/store-postgres";
 
 /**
  * Workflow steps. Each is durable: its result is persisted, retries are

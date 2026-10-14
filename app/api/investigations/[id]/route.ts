@@ -1,6 +1,7 @@
 import { getRun } from "workflow/api";
 import type { InvestigationResult } from "@/lib/contracts";
 import { getStore } from "@/lib/store";
+import "@/lib/store-postgres";
 
 const noStore = { "Cache-Control": "no-store" };
 const validId = (id: string) => /^[\w-]{10,160}$/.test(id);
