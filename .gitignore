@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.vercel/
+.env*
+!.env.example
+*.tsbuildinfo
+.workflow-data/
+.data/
+app/.well-known/
+.DS_Store
+coverage/
+/.swc
+customer-api/dist/
+customer-api/*.zip
+artifacts/local-*
