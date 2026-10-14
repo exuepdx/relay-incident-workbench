@@ -160,8 +160,6 @@ export type ModelStep = {
 export type Accounting = {
   startedAt: string;
   completedAt: string;
-  telemetryCalls: number;
-  telemetryRetries: number;
   modelSteps: ModelStep[];
   totalInputTokens: number;
   totalOutputTokens: number;
