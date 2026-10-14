@@ -25,6 +25,8 @@ export function foldTimeline(events: ProgressEvent[], terminal: "completed" | "f
         rows.set("done", { key: "done", state: "failed", title: "Run stopped without a diagnosis", detail: e.detail });
     } else if (e.type === "model") {
       modelOpen = e.status === "started";
+      // Re-insert so the row sits after the tool calls the model made.
+      rows.delete("model");
       rows.set("model", {
         key: "model",
         state: e.status === "completed" ? "done" : "active",
@@ -32,7 +34,7 @@ export function foldTimeline(events: ProgressEvent[], terminal: "completed" | "f
           e.status === "completed"
             ? `Report written by ${e.model ?? "model"}`
             : `Agent reasoning with ${e.model ?? "model"}`,
-        detail: e.status === "completed" && e.ms ? undefined : "Calls tools as durable steps, then writes the report.",
+        detail: e.status === "completed" ? undefined : "Calls tools as durable steps, then writes the report.",
         ms: e.ms,
       });
     } else {

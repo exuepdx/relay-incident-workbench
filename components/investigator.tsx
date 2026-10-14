@@ -42,6 +42,7 @@ export function Investigator({
   const [fault, setFault] = useState<Fault>("none");
   const [streamNote, setStreamNote] = useState("");
   const generation = useRef(0);
+  const streamAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     fetch("/api/session")
@@ -59,7 +60,11 @@ export function Investigator({
       setResult(null);
       setError("");
       setStreamNote("");
+      // The stream replays persisted chunks and closes itself once the run is
+      // terminal, so it is only aborted when the user leaves this run.
+      streamAbort.current?.abort();
       const controller = new AbortController();
+      streamAbort.current = controller;
       // 1. Replay and follow the persisted progress stream.
       (async () => {
         try {
@@ -100,7 +105,6 @@ export function Investigator({
           if (body.status === "completed" && body.result) {
             setResult(body.result);
             setPhase("completed");
-            controller.abort();
             router.refresh();
             return;
           }
@@ -109,7 +113,6 @@ export function Investigator({
             setError(
               "The run stopped without a diagnosis. The timeline shows which step failed; nothing was substituted.",
             );
-            controller.abort();
             router.refresh();
             return;
           }
@@ -171,6 +174,7 @@ export function Investigator({
   }
 
   function reset() {
+    streamAbort.current?.abort();
     generation.current++;
     setPhase("idle");
     setRunId(null);
