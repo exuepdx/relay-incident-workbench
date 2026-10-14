@@ -7,6 +7,9 @@ const config: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: "/", destination: "/incidents/INC-0244", permanent: false }];
+  },
   async headers() {
     return [
       {

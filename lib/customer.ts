@@ -14,9 +14,16 @@ export const customer = {
   observability: "the existing OpenTelemetry-based observability platform",
   observabilityShort: "observability platform",
   modelProvider: "Bedrock",
-  /** Known incident ids served by the telemetry API. */
-  incidents: ["INC-0244", "INC-0241", "INC-0242", "INC-0243"] as const,
+  /**
+   * Open incidents for the navigation chrome. Static on purpose: the shell
+   * must prerender without the customer API; each incident's own segment is
+   * fetched and cached per id at request time.
+   */
+  incidents: [
+    { id: "INC-0244", short: "Cascading network incident" },
+    { id: "INC-0241", short: "Checkout regression" },
+    { id: "INC-0242", short: "Provider degradation" },
+    { id: "INC-0243", short: "Incomplete evidence" },
+  ],
   leadIncident: "INC-0244",
 };
-
-export type IncidentId = (typeof customer.incidents)[number];
