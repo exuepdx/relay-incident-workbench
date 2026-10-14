@@ -1,0 +1,601 @@
+{
+  "INC-0244": {
+    "id": "INC-0244",
+    "title": "One slow path. Several teams in the war room.",
+    "short": "Cascading network incident",
+    "subtitle": "Checkout and inventory are degraded. Scope the dependency and make the next handoff clear.",
+    "question": "Which dependency should the war room investigate next, and which team owns the check?",
+    "severity": "Degraded",
+    "window": "2026-10-13T17:00:00Z / 2026-10-13T17:30:00Z",
+    "services": [
+      "checkout-api",
+      "inventory-api",
+      "inventory-db",
+      "payment-provider",
+      "inventory-to-db network path"
+    ],
+    "kpis": {
+      "p95Ms": 3180,
+      "baselineMs": 480,
+      "errorRatePct": 7.4,
+      "change": "+563%"
+    },
+    "series": [
+      480,
+      465,
+      490,
+      475,
+      480,
+      470,
+      485,
+      480,
+      1210,
+      2340,
+      2810,
+      3150,
+      3190,
+      3100,
+      3180,
+      3230,
+      3160,
+      3180
+    ],
+    "spans": [
+      {
+        "name": "POST /checkout",
+        "service": "checkout-api",
+        "start": 0,
+        "duration": 3180,
+        "color": "purple"
+      },
+      {
+        "name": "inventory.reserve",
+        "service": "inventory-api",
+        "start": 80,
+        "duration": 2810,
+        "color": "orange"
+      },
+      {
+        "name": "tcp.connect",
+        "service": "inventory → database",
+        "start": 110,
+        "duration": 2450,
+        "color": "red"
+      },
+      {
+        "name": "SELECT inventory",
+        "service": "postgres · successful query",
+        "start": 2580,
+        "duration": 160,
+        "color": "teal"
+      },
+      {
+        "name": "payments.authorize",
+        "service": "payment-provider",
+        "start": 2910,
+        "duration": 130,
+        "color": "teal"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "Checkout degradation spans both releases",
+        "detail": "At 17:14 UTC checkout p95 rose from 480ms to 3180ms and API error rate from 0.4% to 7.4%. Request rate stayed near 115 requests/second. Old and new checkout release cohorts show similar degradation. No lost-order or revenue measurement is available.",
+        "source": "Metrics · checkout cohorts"
+      },
+      {
+        "id": "E2",
+        "kind": "trace",
+        "title": "Inventory waits on a database connection handshake",
+        "detail": "Representative trace trc_network_244: checkout 3180ms; inventory.reserve 2810ms; tcp.connect to inventory-db 2450ms; pool.acquire 22ms; SELECT inventory 160ms; payments.authorize 130ms. 16 of 20 slow sampled traces show database connection handshakes above 2000ms. Samples do not establish population-wide prevalence.",
+        "source": "Traces · checkout and inventory"
+      },
+      {
+        "id": "E3",
+        "kind": "metric",
+        "title": "Rejects increased on the inventory-to-database path",
+        "detail": "From 17:14 UTC, sampled flow records for inventory subnet to inventory-db port 5432 show 18% rejected connections, versus 0.1% baseline. At 17:11 a firewall policy update was applied to that path. Request-level linkage between these records and the slow traces is not yet available. These are path-scoped observations, not fleet-wide packet loss.",
+        "source": "Network telemetry · scoped flow records"
+      },
+      {
+        "id": "E4",
+        "kind": "metric",
+        "title": "Successful queries and payment calls remain near baseline",
+        "detail": "Database CPU is 35%, baseline 34%; SELECT inventory p95 is 160ms, baseline 155ms, for successful queries. Pool acquisition p95 is 22ms, baseline 20ms. Payment authorization p95 is 139ms, baseline 135ms. Successful requests can hide failed connection attempts; these measurements do not clear entire teams or all database behavior.",
+        "source": "Metrics · database and payment owners"
+      },
+      {
+        "id": "E5",
+        "kind": "change",
+        "title": "Two nearby changes require different evidence",
+        "detail": "A receipt-label-only checkout release occurred at 17:10 UTC. A firewall policy update for the inventory-to-database path occurred at 17:11. Both checkout release cohorts degraded at 17:14. Proximity alone proves neither change caused the incident.",
+        "source": "Change audit · application and network"
+      },
+      {
+        "id": "E6",
+        "kind": "coverage",
+        "title": "Physical infrastructure and causal linkage are unverified",
+        "detail": "There are no physical router or switch counters, no per-device packet captures, no correlation between individual flow records and traces, and no controlled policy comparison. Do not name a failed device, claim a confirmed root cause, clear a team, or claim complete blast-radius coverage. Any operational change requires service-owner approval.",
+        "source": "Incident record · coverage gaps"
+      },
+      {
+        "id": "E7",
+        "kind": "coverage",
+        "title": "Catalog defines dependencies and accountable teams",
+        "detail": "Synthetic service catalog: Checkout Experience owns checkout-api; Inventory Services owns inventory-api; Network Platform owns the inventory-to-database network path; Data Platform owns inventory-db; Payments owns payment authorization; Infrastructure Operations owns the physical network underlay. Checkout calls inventory then payments. Inventory reaches its database through the network path, which depends on the underlay. This catalog records dependencies, not causal propagation.",
+        "source": "Service catalog · reviewed synthetic snapshot"
+      }
+    ],
+    "topology": {
+      "scope": "Checkout → inventory → database path in us-east-1. Selected synthetic signals only; other journeys and physical devices are not assessed.",
+      "nodes": [
+        {
+          "id": "checkout",
+          "label": "Checkout API",
+          "owner": "Checkout Experience",
+          "status": "affected",
+          "signal": "p95 480 → 3,180ms; errors 7.4%. Both release cohorts are affected.",
+          "citations": [
+            "E1",
+            "E7"
+          ]
+        },
+        {
+          "id": "inventory",
+          "label": "Inventory API",
+          "owner": "Inventory Services",
+          "status": "affected",
+          "signal": "2,810ms in the representative reservation; 2,450ms waiting on the DB connection handshake.",
+          "citations": [
+            "E2",
+            "E7"
+          ]
+        },
+        {
+          "id": "network",
+          "label": "DB network path",
+          "owner": "Network Platform",
+          "status": "affected",
+          "signal": "18% rejected connections in sampled path-scoped flows, from a 0.1% baseline. Policy involvement is a hypothesis.",
+          "citations": [
+            "E3",
+            "E5",
+            "E7"
+          ]
+        },
+        {
+          "id": "database",
+          "label": "Inventory database",
+          "owner": "Data Platform",
+          "status": "baseline",
+          "signal": "Successful-query p95 and CPU are near baseline. Failed connection attempts are outside that measurement.",
+          "citations": [
+            "E4",
+            "E7"
+          ]
+        },
+        {
+          "id": "payments",
+          "label": "Payment provider",
+          "owner": "Payments",
+          "status": "baseline",
+          "signal": "Authorization p95 is near baseline in the supplied metrics. This is not a blanket clearance.",
+          "citations": [
+            "E4",
+            "E7"
+          ]
+        },
+        {
+          "id": "underlay",
+          "label": "Physical underlay",
+          "owner": "Infrastructure Operations",
+          "status": "unknown",
+          "signal": "Device counters and packet captures are missing. No router or switch can be implicated or cleared.",
+          "citations": [
+            "E6",
+            "E7"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "checkout",
+          "to": "inventory",
+          "label": "reserves inventory",
+          "citations": [
+            "E2",
+            "E7"
+          ]
+        },
+        {
+          "from": "inventory",
+          "to": "network",
+          "label": "connects through",
+          "citations": [
+            "E3",
+            "E7"
+          ]
+        },
+        {
+          "from": "network",
+          "to": "database",
+          "label": "carries DB traffic",
+          "citations": [
+            "E7"
+          ]
+        },
+        {
+          "from": "checkout",
+          "to": "payments",
+          "label": "then authorizes payment",
+          "citations": [
+            "E7"
+          ]
+        },
+        {
+          "from": "network",
+          "to": "underlay",
+          "label": "depends on",
+          "citations": [
+            "E7"
+          ]
+        }
+      ],
+      "handoffs": [
+        {
+          "nodeId": "network",
+          "action": "Validate the affected network path",
+          "reason": "Connection-handshake waits and scoped rejects agree; both application releases are affected. Coordinate with Inventory Services before selecting a mitigation.",
+          "confirm": "Match inventory source/destination and incident timestamps to rejected flows and the changed policy; request a read-only policy diff.",
+          "challenge": "If rejected flows do not match the slow requests, investigate DNS, endpoint reachability, and other connection causes.",
+          "citations": [
+            "E1",
+            "E2",
+            "E3",
+            "E5"
+          ]
+        },
+        {
+          "nodeId": "inventory",
+          "action": "Correlate requests across the boundary",
+          "reason": "Trace samples locate the wait before a successful database query. The request-to-flow link is still missing.",
+          "confirm": "Provide trace IDs, connection timestamps, source identity, and destination endpoint for the slow samples to Network Platform.",
+          "challenge": "Compare slow and baseline traces; a connection delay on unaffected paths weakens the policy hypothesis.",
+          "citations": [
+            "E2",
+            "E3",
+            "E6"
+          ]
+        },
+        {
+          "nodeId": "underlay",
+          "action": "Close the infrastructure coverage gap",
+          "reason": "Missing device telemetry is uncertainty, not evidence of a hardware fault. Keep this check parallel and read-only.",
+          "confirm": "Request existing interface errors, route changes, and device health for the scoped path and time window.",
+          "challenge": "Healthy device counters would weaken a device-failure hypothesis without excluding a policy issue.",
+          "citations": [
+            "E6",
+            "E7"
+          ]
+        }
+      ]
+    },
+    "reportPolicy": {
+      "diagnosis": "hypothesis-permitted"
+    }
+  },
+  "INC-0241": {
+    "id": "INC-0241",
+    "title": "Checkout is slowing down",
+    "short": "Checkout regression",
+    "subtitle": "Latency rose after a checkout release. Find the strongest explanation.",
+    "question": "What is slowing checkout, and what should we check next?",
+    "severity": "Degraded",
+    "window": "2026-10-13T14:00:00Z / 2026-10-13T14:30:00Z",
+    "services": [
+      "checkout-api",
+      "inventory-api",
+      "inventory-db",
+      "payment-provider"
+    ],
+    "kpis": {
+      "p95Ms": 2840,
+      "baselineMs": 420,
+      "errorRatePct": 6.8,
+      "change": "+576%"
+    },
+    "series": [
+      420,
+      390,
+      430,
+      415,
+      440,
+      410,
+      460,
+      430,
+      590,
+      1380,
+      2020,
+      2450,
+      2790,
+      2680,
+      2840,
+      2810,
+      2920,
+      2840
+    ],
+    "spans": [
+      {
+        "name": "POST /checkout",
+        "service": "checkout-api",
+        "start": 0,
+        "duration": 2840,
+        "color": "purple"
+      },
+      {
+        "name": "inventory.reserve",
+        "service": "inventory-api",
+        "start": 80,
+        "duration": 2520,
+        "color": "orange"
+      },
+      {
+        "name": "db.pool.acquire",
+        "service": "postgres",
+        "start": 105,
+        "duration": 2190,
+        "color": "red"
+      },
+      {
+        "name": "SELECT inventory",
+        "service": "postgres",
+        "start": 2300,
+        "duration": 180,
+        "color": "purple"
+      },
+      {
+        "name": "payments.authorize",
+        "service": "payment-provider",
+        "start": 2640,
+        "duration": 130,
+        "color": "teal"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "Checkout latency and errors rose",
+        "detail": "From 14:15 to 14:30 UTC, checkout-api p95 increased from 420ms baseline to 2840ms; error rate rose from 0.3% to 6.8%. Request rate stayed near 120 requests/second. This is API error rate, not measured lost orders or revenue.",
+        "source": "Metrics · checkout-api"
+      },
+      {
+        "id": "E2",
+        "kind": "trace",
+        "title": "Most sampled time is waiting for a DB connection",
+        "detail": "Representative trace trc_checkout_241: POST /checkout 2840ms; inventory.reserve 2520ms; db.pool.acquire 2190ms; SELECT inventory 180ms; payments.authorize 130ms. 18 of 20 slow sampled traces have pool waits above 1800ms. Samples do not prove all requests behave the same way.",
+        "source": "Traces · inventory-api"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "Pool limit changed during the release",
+        "detail": "At 14:12 UTC checkout release 8f2c1d changed the inventory client connection pool maximum from 20 to 5. The latency increase starts at 14:15. Temporal correlation supports a hypothesis but does not establish causality.",
+        "source": "Changes · release 8f2c1d"
+      },
+      {
+        "id": "E4",
+        "kind": "metric",
+        "title": "Database CPU and payment time stayed stable",
+        "detail": "Database CPU is 36%, baseline 34%. Payment authorization p95 is 140ms, baseline 135ms. Pool pending requests rose from 0 to 84. These observations favor pool contention over a payment-provider slowdown or database CPU saturation.",
+        "source": "Metrics · dependencies"
+      },
+      {
+        "id": "E5",
+        "kind": "coverage",
+        "title": "No controlled mitigation has been measured",
+        "detail": "There has been no rollback, load test, pool-size experiment, or measured revenue-impact analysis. No writes or remediation are authorized. A human must approve any operational change.",
+        "source": "Incident record"
+      }
+    ],
+    "reportPolicy": {
+      "diagnosis": "hypothesis-permitted"
+    }
+  },
+  "INC-0242": {
+    "id": "INC-0242",
+    "title": "Payments are timing out",
+    "short": "Provider degradation",
+    "subtitle": "A recent deploy is nearby. The slow span points somewhere else.",
+    "question": "Is the latest deploy responsible for the payment errors?",
+    "severity": "Degraded",
+    "window": "2026-10-13T15:00:00Z / 2026-10-13T15:30:00Z",
+    "services": [
+      "checkout-api",
+      "inventory-api",
+      "inventory-db",
+      "payment-provider"
+    ],
+    "kpis": {
+      "p95Ms": 3210,
+      "baselineMs": 460,
+      "errorRatePct": 8.2,
+      "change": "+598%"
+    },
+    "series": [
+      460,
+      450,
+      480,
+      430,
+      470,
+      460,
+      450,
+      490,
+      470,
+      1650,
+      2890,
+      3150,
+      3090,
+      3210,
+      3180,
+      3300,
+      3100,
+      3210
+    ],
+    "spans": [
+      {
+        "name": "POST /checkout",
+        "service": "checkout-api",
+        "start": 0,
+        "duration": 3210,
+        "color": "purple"
+      },
+      {
+        "name": "inventory.reserve",
+        "service": "inventory-api",
+        "start": 60,
+        "duration": 150,
+        "color": "teal"
+      },
+      {
+        "name": "db.pool.acquire",
+        "service": "postgres",
+        "start": 70,
+        "duration": 18,
+        "color": "teal"
+      },
+      {
+        "name": "payments.authorize",
+        "service": "payment-provider",
+        "start": 220,
+        "duration": 2880,
+        "color": "red"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "Payment errors rose across both release cohorts",
+        "detail": "Checkout p95 increased from 460ms to 3210ms and errors from 0.4% to 8.2% at 15:18 UTC. Old and new application versions show similar error rates and latency. Request rate is stable.",
+        "source": "Metrics · checkout cohorts"
+      },
+      {
+        "id": "E2",
+        "kind": "trace",
+        "title": "Payment authorization dominates the slow trace",
+        "detail": "Trace trc_payment_242: checkout 3210ms; inventory.reserve 150ms; db.pool.acquire 18ms; payments.authorize 2880ms with upstream HTTP 504. 17 of 20 slow sampled traces have slow payment authorization.",
+        "source": "Traces · payments"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "A deploy occurred before the alert",
+        "detail": "At 15:10 UTC a presentation-only release changed the checkout receipt label. Errors begin at 15:18 and affect the old release too. A nearby deploy alone is not sufficient evidence of a regression.",
+        "source": "Changes · release 9a7e3b"
+      },
+      {
+        "id": "E4",
+        "kind": "metric",
+        "title": "Inventory and DB pool metrics are normal",
+        "detail": "Pool pending requests are 0; database CPU is 33%; inventory latency is 150ms, baseline 145ms. The external payment provider has not yet confirmed an incident.",
+        "source": "Metrics · dependencies"
+      },
+      {
+        "id": "E5",
+        "kind": "coverage",
+        "title": "Provider-side evidence is unavailable",
+        "detail": "No provider-side traces or confirmed provider status report. Do not claim a confirmed root cause, recommend blindly retrying charges, or claim that a rollback will solve the problem.",
+        "source": "Incident record"
+      }
+    ],
+    "reportPolicy": {
+      "singleObservedHttpCodes": [
+        504
+      ],
+      "diagnosis": "hypothesis-permitted"
+    }
+  },
+  "INC-0243": {
+    "id": "INC-0243",
+    "title": "An alert without the full picture",
+    "short": "Incomplete evidence",
+    "subtitle": "Latency is elevated, but downstream spans are missing. Avoid a false diagnosis.",
+    "question": "Can we identify the cause with the telemetry we have?",
+    "severity": "Investigating",
+    "window": "2026-10-13T16:00:00Z / 2026-10-13T16:30:00Z",
+    "services": [
+      "checkout-api"
+    ],
+    "kpis": {
+      "p95Ms": 1920,
+      "baselineMs": 440,
+      "errorRatePct": 4.1,
+      "change": "+336%"
+    },
+    "series": [
+      440,
+      430,
+      445,
+      460,
+      420,
+      470,
+      450,
+      440,
+      480,
+      1190,
+      1510,
+      1810,
+      1740,
+      1870,
+      1920,
+      1840,
+      1890,
+      1920
+    ],
+    "spans": [
+      {
+        "name": "POST /checkout",
+        "service": "checkout-api · child spans missing",
+        "start": 0,
+        "duration": 1920,
+        "color": "orange"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "metric",
+        "title": "The checkout symptom is real",
+        "detail": "Checkout p95 increased from 440ms to 1920ms; API error rate increased from 0.4% to 4.1%. Only aggregate checkout metrics are available.",
+        "source": "Metrics · checkout-api"
+      },
+      {
+        "id": "E2",
+        "kind": "coverage",
+        "title": "Downstream trace coverage is missing",
+        "detail": "A collector sampling/configuration fault omitted child spans for inventory, database, and payments. The root span is present but does not identify which dependency is slow.",
+        "source": "Collector health"
+      },
+      {
+        "id": "E3",
+        "kind": "change",
+        "title": "Two simultaneous changes are uncorroborated",
+        "detail": "Both a checkout release and a network-policy update occurred at 16:12 UTC. There are no per-cohort metrics or dependency measurements to distinguish them. The evidence is insufficient to select a cause.",
+        "source": "Changes · audit log"
+      },
+      {
+        "id": "E4",
+        "kind": "coverage",
+        "title": "Impact has not been translated into revenue",
+        "detail": "There are no order-completion or revenue measurements. Do not invent financial loss. Restore telemetry and collect comparative evidence before recommending a specific mitigation.",
+        "source": "Incident record"
+      }
+    ],
+    "reportPolicy": {
+      "diagnosis": "withhold"
+    }
+  }
+}
