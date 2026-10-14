@@ -268,7 +268,7 @@ export default function Proposal() {
         <div className="section-intro">
           <span className="section-number">04 / THE PROOF</span>
           <div>
-            <h2>Three cases. Three different judgments.</h2>
+            <h2>Four cases. Evidence changes the next step.</h2>
             <p>
               The demo should know when evidence supports a hypothesis, when it
               points away from a recent change, and when it cannot support a
@@ -276,9 +276,19 @@ export default function Proposal() {
             </p>
           </div>
         </div>
-        <div className="success-grid">
+        <div className="success-grid proof-grid">
           <div>
-            <span className="mini-label">01 · CORROBORATE</span>
+            <span className="mini-label">01 · COORDINATE</span>
+            <h3>A cascading network incident</h3>
+            <p>
+              Checkout symptoms lead to inventory connection waits and a scoped
+              network-path hypothesis. A dependency map distinguishes affected,
+              within-baseline, and unknown signals. Each handoff names the owner
+              and the evidence that could support or challenge the lead.
+            </p>
+          </div>
+          <div>
+            <span className="mini-label">02 · CORROBORATE</span>
             <h3>A checkout regression</h3>
             <p>
               Pool wait spans, a lower connection limit, and stable dependency
@@ -287,7 +297,7 @@ export default function Proposal() {
             </p>
           </div>
           <div>
-            <span className="mini-label">02 · CHALLENGE</span>
+            <span className="mini-label">03 · CHALLENGE</span>
             <h3>A provider slowdown</h3>
             <p>
               Both release cohorts suffer. Payment calls dominate the slow
@@ -296,7 +306,7 @@ export default function Proposal() {
             </p>
           </div>
           <div>
-            <span className="mini-label">03 · WITHHOLD</span>
+            <span className="mini-label">04 · WITHHOLD</span>
             <h3>Incomplete telemetry</h3>
             <p>
               Missing child spans and overlapping changes do not identify a
@@ -307,6 +317,8 @@ export default function Proposal() {
         <p className="proposal-footnote">
           Also test: first-request 503 recovery, persistent outage, refresh and
           reconnect, invalid citations, invalid inputs, and denied run access.
+          The map and handoff plan are curated synthetic context retained with
+          each run, not AI-discovered topology or proof of a failed device.
           Authored sample reports are labeled and invoke no model. Live reports
           use the AI SDK and Gateway.
         </p>

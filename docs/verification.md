@@ -82,3 +82,21 @@ verification from pending work.
 - No statistically representative model eval or professional security audit.
 
 The authored sample mode is a rehearsal aid, never evidence of live AI quality.
+
+## Cascading incident release: local verification
+
+- The final production build passed, including TypeScript and static page generation.
+- Twenty tests passed, including the actual earlier 504 regression, graph and
+  citation integrity, versioned adapter compatibility, and withholding a policy
+  bypass when path evidence is missing. App and mock typechecks passed.
+- The local four-run HTTP suite passed: checkout and network samples, provider
+  transient recovery, and permanent upstream outage without a report. Network
+  output retained six nodes and three handoffs; fresh reads returned identical
+  state. Invalid requests and unauthorized reads remained denied.
+- Seven live model cases passed the expanded checks; reports and review limits
+  are recorded in `evaluation-review.md` and `artifacts/evaluation.json`.
+- Browser review at desktop and 390px mobile covered owner selection, unknown
+  underlay evidence, citations, three-tab keyboard navigation, copying handoffs,
+  and a sample run with retrieved topology. Mobile map/cards had no horizontal
+  overflow. A limited DOM contrast check found no below-threshold leaf text; it
+  is not a full accessibility audit.

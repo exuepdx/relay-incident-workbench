@@ -1,6 +1,61 @@
 import type { ScenarioId } from "./contracts";
 
 export const scenarios = {
+  network: {
+    code: "INC-0244",
+    title: "One slow path. Several teams in the war room.",
+    short: "Cascading network incident",
+    subtitle:
+      "Checkout and inventory are degraded. Scope the dependency and make the next handoff clear.",
+    question:
+      "Which dependency should the war room investigate next, and which team owns the check?",
+    severity: "Degraded",
+    latency: "3,180",
+    baseline: "480",
+    error: "7.4",
+    change: "+563%",
+    series: [
+      480, 465, 490, 475, 480, 470, 485, 480, 1210, 2340, 2810, 3150, 3190,
+      3100, 3180, 3230, 3160, 3180,
+    ],
+    spans: [
+      {
+        name: "POST /checkout",
+        service: "checkout-api",
+        start: 0,
+        duration: 3180,
+        color: "purple",
+      },
+      {
+        name: "inventory.reserve",
+        service: "inventory-api",
+        start: 80,
+        duration: 2810,
+        color: "orange",
+      },
+      {
+        name: "tcp.connect",
+        service: "inventory → database",
+        start: 110,
+        duration: 2450,
+        color: "red",
+      },
+      {
+        name: "SELECT inventory",
+        service: "postgres · successful query",
+        start: 2580,
+        duration: 160,
+        color: "teal",
+      },
+      {
+        name: "payments.authorize",
+        service: "payment-provider",
+        start: 2910,
+        duration: 130,
+        color: "teal",
+      },
+    ],
+  },
   checkout: {
     code: "INC-0241",
     title: "Checkout is slowing down",

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Icon, Logo } from "./icons";
+import { BlastRadius } from "./blast-radius";
 import { scenarios } from "@/lib/scenarios";
 import {
   bundleSchema,
@@ -98,8 +99,8 @@ function Chart({ scenario }: { scenario: ScenarioId }) {
 }
 
 export function Workbench() {
-  const [scenario, setScenario] = useState<ScenarioId>("checkout");
-  const [tab, setTab] = useState("overview");
+  const [scenario, setScenario] = useState<ScenarioId>("network");
+  const [tab, setTab] = useState("blast");
   const [mode, setMode] = useState<"sample" | "live">("sample");
   const [fault, setFault] = useState<InvestigationInput["fault"]>("none");
   const [result, setResult] = useState<InvestigationResult | null>(null);
@@ -199,7 +200,7 @@ export function Workbench() {
         }
         if (body.status === "failed" || body.status === "cancelled") {
           setError(
-            "The investigation could not complete. Evidence retrieval or model generation failed; no diagnosis has been substituted. Check the workflow trace, or start a new run.",
+            "The investigation could not complete. Evidence retrieval, model generation, or report validation failed; no diagnosis has been substituted. Check the workflow trace, or start a new run.",
           );
           setBusy(false);
           return;
@@ -276,6 +277,7 @@ export function Workbench() {
 
   function resume(run: SavedRun) {
     setScenario(run.scenario);
+    setTab(run.scenario === "network" ? "blast" : "overview");
     setMode(run.mode);
     setActiveRun(run);
     setResult(null);
@@ -287,6 +289,7 @@ export function Workbench() {
   function changeScenario(value: ScenarioId) {
     generation.current++;
     setScenario(value);
+    setTab(value === "network" ? "blast" : "overview");
     setResult(null);
     setActiveRun(null);
     setError("");
@@ -483,7 +486,15 @@ export function Workbench() {
                 onKeyDown={(event) => {
                   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
                     event.preventDefault();
-                    const next = tab === "overview" ? "evidence" : "overview";
+                    const tabs = bundle.topology
+                      ? ["blast", "overview", "evidence"]
+                      : ["overview", "evidence"];
+                    const next =
+                      tabs[
+                        (tabs.indexOf(tab) +
+                          (event.key === "ArrowRight" ? 1 : tabs.length - 1)) %
+                          tabs.length
+                      ];
                     setTab(next);
                     document.getElementById(`tab-${next}`)?.focus();
                   }
@@ -491,8 +502,22 @@ export function Workbench() {
                 role="tablist"
                 aria-label="Evidence view"
               >
+                {bundle.topology && (
+                  <button
+                    role="tab"
+                    id="tab-blast"
+                    aria-controls="evidence-panel"
+                    aria-selected={tab === "blast"}
+                    tabIndex={tab === "blast" ? 0 : -1}
+                    className={tab === "blast" ? "active" : ""}
+                    onClick={() => setTab("blast")}
+                  >
+                    Blast radius & owners
+                  </button>
+                )}
                 <button
                   role="tab"
+                  tabIndex={tab === "overview" ? 0 : -1}
                   id="tab-overview"
                   aria-controls="evidence-panel"
                   aria-selected={tab === "overview"}
@@ -503,6 +528,7 @@ export function Workbench() {
                 </button>
                 <button
                   role="tab"
+                  tabIndex={tab === "evidence" ? 0 : -1}
                   id="tab-evidence"
                   aria-controls="evidence-panel"
                   aria-selected={tab === "evidence"}
@@ -511,14 +537,23 @@ export function Workbench() {
                 >
                   Evidence register <span>{bundle.evidence.length}</span>
                 </button>
-                <span className="tab-note">Fixed synthetic snapshot</span>
+                <span className="tab-note">
+                  {result ? "Retrieved synthetic evidence" : "Scenario preview"}
+                </span>
               </div>
               <div
                 id="evidence-panel"
                 role="tabpanel"
                 aria-labelledby={`tab-${tab}`}
               >
-                {tab === "overview" ? (
+                {tab === "blast" && bundle.topology ? (
+                  <BlastRadius
+                    key={scenario + (activeRun?.runId ?? "preview")}
+                    bundle={bundle}
+                    retrieved={Boolean(result)}
+                    onCite={cite}
+                  />
+                ) : tab === "overview" ? (
                   <>
                     <div className="panel chart-panel">
                       <div className="panel-heading">
@@ -751,6 +786,13 @@ export function Workbench() {
                         <Icon name="download" size={17} />
                       </button>
                     </div>
+                    {result.mode === "live" && !result.validationVersion && (
+                      <p className="review-note">
+                        Saved before the latest wording checks. Review this
+                        earlier draft against its evidence, or start a new
+                        investigation.
+                      </p>
+                    )}
                     <span className="assessment-label">
                       {result.report.assessment === "insufficient-evidence"
                         ? "INSUFFICIENT EVIDENCE"

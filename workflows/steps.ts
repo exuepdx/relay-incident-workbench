@@ -33,6 +33,7 @@ export async function collectEvidence(input: InvestigationInput) {
     response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "x-relay-evidence-version": "2",
         ...(fail ? { "x-demo-fault": "unavailable" } : {}),
       },
       cache: "no-store",
@@ -98,6 +99,7 @@ export async function finalizeReport(
   const { bundle, ...retrieval } = collected;
   return {
     schemaVersion: 1,
+    validationVersion: 2,
     scenario: input.scenario,
     mode: input.mode,
     report,

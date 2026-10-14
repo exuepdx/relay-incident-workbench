@@ -1,0 +1,39 @@
+{
+  "title": "Checkout slowdown consistent with payment provider timeouts",
+  "assessment": "supported-hypothesis",
+  "summary": "During the query window, checkout p95 and error rate increased while request rate stayed stable across old and new releases. Sampled slow traces commonly show payments.authorize dominating latency with upstream HTTP 504s, consistent with a payment-provider or network path issue, but provider-side confirmation is missing.",
+  "findings": [
+    {
+      "text": "Metrics show checkout p95 rose 460ms\u21923210ms and errors 0.4%\u21928.2% at 15:18 UTC, with stable request rate and similar impact across old/new release cohorts.",
+      "citations": [
+        "E1"
+      ]
+    },
+    {
+      "text": "In 20 slow sampled traces, 17 include slow payments.authorize; one representative trace shows payments.authorize 2880ms with an upstream HTTP 504 dominating a 3210ms checkout.",
+      "citations": [
+        "E2"
+      ]
+    },
+    {
+      "text": "A presentation-only deploy occurred at 15:10 UTC, but errors starting 15:18 UTC also affect the old release, which is counter-evidence for a code-regression limited to the new version.",
+      "citations": [
+        "E3",
+        "E1"
+      ]
+    },
+    {
+      "text": "Inventory latency and DB pool indicators appear normal in the measured metrics (pool pending 0, DB CPU 33%, inventory 150ms near 145ms baseline), reducing support for inventory/DB as the bottleneck in sampled data.",
+      "citations": [
+        "E4"
+      ]
+    }
+  ],
+  "nextSteps": [
+    "Collect payment-service metrics during the window (authorize latency distribution, HTTP status breakdown including 504s, and timeout counts) and compare to a prior baseline period.",
+    "Request the payment provider\u2019s incident/status confirmation and any available request/timeout logs for the same UTC interval, and validate correlation with the sampled 504 traces.",
+    "With payment-service owner approval, run a controlled, reversible timeout and dependency-health diagnostic (read-only where possible) to localize whether failures originate in provider response vs network path."
+  ],
+  "uncertainty": "Evidence localizes latency to payments.authorize only for 20 sampled slow traces; it does not quantify overall 504 frequency or prove provider responsibility. Provider-side telemetry/status is unavailable, and normal DB/inventory metrics cannot exclude all downstream issues.",
+  "customerUpdate": "We\u2019re seeing elevated checkout latency and errors in the measured window, affecting both old and new releases. Sampled slow traces indicate payment authorization is frequently the dominant delay and includes upstream 504s, which is consistent with a provider or network-path issue, but provider confirmation is not yet available. Next we will gather payment-service status-code/timeout metrics, request provider-side evidence for the same interval, and\u2014only with service-owner approval\u2014run a controlled diagnostic to better localize the dependency."
+}

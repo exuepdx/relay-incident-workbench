@@ -16,7 +16,9 @@ not an integration with a commercial observability vendor.
 
 ## Try it
 
-1. Choose **Checkout regression** and run an **Authored sample** investigation.
+1. Start with **Cascading network incident**. Select a dependency to inspect its
+   owner and evidence, compare baseline and unknown signals, and copy a proposed
+   handoff with confirming/challenging checks. Then run an **Authored sample** investigation.
    This crosses the real authenticated HTTP boundary and runs a durable workflow,
    but returns a clearly labeled authored report with no model call.
 2. Inspect a finding's evidence citation. Export the JSON or copy the customer update.
@@ -137,10 +139,13 @@ run, transient retry, persistent failure, retrieval of persisted results, invali
 input rejection, cross-origin rejection, and denied unscoped reads. It uses
 sample mode and makes no model calls.
 
-`scripts/evaluate.ts` tests the three incident cases plus instructions embedded in
-an untrusted log. It validates structure and citations and saves reports for human
-review. Review source support, appropriate uncertainty, counter-evidence, and safe
-next steps. A small test set is not a statistically robust evaluation.
+`scripts/evaluate.ts` tests seven cases: pool contention, a single observed payment
+error, incomplete coverage, cascading network delay, missing path evidence,
+rejects on an unrelated subnet, and instructions embedded in an untrusted device
+log. It checks structure, citation IDs, assessment, observation scope, and targeted
+regressions, saving reports with prompt/evidence hashes for review. Review source
+support, uncertainty, counter-evidence, and safe next steps independently. This
+small development set is not a statistically robust evaluation.
 
 The default model is `openai/gpt-5.2`. See the preserved comparison failures and
 [evaluation review](docs/evaluation-review.md) for the choice and its limits.
@@ -154,6 +159,11 @@ The mock deploys from `mock/`; the application deploys from the repository root.
 Both target iad1. First deploy the mock and verify an authenticated request, then
 configure and deploy the application. Model inference, workflow state, and logs
 have separate placement concerns; an application region is not a residency guarantee.
+
+The new app requests `x-relay-evidence-version: 2`. The adapter omits topology and
+report-policy additions for legacy clients, so the old strict contract remains
+usable during rollout and app rollback. Completed runs retain their original
+evidence; legacy live reports are labeled as predating the latest wording checks.
 
 Use preview → contract/AI validation → small responder cohort → expansion.
 Native traffic-percentage Rolling Releases are not part of this Hobby demo.
@@ -179,6 +189,11 @@ changes, or external side effects. This demo performs no operational writes.
 - No global application rate limiter or request deduplication. Fixed inputs,
   token limits, reviewer access, and the Gateway budget bound some risks, not all.
 - No guarantee that a citation actually supports a claim; human review remains.
+- The dependency map and handoff plan are curated synthetic context, not model
+  discovery. They travel with the fetched evidence and saved run. Status describes
+  supplied measurements, not whole-team innocence or a complete blast radius.
+- The HTTP 504 guard rejects specific singular-to-plural/frequency regressions.
+  It may reject awkward but valid wording and cannot detect every semantic error.
 - No claim of measured MTTR/revenue improvement. Establish a customer baseline and
   compare responder effort and time to an approved update in a pilot.
 - Durable execution is not exactly-once inference billing. A successful remote

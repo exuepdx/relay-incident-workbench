@@ -1591,6 +1591,9 @@ summary:focus-visible {
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
 }
+.proof-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
 .success-grid > div {
   padding: 25px;
   border: 1px solid var(--border);
@@ -2195,5 +2198,311 @@ summary:focus-visible {
   .incident-selector .badge {
     font-size: 7px;
     padding: 3px;
+  }
+}
+
+/* Curated dependency scene: status is evidence-scoped, never inferred from color. */
+.blast-view {
+  display: grid;
+  gap: 20px;
+}
+.blast-panel {
+  padding: 24px;
+}
+.blast-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.blast-heading h3,
+.handoff-panel > h3 {
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  font-weight: 500;
+  margin: 8px 0 0;
+}
+.blast-heading .badge {
+  white-space: nowrap;
+  font-size: 9px;
+}
+.blast-scope,
+.map-caption,
+.handoff-intro {
+  color: #625c6b;
+  font-size: 12px;
+  line-height: 1.75;
+}
+.blast-scope {
+  margin: 12px 0 16px;
+}
+.blast-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eeebf1;
+}
+.node-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 500;
+}
+.node-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.node-status.affected {
+  color: #9b442d;
+}
+.node-status.baseline {
+  color: #326e5c;
+}
+.node-status.unknown {
+  color: #675a7e;
+}
+.dependency-map {
+  height: 440px;
+  position: relative;
+  margin: 15px -6px 8px;
+}
+.dependency-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.dependency-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  min-height: 78px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+  border: 1px solid #e3dfe8;
+  border-radius: 9px;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.dependency-node strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: #39313e;
+}
+.dependency-node small {
+  color: #655d6f;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.dependency-node.selected {
+  border-color: #78579d;
+  box-shadow: 0 0 0 3px #f0eaf8;
+  background: #fbf9fe;
+}
+.dependency-node:hover {
+  border-color: #8a779e;
+}
+.dependency-node:focus-visible {
+  outline: 2px solid #63438a;
+  outline-offset: 4px;
+}
+.map-annotation {
+  position: absolute;
+  left: 55%;
+  top: 33%;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: #71667e;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.map-caption {
+  font-size: 11px;
+  border-top: 1px solid #eeebf1;
+  padding-top: 14px;
+}
+.dependency-detail {
+  margin-top: 18px;
+  padding: 19px;
+  border: 1px solid #e8e0ee;
+  border-radius: 7px;
+  background: #faf8fd;
+}
+.detail-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.detail-title h4 {
+  font-size: 15px;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+.dependency-detail > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #554b60;
+  margin: 12px 0;
+}
+.dependency-links {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+}
+.dependency-links > button {
+  padding: 8px 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #62467f;
+}
+.dependency-links > button span {
+  color: #6a626f;
+}
+.owner-check {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #e5deec;
+  padding-top: 12px;
+}
+.owner-check strong {
+  font-size: 11px;
+  color: #493855;
+}
+.handoff-panel {
+  padding: 24px;
+}
+.handoff-intro {
+  margin: 12px 0 20px;
+}
+.handoff-card {
+  border-top: 1px solid #eae6ee;
+  padding: 22px 0;
+}
+.handoff-card:last-of-type {
+  padding-bottom: 0;
+}
+.handoff-top {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+.handoff-number {
+  border: 1px solid #e8e0ee;
+  border-radius: 6px;
+  background: #f5f1fa;
+  padding: 7px;
+  color: #765590;
+  font-size: 11px;
+  font-family: var(--font-mono), monospace;
+}
+.handoff-top small {
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  color: #665474;
+}
+.handoff-top h4 {
+  margin: 7px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.handoff-card > p,
+.handoff-card dd {
+  font-size: 12px;
+  line-height: 1.75;
+  color: #5c5465;
+}
+.handoff-card > p {
+  margin: 12px 0;
+}
+.handoff-card details {
+  margin: 12px 0;
+}
+.handoff-card summary {
+  cursor: pointer;
+  padding: 9px 0;
+  font-size: 11px;
+  color: #62477c;
+}
+.handoff-card dt {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 10px;
+  color: #4d4059;
+}
+.handoff-card dd {
+  margin: 5px 0 12px;
+}
+.handoff-card .secondary-button {
+  font-size: 11px;
+  min-height: 38px;
+  width: 100%;
+  justify-content: center;
+}
+.handoff-feedback {
+  min-height: 16px;
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: #326e5c;
+}
+@media (max-width: 1200px) {
+  .tab-bar {
+    gap: 13px;
+  }
+  .tab-note {
+    display: none;
+  }
+  .blast-panel,
+  .handoff-panel {
+    padding: 18px;
+  }
+  .blast-heading {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 700px) {
+  .dependency-node {
+    width: 43%;
+    padding: 9px;
+    min-height: 85px;
+  }
+  .dependency-node strong {
+    font-size: 11px;
+  }
+  .dependency-node small,
+  .node-status {
+    font-size: 9px;
+  }
+  .blast-heading h3,
+  .handoff-panel > h3 {
+    font-size: 19px;
+  }
+  .map-annotation {
+    font-size: 10px;
+    left: 54%;
+  }
+  .tab-bar {
+    gap: 15px;
+  }
+  .tab-bar > button {
+    font-size: 10px;
+  }
+  .detail-title {
+    flex-wrap: wrap;
   }
 }

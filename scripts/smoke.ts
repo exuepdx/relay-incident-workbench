@@ -39,6 +39,11 @@ async function run(
         );
         assert.equal(body.result.mode, "sample");
         assert.equal(body.result.telemetry.model, null);
+        assert.equal(body.result.validationVersion, 2);
+        if (scenario === "network") {
+          assert.equal(body.result.bundle.topology.nodes.length, 6);
+          assert.equal(body.result.bundle.topology.handoffs.length, 3);
+        }
         // Re-fetch with a fresh HTTP request to demonstrate persisted output access.
         const reconnected = await fetch(`${base}/api/investigations/${runId}`, {
           headers: { "x-run-token": runToken },
@@ -64,6 +69,7 @@ async function run(
 }
 async function main() {
   await run("none");
+  await run("none", "network");
   await run("transient", "provider");
   await run("outage");
   const invalid = await fetch(`${base}/api/investigations`, {

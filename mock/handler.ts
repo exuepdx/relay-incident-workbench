@@ -38,5 +38,20 @@ export function handleTelemetry(
       { status: 503, headers },
     );
   }
-  return Response.json(data[scenario as keyof typeof data], { headers });
+  const version = request.headers.get("x-relay-evidence-version") ?? "1";
+  if (!["1", "2"].includes(version))
+    return Response.json(
+      { error: "Unsupported evidence version" },
+      { status: 400, headers },
+    );
+  const bundle = { ...data[scenario as keyof typeof data] } as Record<
+    string,
+    unknown
+  >;
+  // Roll out the adapter before the app without breaking the original strict client.
+  if (version === "1") {
+    delete bundle.topology;
+    delete bundle.reportPolicy;
+  }
+  return Response.json(bundle, { headers });
 }

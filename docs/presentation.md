@@ -26,7 +26,7 @@ your responders? What does your existing vendor already do well here?”
 | ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0:00–1:30   | Proposal opportunity               | “You already have telemetry. What slows response is turning multiple signals into an agreed next step.” Validate the pain before the product. |
 | 1:30–3:00   | Boundary diagram                   | Workloads and observability stay. Vercel adds the response experience, durable execution, and model boundary.                                 |
-| 3:00–6:00   | Checkout investigation             | Read the latency and trace, start a live run, open a citation, distinguish hypothesis from root cause, show the customer update.              |
+| 3:00–6:00   | Cascading network investigation    | Follow checkout → inventory → DB path, inspect an owner and citation, show unknown underlay coverage, run live AI, copy a proposed handoff.              |
 | 6:00–7:30   | Counter-evidence / incomplete case | A nearby deploy is not necessarily responsible. Missing spans should cause uncertainty, not a confident story.                                |
 | 7:30–9:00   | Resilience controls and saved runs | First-request 503 recovers; persistent outage returns no diagnosis. Refresh and reconnect. Explain retry and state boundaries.                |
 | 9:00–10:00  | Run accounting                     | Show actual input/output tokens, model time, cost when returned, and the project budget. Explain what cost excludes.                          |
@@ -35,6 +35,20 @@ your responders? What does your existing vendor already do well here?”
 If live inference is unavailable, say so explicitly and use the authored sample to
 rehearse UX and workflow behavior. Do not present the sample as proof of live model
 quality. Before the interview, run the live evaluation and record its results.
+
+## The key moment in the network demo
+
+Select **DB network path**, then **Physical underlay**. Say: “These sampled signals
+give Network Platform and Inventory Services a joint next check. They do not
+identify a broken switch, prove the policy caused it, or clear the database team.
+The map and handoffs are curated catalog/evidence context; AI synthesizes the
+report. Each completed run retains the snapshot we actually used.” Expand
+**Confirm or challenge this lead**, then copy the handoff. Explain that this copies
+a proposed investigation brief, not an assignment or an automated operational action.
+
+In the code discussion, show the wrong-subnet evaluation: connection delays remain,
+but the policy and rejects belong to analytics. The output must follow the changed
+evidence. The missing-path case removes both measurements and derived topology.
 
 ## Discovery questions you should be ready to ask
 
@@ -139,7 +153,7 @@ References: [Gateway routing](https://vercel.com/docs/ai-gateway/models-and-prov
 ## Before sending
 
 - Confirm the live inference path and reviewer code work from a fresh browser.
-- Run the four AI evaluation cases and review every claim and cited source.
+- Run the seven AI evaluation cases and review every claim and cited source.
 - Verify the public app and repository links without a Vercel/GitHub login.
 - Ensure the proposal clearly distinguishes demo, proposed production design, and pilot targets.
 - Preserve the commit history and disclose development tools.

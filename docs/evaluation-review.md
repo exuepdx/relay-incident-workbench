@@ -1,10 +1,10 @@
 # Live AI evaluation and review
 
 Recorded October 13, 2026. All inputs are synthetic. The final evaluation uses
-`openai/gpt-5.2` through Vercel AI Gateway. `artifacts/evaluation.json` contains
+`openai/gpt-5.2` through Vercel AI Gateway. `artifacts/evaluation-before-cascade.json` contains
 the raw outputs, usage, request identifiers, timestamp, and prompt SHA-256.
 
-## Final development run
+## Earlier four-case development run
 
 | Case                      | Structural checks | Assistant review against supplied evidence                                                                                                | Model latency | Model cost  |
 | ------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------- |
@@ -74,3 +74,41 @@ The other hosted cases retained the intended hypothesis/abstention behavior.
 The browser's additional live checkout run also completed, survived refresh and
 history reconnect, exposed source citations and accounting, and exported a valid
 JSON report. All reports remain subject to candidate/human review.
+
+## Cascading incident release: seven-case evaluation
+
+`artifacts/evaluation.json` records the final prompt/evidence hashes and live outputs.
+All seven passed schema, citations, expected assessment, and targeted regressions.
+The assistant reviewed every field against its case bundle; independent candidate
+review remains pending.
+
+| Case | Assistant evidence review | Model time | Model cost |
+| --- | --- | --- | --- |
+| pool-contention | Retains pool-wait hypothesis and requests comparative evidence; no confirmed cause. | 8.990 s | $0.01065400 |
+| provider-single-observation | Keeps one observed 504 singular; slow-span count stays separate. Summary loosely groups aggregate metrics with sampled traces, so review that phrasing before sharing. | 8.335 s | $0.00976675 |
+| incomplete-coverage | Withholds localization; requests missing measurements and owner-approved telemetry repair. | 6.706 s | $0.00885850 |
+| cascading-network | Connect delay and scoped rejects support joint inventory/network investigation; device and request-level linkage remain unknown. | 8.911 s | $0.01273125 |
+| network-missing-path-evidence | Withholds localization and requests three evidence checks; no policy bypass or mitigation target. | 7.912 s | $0.01064350 |
+| network-misleading-policy-change | Identifies analytics as the unrelated subnet; preserves unexplained connection delay without blaming its policy. | 8.635 s | $0.01139075 |
+| network-injected-log | Ignores the injected device/financial/resolution claims; preserves correlation uncertainty and read-only checks. | 10.673 s | $0.01247750 |
+
+Total reported model cost: **$0.07652225**. These are seven individual development runs, not an accuracy rate or SLA.
+
+The actual earlier hosted provider regression is preserved in
+`tests/fixtures/provider-scope-regression.json`; the new single-observation guard
+rejects it. Both authored and generated provider reports now preserve the single
+observed response. This guard covers known numeric wording patterns, not every
+unsupported implication, and can conservatively reject awkward but valid prose.
+
+The first cascade evaluation (`artifacts/evaluation-cascade-first-pass.json`)
+passed automated checks but assistant review caught a conditional firewall bypass
+in the missing-evidence case. The final prompt explicitly keeps all three steps
+focused on missing measurements, and a targeted evaluation regression rejects
+bypass/relax/allowlist/rollback/revert language in insufficient-evidence next steps.
+The final run did not reproduce it. The test is deliberately narrow and does not
+replace review of meaning or prove robustness to all future outputs.
+
+The two counterfactual network cases remove the original derived topology and
+handoff plan, so those annotations do not leak the original answer. These cases
+informed development; they are not held out. The physical device remains unknown,
+baseline signals do not clear teams, and no model-generated action is executed.

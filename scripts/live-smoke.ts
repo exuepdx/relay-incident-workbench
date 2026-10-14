@@ -48,7 +48,7 @@ async function main() {
   );
 
   // Real hosted workflow + separate telemetry service + Gateway, not a direct model-only eval.
-  for (const scenario of ["checkout", "provider", "incomplete"]) {
+  for (const scenario of ["checkout", "provider", "incomplete", "network"]) {
     const started = Date.now();
     const response = await fetch(`${base}/api/investigations`, {
       method: "POST",
@@ -81,6 +81,14 @@ async function main() {
         const { result } = body;
         validateReport(result.report, bundleSchema.parse(result.bundle));
         assert.equal(result.mode, "live");
+        assert.equal(result.validationVersion, 2);
+        if (scenario === "network")
+          assert.equal(result.bundle.topology.nodes.length, 6);
+        if (scenario === "provider")
+          assert.deepEqual(
+            result.bundle.reportPolicy.singleObservedHttpCodes,
+            [504],
+          );
         assert.equal(result.telemetry.model, "openai/gpt-5.2");
         assert.ok(result.telemetry.inputTokens > 0);
         assert.ok(result.telemetry.outputTokens > 0);
@@ -117,7 +125,7 @@ async function main() {
   await mkdir("artifacts", { recursive: true });
   // Intentionally omit reviewer codes, cookies, service credentials, and run access tokens.
   await writeFile(
-    "artifacts/deployment-live.json",
+    "artifacts/deployment-live-cascade.json",
     JSON.stringify(
       {
         testedAt: new Date().toISOString(),

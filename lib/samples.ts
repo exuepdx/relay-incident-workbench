@@ -2,6 +2,39 @@ import type { Report, ScenarioId } from "./contracts";
 
 // These are authored rehearsal reports, never represented as model output.
 export const samples: Record<ScenarioId, Report> = {
+  network: {
+    title: "Investigate the inventory-to-database network path",
+    assessment: "supported-hypothesis",
+    summary:
+      "Checkout symptoms span both releases. Sampled inventory requests wait on a database connection handshake, while rejects increased on that path. Network Platform and Inventory Services should correlate the two signals before proposing mitigation.",
+    findings: [
+      {
+        text: "Both checkout release cohorts degraded at 17:14; p95 reached 3,180ms and API errors reached 7.4%.",
+        citations: ["E1", "E5"],
+      },
+      {
+        text: "The representative trace spends 2,450ms in the database connection handshake; 16 of 20 slow samples have handshake waits above two seconds.",
+        citations: ["E2"],
+      },
+      {
+        text: "Rejected connections rose to 18% in sampled flows on the inventory-to-database path after a policy update. Individual flows have not been linked to the slow traces.",
+        citations: ["E3", "E6"],
+      },
+      {
+        text: "Successful queries and payment latency remain near baseline. Device counters are missing, so the evidence neither clears whole teams nor identifies a failed physical device.",
+        citations: ["E4", "E6"],
+      },
+    ],
+    nextSteps: [
+      "Ask Network Platform and Inventory Services to match trace connection timestamps and source/destination identity to the rejected flow records.",
+      "Compare the policy diff, affected paths, and existing device counters; use unaffected traffic as counter-evidence before choosing a mitigation.",
+      "Only with the service owners’ approval, design a controlled policy comparison after correlation is established; measure connection waits and checkout errors before declaring recovery.",
+    ],
+    uncertainty:
+      "The evidence supports a path-level hypothesis, not a confirmed policy cause or failed device. Sampled flows and traces do not establish the full blast radius; there is no controlled comparison or measured recovery.",
+    customerUpdate:
+      "Checkout and inventory are degraded in the observed window. The evidence points toward connection delays on the inventory-to-database path, but the cause is unconfirmed. The proposed next step is for Network Platform and Inventory Services to correlate traces with network records. Any operational change requires owner approval.",
+  },
   checkout: {
     title: "Connection-pool contention is the leading hypothesis",
     assessment: "supported-hypothesis",
@@ -42,7 +75,7 @@ export const samples: Record<ScenarioId, Report> = {
         citations: ["E1", "E3"],
       },
       {
-        text: "Payment authorization takes 2,880ms and returns HTTP 504 in the representative trace; 17 of 20 slow samples show the same pattern.",
+        text: "One representative trace records HTTP 504 and 2,880ms in payment authorization. Separately, 17 of 20 slow samples have slow authorization; their response codes are unspecified.",
         citations: ["E2"],
       },
       {
@@ -80,7 +113,7 @@ export const samples: Record<ScenarioId, Report> = {
       },
     ],
     nextSteps: [
-      "Repair the collector configuration and capture representative end-to-end traces.",
+      "With the observability owner’s approval, repair the collector configuration and capture representative end-to-end traces.",
       "Collect per-release and per-dependency latency and error measurements for the affected window.",
       "Compare the two changes using the new evidence before proposing a specific mitigation.",
     ],

@@ -44,7 +44,7 @@ test("origin checks use the browser's Host when Next normalizes its internal URL
 });
 
 test("each scenario has a valid evidence contract and a cited rehearsal report", () => {
-  for (const id of ["checkout", "provider", "incomplete"] as const) {
+  for (const id of ["checkout", "provider", "incomplete", "network"] as const) {
     const bundle = bundleSchema.parse(fixtures[id]);
     assert.deepEqual(validateReport(samples[id], bundle), samples[id]);
   }
@@ -156,4 +156,120 @@ test("authorized retrieval returns a non-cacheable evidence bundle", async () =>
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.equal(bundleSchema.parse(await response.json()).scenario, "provider");
+});
+
+test("topology rejects missing nodes, unknown citations, and duplicate identity", () => {
+  for (const mutate of [
+    (b: typeof fixtures.network) => {
+      b.topology.edges[0].to = "missing-node";
+    },
+    (b: typeof fixtures.network) => {
+      b.topology.nodes[0].citations = ["E999"];
+    },
+    (b: typeof fixtures.network) => {
+      b.topology.handoffs[0].nodeId = "missing-owner";
+    },
+    (b: typeof fixtures.network) => {
+      b.topology.nodes[1].id = b.topology.nodes[0].id;
+    },
+  ]) {
+    const invalid = structuredClone(fixtures.network);
+    mutate(invalid);
+    assert.equal(bundleSchema.safeParse(invalid).success, false);
+  }
+});
+
+test("single-observation guard rejects the actual earlier hosted provider regression", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const report = JSON.parse(
+    await readFile("tests/fixtures/provider-scope-regression.json", "utf8"),
+  );
+  assert.throws(
+    () => validateReport(report, bundleSchema.parse(fixtures.provider)),
+    /Observation scope/,
+  );
+});
+
+test("a single observed response cannot become plural errors or a frequency", () => {
+  for (const text of [
+    "Sampled requests frequently return HTTP 504.",
+    "One representative trace shows HTTP 504 errors across transactions.",
+    "Payment authorization includes upstream 504s.",
+    "One trace shows HTTP 504; multiple requests fail the same way.",
+  ]) {
+    const report = structuredClone(samples.provider);
+    report.customerUpdate = text;
+    assert.throws(
+      () => validateReport(report, bundleSchema.parse(fixtures.provider)),
+      /Observation scope/,
+    );
+  }
+});
+
+test("explicit singular observation and unknown frequency remain acceptable", () => {
+  const report = structuredClone(samples.provider);
+  report.findings[1].text =
+    "One representative trace records HTTP 504; response-code frequency across all requests is unknown.";
+  assert.deepEqual(
+    validateReport(report, bundleSchema.parse(fixtures.provider)),
+    report,
+  );
+});
+
+test("retained bundles without topology remain readable; new network evidence stays attached", () => {
+  assert.equal(bundleSchema.parse(fixtures.checkout).topology, undefined);
+  const bundle = bundleSchema.parse(fixtures.network);
+  assert.equal(
+    bundle.topology?.nodes.find((n) => n.id === "underlay")?.status,
+    "unknown",
+  );
+  assert.equal(
+    bundle.topology?.nodes.find((n) => n.id === "network")?.owner,
+    "Network Platform",
+  );
+  assert.deepEqual(validateReport(samples.network, bundle), samples.network);
+});
+
+test("missing path evidence must abstain and cannot leak the original topology", async () => {
+  const { evaluationCases } = await import("../lib/evaluation-cases");
+  const missing = evaluationCases().find(
+    (c) => c.name === "network-missing-path-evidence",
+  )!;
+  assert.equal(missing.bundle.topology, undefined);
+  assert.equal(
+    missing.bundle.evidence.some((e) => ["E2", "E3"].includes(e.id)),
+    false,
+  );
+  assert.throws(() => validateReport(samples.network, missing.bundle));
+});
+
+test("adapter versioning preserves strict legacy clients and includes v2 provenance", async () => {
+  for (const version of [undefined, "1", "2", "99"]) {
+    const headers: Record<string, string> = { authorization: "Bearer secret" };
+    if (version) headers["x-relay-evidence-version"] = version;
+    const response = handleTelemetry(
+      new Request("https://mock/api/telemetry?scenario=network", { headers }),
+      "secret",
+    );
+    assert.equal(response.status, version === "99" ? 400 : 200);
+    if (version === "99") continue;
+    const bundle = await response.json();
+    assert.equal(Boolean(bundle.topology), version === "2");
+    assert.equal(Boolean(bundle.reportPolicy), version === "2");
+    assert.equal(bundleSchema.parse(bundle).evidence.length, 7);
+  }
+});
+
+test("evaluation rejects a conditional policy bypass without path evidence", async () => {
+  const { evaluationCases, evaluationRegressions } =
+    await import("../lib/evaluation-cases");
+  const missing = evaluationCases().find(
+    (c) => c.name === "network-missing-path-evidence",
+  )!;
+  const report = structuredClone(samples.incomplete);
+  report.nextSteps[2] =
+    "With owner approval, temporarily bypass the new firewall rule if later data implicates it.";
+  assert.deepEqual(evaluationRegressions(missing, report), [
+    "Operational mitigation proposed before localization",
+  ]);
 });
