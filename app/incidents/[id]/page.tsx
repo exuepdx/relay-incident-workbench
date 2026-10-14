@@ -10,6 +10,8 @@ import { DependencyMap } from "@/components/dependency-map";
 import { Investigator } from "@/components/investigator";
 import { SavedRuns } from "@/components/saved-runs";
 import { RefreshButton } from "@/components/refresh-button";
+import { SignalCanvas } from "@/components/signal-canvas";
+import { CountUp } from "@/components/motion";
 import { getIncident } from "@/lib/incidents";
 import { customer } from "@/lib/customer";
 import { config } from "@/lib/config";
@@ -46,51 +48,54 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
         <RefreshButton id={incident.id} />
       </Topbar>
       <main id="main" className="page">
-        <div className="incident-head">
-          <div>
-            <span className="eyebrow">
-              {incident.id} · {incident.window.replace(" / ", " → ")}
-            </span>
-            <h1>{incident.title}</h1>
-            <p>{incident.subtitle}</p>
+        <div className="hero-band">
+          <SignalCanvas />
+          <div className="incident-head enter">
+            <div>
+              <span className="eyebrow">
+                {incident.id} · {incident.window.replace(" / ", " → ")}
+              </span>
+              <h1>{incident.title}</h1>
+              <p>{incident.subtitle}</p>
+            </div>
+            <div className="incident-meta">
+              <span className="chip amber">
+                <i /> {incident.severity}
+              </span>
+              <span className="chip">
+                <Icon name="layers" size={13} /> {incident.services.length} services in scope
+              </span>
+            </div>
           </div>
-          <div className="incident-meta">
-            <span className="chip amber">
-              <i /> {incident.severity}
-            </span>
-            <span className="chip">
-              <Icon name="layers" size={13} /> {incident.services.length} services in scope
-            </span>
-          </div>
-        </div>
 
-        <div className="kpis">
-          <div className="kpi">
-            <span className="label">Checkout p95 latency</span>
-            <div className="value">
-              {k.p95Ms.toLocaleString()} <small>ms</small>
-              <span className="delta">{k.change}</span>
+          <div className="kpis stagger">
+            <div className="kpi">
+              <span className="label">Checkout p95 latency</span>
+              <div className="value">
+                <CountUp value={k.p95Ms} from={k.baselineMs} /> <small>ms</small>
+                <span className="delta">{k.change}</span>
+              </div>
+              <span className="foot">Baseline {k.baselineMs} ms</span>
             </div>
-            <span className="foot">Baseline {k.baselineMs} ms</span>
-          </div>
-          <div className="kpi">
-            <span className="label">API error rate</span>
-            <div className="value">
-              {k.errorRatePct} <small>%</small>
+            <div className="kpi">
+              <span className="label">API error rate</span>
+              <div className="value">
+                <CountUp value={k.errorRatePct} decimals={1} delay={150} /> <small>%</small>
+              </div>
+              <span className="foot">Checkout API, incident window</span>
             </div>
-            <span className="foot">Checkout API, incident window</span>
-          </div>
-          <div className="kpi">
-            <span className="label">Known gaps</span>
-            <div className="value">
-              {incident.coverage.length} <small>coverage notes</small>
+            <div className="kpi">
+              <span className="label">Known gaps</span>
+              <div className="value">
+                <CountUp value={incident.coverage.length} delay={300} /> <small>coverage notes</small>
+              </div>
+              <span className="foot">What the record says is missing</span>
             </div>
-            <span className="foot">What the record says is missing</span>
           </div>
         </div>
 
         <div className="grid">
-          <section aria-label="Incident evidence">
+          <section aria-label="Incident evidence" className="enter-late">
             <EvidenceTabs
               hasTopology={Boolean(incident.topology)}
               topology={incident.topology ? <DependencyMap incident={incident} /> : null}
@@ -131,7 +136,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
               }
             />
           </section>
-          <aside className="investigator" aria-label="Investigation">
+          <aside className="investigator enter-late" aria-label="Investigation">
             <Investigator
               incidentId={incident.id}
               question={incident.question}

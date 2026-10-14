@@ -1,6 +1,6 @@
 import type { Incident } from "@/lib/contracts";
 
-/** The representative slow request as a span waterfall. */
+/** The representative slow request as a span waterfall; bars grow in on mount. */
 export function TraceWaterfall({ incident }: { incident: Incident }) {
   const total = Math.max(...incident.spans.map((s) => s.start + s.duration), 1);
   const scale = Math.ceil(total / 500) * 500;
@@ -26,6 +26,7 @@ export function TraceWaterfall({ incident }: { incident: Incident }) {
               style={{
                 left: `${(span.start / scale) * 100}%`,
                 width: `${Math.max(0.5, (span.duration / scale) * 100)}%`,
+                ["--i" as string]: i,
               }}
             />
           </div>

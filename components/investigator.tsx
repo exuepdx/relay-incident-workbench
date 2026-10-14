@@ -206,6 +206,7 @@ export function Investigator({
         )}
       </div>
       <div className="panel-body">
+        {phase === "running" && <div className="progress" aria-hidden="true" />}
         {phase === "idle" && (
           <>
             <div className="question">
@@ -233,7 +234,7 @@ export function Investigator({
                 </form>
               </div>
             )}
-            <button className="btn btn-primary btn-lg btn-block" disabled={auth !== true} onClick={start}>
+            <button className="btn btn-primary btn-lg btn-block run" disabled={auth !== true} onClick={start}>
               <Icon name="spark" size={16} /> Run investigation <Icon name="arrow" size={16} />
             </button>
             <p className="note">

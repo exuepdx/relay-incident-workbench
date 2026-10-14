@@ -2,6 +2,9 @@ import Link from "next/link";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Icon, Logo } from "@/components/icons";
+import { Hero } from "@/components/hero";
+import { Reveal } from "@/components/motion";
+import { BoundaryConduit } from "@/components/boundary-conduit";
 import { customer } from "@/lib/customer";
 import { config } from "@/lib/config";
 
@@ -108,462 +111,499 @@ export default function Proposal() {
   const evaluation = loadEval();
   return (
     <main className="proposal">
-      <nav className="proposal-nav" aria-label="Proposal">
-        <Link href="/" aria-label="Relay home">
-          <Logo />
-        </Link>
-        <nav>
-          <a href="#architecture">Architecture</a>
-          <a href="#choices">Vercel choices</a>
-          <a href="#demo">Demo</a>
-          <a href="#rollout">Rollout</a>
-          <a href="#risks">Risks</a>
-          <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary">
-            Open the workbench <Icon name="arrow" size={14} />
+      <Hero>
+        <nav className="hero-nav" aria-label="Proposal">
+          <Link href="/" aria-label="Relay home">
+            <Logo />
           </Link>
+          <nav>
+            <a href="#architecture">Architecture</a>
+            <a href="#choices">Vercel choices</a>
+            <a href="#demo">Demo</a>
+            <a href="#rollout">Rollout</a>
+            <a href="#risks">Risks</a>
+            <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary">
+              Open the workbench <Icon name="arrow" size={14} />
+            </Link>
+          </nav>
         </nav>
-      </nav>
-
-      <header className="hero">
-        <span className="eyebrow">Technical proposal · {customer.name}</span>
-        <h1>
-          Your telemetry already knows.
-          <br />
-          <em>Relay gets the bridge to the next check faster.</em>
-        </h1>
-        <p>
-          An incident investigation agent that runs on Vercel and reads the telemetry {customer.short} already has. It
-          proposes the next check, names the accountable team, and drafts the customer update, with every claim cited.
-          Your systems stay where they are. Your people decide.
-        </p>
-        <div className="hero-meta">
-          <div>
-            Customer{" "}
-            <strong>
-              {customer.name} ({customer.industry})
-            </strong>
+        <div className="hero-body">
+          <div className="hero-copy">
+            <span className="eyebrow">Technical proposal · {customer.name}</span>
+            <h1>
+              Your telemetry already knows.
+              <br />
+              <em>Relay gets the bridge to the next check faster.</em>
+            </h1>
+            <p>
+              An incident investigation agent on Vercel that reads the telemetry {customer.short} already has, proposes
+              the next check, names the accountable team, and drafts the customer update, with every claim cited. Your
+              systems stay where they are. Your people decide.
+            </p>
+            <div className="hero-cta">
+              <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary btn-lg">
+                Run an investigation <Icon name="arrow" size={16} />
+              </Link>
+              <a href="#architecture" className="btn btn-lg">
+                See the boundary
+              </a>
+            </div>
           </div>
-          <div>
-            Vercel's role <strong>Connect: the application and agent layer</strong>
-          </div>
-          <div>
-            First slice <strong>Checkout incident response</strong>
+          <div className="hero-legend" aria-hidden="true">
+            <div>
+              <i className="lw" /> <span>Vercel: Workflows · agent · AI Gateway</span>
+            </div>
+            <div>
+              <i className="lv" /> <span>Tool calls crossing the boundary</span>
+            </div>
+            <div>
+              <i className="lt" /> <span>Evidence returning from the estate</span>
+            </div>
           </div>
         </div>
-      </header>
+      </Hero>
+      <div className="hero-meta">
+        <div>
+          Customer{" "}
+          <strong>
+            {customer.name} ({customer.industry})
+          </strong>
+        </div>
+        <div>
+          Vercel's role <strong>Connect: the application and agent layer</strong>
+        </div>
+        <div>
+          First slice <strong>Checkout incident response</strong>
+        </div>
+      </div>
 
       {/* 1. Problem statement */}
       <section className="section" id="problem">
-        <div className="section-intro">
-          <span className="section-n">01 / PROBLEM</span>
-          <div>
-            <h2>The first twenty minutes of every sev-1 are spent assembling evidence by hand.</h2>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">01 / PROBLEM</span>
+            <div>
+              <h2>The first twenty minutes of every sev-1 are spent assembling evidence by hand.</h2>
+              <p>
+                {customer.short} runs checkout and inventory on {customer.cloud} {customer.compute} with{" "}
+                {customer.database}, an external payments provider, and {customer.observability}. The telemetry is
+                complete. The coordination is not.
+              </p>
+            </div>
+          </div>
+          <div className="cols-2 stagger">
+            <div className="card">
+              <span className="eyebrow">Current state</span>
+              <h3>Five teams, one bridge, no shared evidence</h3>
+              <ul>
+                <li>
+                  A checkout alert pulls application, inventory, database, network, and payments on-call engineers onto
+                  the same call.
+                </li>
+                <li>
+                  Each team checks its own dashboards; nobody owns the question "which dependency do we chase next, and
+                  who owns the check?"
+                </li>
+                <li>
+                  The first customer update is written from memory, often with claims that the evidence does not
+                  support.
+                </li>
+              </ul>
+            </div>
+            <div className="card">
+              <span className="eyebrow">What the tooling team tried</span>
+              <h3>An AI helper on Lambda that did not survive production</h3>
+              <ul>
+                <li>
+                  Investigations run 20 to 60 seconds; API Gateway cuts them off at 29. Retries, timeouts, and state
+                  were hand-rolled.
+                </li>
+                <li>One model, one provider, no failover. When the provider degraded the helper did too.</li>
+                <li>No cost per investigation, so Finance could not say what a month of use would cost.</li>
+                <li>
+                  Internal tools ship through the same {customer.releasePipeline} pipeline as checkout: 45-minute
+                  deploys and no preview environments.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="card highlight" style={{ marginTop: 18 }}>
+            <span className="eyebrow">Why it matters</span>
             <p>
-              {customer.short} runs checkout and inventory on {customer.cloud} {customer.compute} with{" "}
-              {customer.database}, an external payments provider, and {customer.observability}. The telemetry is
-              complete. The coordination is not.
+              Every minute of coordination is a minute of degraded checkout. Responder time across five teams is the
+              largest hidden cost of an incident, and an unsupported claim in a customer update is a trust cost that
+              outlives the outage. The target is a shorter path from alert to an agreed next check, with evidence
+              attached.
             </p>
           </div>
-        </div>
-        <div className="cols-2">
-          <div className="card">
-            <span className="eyebrow">Current state</span>
-            <h3>Five teams, one bridge, no shared evidence</h3>
-            <ul>
-              <li>
-                A checkout alert pulls application, inventory, database, network, and payments on-call engineers onto
-                the same call.
-              </li>
-              <li>
-                Each team checks its own dashboards; nobody owns the question "which dependency do we chase next, and
-                who owns the check?"
-              </li>
-              <li>
-                The first customer update is written from memory, often with claims that the evidence does not support.
-              </li>
-            </ul>
-          </div>
-          <div className="card">
-            <span className="eyebrow">What the tooling team tried</span>
-            <h3>An AI helper on Lambda that did not survive production</h3>
-            <ul>
-              <li>
-                Investigations run 20 to 60 seconds; API Gateway cuts them off at 29. Retries, timeouts, and state were
-                hand-rolled.
-              </li>
-              <li>One model, one provider, no failover. When the provider degraded the helper did too.</li>
-              <li>No cost per investigation, so Finance could not say what a month of use would cost.</li>
-              <li>
-                Internal tools ship through the same {customer.releasePipeline} pipeline as checkout: 45-minute deploys
-                and no preview environments.
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="card highlight" style={{ marginTop: 18 }}>
-          <span className="eyebrow">Why it matters</span>
-          <p>
-            Every minute of coordination is a minute of degraded checkout. Responder time across five teams is the
-            largest hidden cost of an incident, and an unsupported claim in a customer update is a trust cost that
-            outlives the outage. The target is a shorter path from alert to an agreed next check, with evidence
-            attached.
-          </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* 2. Architecture */}
       <section className="section" id="architecture">
-        <div className="section-intro">
-          <span className="section-n">02 / ARCHITECTURE</span>
-          <div>
-            <h2>Vercel runs the application and the agent. Everything that holds data stays.</h2>
-            <p>
-              The boundary is a read-only, authenticated HTTPS API that {customer.short} already exposes from its
-              observability platform. Relay crosses it with a scoped credential and nothing else.
-            </p>
-          </div>
-        </div>
-        <div className="arch">
-          <div className="zone">
-            <span className="eyebrow">Vercel · application and agent layer</span>
-            <h3>Relay</h3>
-            <div className="zone-node">
-              <b>Next.js 16 on Fluid compute</b>
-              <small>Static shell, cached incident segments, streamed runs, reviewer session</small>
-            </div>
-            <div className="zone-node">
-              <b>Vercel Workflows</b>
-              <small>brief → tools (durable steps) → validate → persist · region-pinned to {config.region}</small>
-            </div>
-            <div className="zone-node">
-              <b>AI SDK WorkflowAgent → AI Gateway</b>
-              <small>
-                {config.model} with fallbacks {config.fallbackModels.join(", ")} · cost per run
-              </small>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">02 / ARCHITECTURE</span>
+            <div>
+              <h2>Vercel runs the application and the agent. Everything that holds data stays.</h2>
+              <p>
+                The boundary is a read-only, authenticated HTTPS API that {customer.short} already exposes from its
+                observability platform. Relay crosses it with a scoped credential and nothing else.
+              </p>
             </div>
           </div>
-          <div className="arch-arrow">
-            <Icon name="arrow" size={24} />
-            <span>HTTPS, bearer, read-only</span>
+          <div className="arch">
+            <div className="zone">
+              <span className="eyebrow">Vercel · application and agent layer</span>
+              <h3>Relay</h3>
+              <div className="zone-node">
+                <b>Next.js 16 on Fluid compute</b>
+                <small>Static shell, cached incident segments, streamed runs, reviewer session</small>
+              </div>
+              <div className="zone-node">
+                <b>Vercel Workflows</b>
+                <small>brief → tools (durable steps) → validate → persist · region-pinned to {config.region}</small>
+              </div>
+              <div className="zone-node">
+                <b>AI SDK WorkflowAgent → AI Gateway</b>
+                <small>
+                  {config.model} with fallbacks {config.fallbackModels.join(", ")} · cost per run
+                </small>
+              </div>
+            </div>
+            <BoundaryConduit />
+            <div className="zone customer">
+              <span className="eyebrow">{customer.name} · what stays, and why</span>
+              <h3>The existing estate</h3>
+              <div className="zone-node">
+                <b>Telemetry API ({customer.region})</b>
+                <small>
+                  Metrics, traces, changes, incident records. Stays: retention, ingestion, and alerting are mature and
+                  regulated.
+                </small>
+              </div>
+              <div className="zone-node">
+                <b>
+                  {customer.compute} services + {customer.database}
+                </b>
+                <small>
+                  Checkout, inventory, orders. Stays: tested business rules, data placement, and operational ownership.
+                </small>
+              </div>
+              <div className="zone-node">
+                <b>Postgres investigation index</b>
+                <small>
+                  Who ran what, when, at what cost, and the report. Stays: this is the customer's record, in their
+                  database.
+                </small>
+              </div>
+              <div className="zone-node">
+                <b>Identity, approvals, {customer.modelProvider}</b>
+                <small>
+                  SSO gates production access; service owners approve changes; Bedrock can serve models behind Gateway.
+                </small>
+              </div>
+            </div>
           </div>
-          <div className="zone customer">
-            <span className="eyebrow">{customer.name} · what stays, and why</span>
-            <h3>The existing estate</h3>
-            <div className="zone-node">
-              <b>Telemetry API ({customer.region})</b>
-              <small>
-                Metrics, traces, changes, incident records. Stays: retention, ingestion, and alerting are mature and
-                regulated.
-              </small>
-            </div>
-            <div className="zone-node">
-              <b>
-                {customer.compute} services + {customer.database}
-              </b>
-              <small>
-                Checkout, inventory, orders. Stays: tested business rules, data placement, and operational ownership.
-              </small>
-            </div>
-            <div className="zone-node">
-              <b>Postgres investigation index</b>
-              <small>
-                Who ran what, when, at what cost, and the report. Stays: this is the customer's record, in their
-                database.
-              </small>
-            </div>
-            <div className="zone-node">
-              <b>Identity, approvals, {customer.modelProvider}</b>
-              <small>
-                SSO gates production access; service owners approve changes; Bedrock can serve models behind Gateway.
-              </small>
-            </div>
-          </div>
-        </div>
-        <p className="muted" style={{ marginTop: 14, fontSize: "var(--text-sm)", lineHeight: 1.7 }}>
-          In the demo the telemetry API is a synthetic service on an AWS Lambda function URL in us-east-1 and the index
-          is a Neon Postgres database. In production the API is the customer's observability vendor or an adapter in
-          their VPC, reached through Secure Compute static IPs or VPC peering, and the index is a table in their RDS.
-          Nothing about the application changes.
-        </p>
+          <p className="muted" style={{ marginTop: 14, fontSize: "var(--text-sm)", lineHeight: 1.7 }}>
+            In the demo the telemetry API is a synthetic service on an AWS Lambda function URL in us-east-1 and the
+            index is a Neon Postgres database. In production the API is the customer's observability vendor or an
+            adapter in their VPC, reached through Secure Compute static IPs or VPC peering, and the index is a table in
+            their RDS. Nothing about the application changes.
+          </p>
+        </Reveal>
       </section>
 
       {/* 3. Vercel choices */}
       <section className="section" id="choices">
-        <div className="section-intro">
-          <span className="section-n">03 / VERCEL CHOICES</span>
-          <div>
-            <h2>Six primitives, each answering a named pain.</h2>
-            <p>Fewer, well-chosen pieces. Each row names what it buys the customer and the trade-off we accept.</p>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">03 / VERCEL CHOICES</span>
+            <div>
+              <h2>Six primitives, each answering a named pain.</h2>
+              <p>Fewer, well-chosen pieces. Each row names what it buys the customer and the trade-off we accept.</p>
+            </div>
           </div>
-        </div>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Primitive</th>
-              <th>What it buys {customer.short}</th>
-              <th>Trade-off we own</th>
-            </tr>
-          </thead>
-          <tbody>
-            {primitives.map(([name, value, tradeoff, url]) => (
-              <tr key={name}>
-                <td>
-                  <a href={url}>{name} ↗</a>
-                </td>
-                <td>{value}</td>
-                <td>{tradeoff}</td>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Primitive</th>
+                <th>What it buys {customer.short}</th>
+                <th>Trade-off we own</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {primitives.map(([name, value, tradeoff, url]) => (
+                <tr key={name}>
+                  <td>
+                    <a href={url}>{name} ↗</a>
+                  </td>
+                  <td>{value}</td>
+                  <td>{tradeoff}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Reveal>
       </section>
 
       {/* 4. Working demo */}
       <section className="section" id="demo">
-        <div className="section-intro">
-          <span className="section-n">04 / WORKING DEMO</span>
-          <div>
-            <h2>Deployed, public, and reviewable in five minutes.</h2>
-            <p>
-              Four incidents are loaded. Open the lead incident, enter the reviewer code from the submission email, and
-              press Run. Then break something from the Test resilience panel.
-            </p>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">04 / WORKING DEMO</span>
+            <div>
+              <h2>Deployed, public, and reviewable in five minutes.</h2>
+              <p>
+                Four incidents are loaded. Open the lead incident, enter the reviewer code from the submission email,
+                and press Run. Then break something from the Test resilience panel.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="cols-3">
-          <div className="card">
-            <span className="eyebrow">Public URL</span>
-            <h3>
-              {demoUrl ? <a href={demoUrl}>{demoUrl.replace(/^https?:\/\//, "")}</a> : "Set NEXT_PUBLIC_DEMO_URL"}
-            </h3>
-            <p>Reviewer code: in the submission email. Starting a run needs it; reading does not.</p>
+          <div className="cols-3 stagger">
+            <div className="card">
+              <span className="eyebrow">Public URL</span>
+              <h3>
+                {demoUrl ? <a href={demoUrl}>{demoUrl.replace(/^https?:\/\//, "")}</a> : "Set NEXT_PUBLIC_DEMO_URL"}
+              </h3>
+              <p>Reviewer code: in the submission email. Starting a run needs it; reading does not.</p>
+            </div>
+            <div className="card">
+              <span className="eyebrow">Public repository</span>
+              <h3>
+                {repoUrl ? <a href={repoUrl}>{repoUrl.replace(/^https?:\/\//, "")}</a> : "Set NEXT_PUBLIC_REPO_URL"}
+              </h3>
+              <p>
+                Full commit history. Each commit message explains the decision it carries. Comments mark the deliberate
+                ones.
+              </p>
+            </div>
+            <div className="card">
+              <span className="eyebrow">What to try</span>
+              <ul>
+                <li>Run INC-0244 and click a citation.</li>
+                <li>Transient 503: watch the tool step retry.</li>
+                <li>Provider outage: watch Gateway fall back and read the model attempts.</li>
+                <li>Refresh mid-run: the run continues.</li>
+                <li>INC-0243: the agent must abstain.</li>
+              </ul>
+            </div>
           </div>
-          <div className="card">
-            <span className="eyebrow">Public repository</span>
-            <h3>
-              {repoUrl ? <a href={repoUrl}>{repoUrl.replace(/^https?:\/\//, "")}</a> : "Set NEXT_PUBLIC_REPO_URL"}
-            </h3>
-            <p>
-              Full commit history. Each commit message explains the decision it carries. Comments mark the deliberate
-              ones.
-            </p>
-          </div>
-          <div className="card">
-            <span className="eyebrow">What to try</span>
-            <ul>
-              <li>Run INC-0244 and click a citation.</li>
-              <li>Transient 503: watch the tool step retry.</li>
-              <li>Provider outage: watch Gateway fall back and read the model attempts.</li>
-              <li>Refresh mid-run: the run continues.</li>
-              <li>INC-0243: the agent must abstain.</li>
-            </ul>
-          </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* 5. Rollout */}
       <section className="section" id="rollout">
-        <div className="section-intro">
-          <span className="section-n">05 / ROLLOUT PLAN</span>
-          <div>
-            <h2>Preview, validate, canary, cut over, roll back.</h2>
-            <p>The original incident process stays available for the whole pilot. Relay earns expansion with data.</p>
-          </div>
-        </div>
-        <div className="rollout">
-          {rollout.map(([n, title, text]) => (
-            <div key={n}>
-              <span>{n}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">05 / ROLLOUT PLAN</span>
+            <div>
+              <h2>Preview, validate, canary, cut over, roll back.</h2>
+              <p>The original incident process stays available for the whole pilot. Relay earns expansion with data.</p>
             </div>
-          ))}
-        </div>
-        <div className="card" style={{ marginTop: 22 }}>
-          <span className="eyebrow">An incident mid-rollout</span>
-          <p>
-            A bad release is caught by the canary metrics or by a responder. Instant Rollback points production back at
-            the previous deployment in seconds; nobody re-deploys. Runs started on the canary finish on the canary
-            because Workflows pins a run to its deployment. The index in Postgres is untouched. Afterwards the Preview
-            Deployment of the fix gets the same eval and smoke gate before promotion.
-          </p>
-        </div>
+          </div>
+          <div className="rollout">
+            <div className="rollout-line" aria-hidden="true" />
+            {rollout.map(([n, title, text]) => (
+              <div key={n}>
+                <span>{n}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="card" style={{ marginTop: 22 }}>
+            <span className="eyebrow">An incident mid-rollout</span>
+            <p>
+              A bad release is caught by the canary metrics or by a responder. Instant Rollback points production back
+              at the previous deployment in seconds; nobody re-deploys. Runs started on the canary finish on the canary
+              because Workflows pins a run to its deployment. The index in Postgres is untouched. Afterwards the Preview
+              Deployment of the fix gets the same eval and smoke gate before promotion.
+            </p>
+          </div>
+        </Reveal>
       </section>
 
       {/* 6. Success measures */}
       <section className="section" id="measures">
-        <div className="section-intro">
-          <span className="section-n">06 / SUCCESS MEASURES</span>
-          <div>
-            <h2>Measured against the last rotation, not against a slide.</h2>
-            <p>
-              Baseline on sanitized historical incidents with {customer.short}'s own responders. These are the pilot
-              gates.
-            </p>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">06 / SUCCESS MEASURES</span>
+            <div>
+              <h2>Measured against the last rotation, not against a slide.</h2>
+              <p>
+                Baseline on sanitized historical incidents with {customer.short}'s own responders. These are the pilot
+                gates.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="cols-3">
-          <div className="card">
-            <span className="eyebrow">Technical</span>
-            <h3>Faster to an agreed next check</h3>
-            <ul>
-              <li>
-                30 percent lower median time from alert to an evidence-backed hypothesis, paired against manual
-                investigation.
-              </li>
-              <li>Report ready in under 30 seconds p95; retrieval and model time tracked separately.</li>
-              <li>Zero runs lost to a crash, deploy, or customer-side 503 (durable steps).</li>
-            </ul>
+          <div className="cols-3 stagger">
+            <div className="card">
+              <span className="eyebrow">Technical</span>
+              <h3>Faster to an agreed next check</h3>
+              <ul>
+                <li>
+                  30 percent lower median time from alert to an evidence-backed hypothesis, paired against manual
+                  investigation.
+                </li>
+                <li>Report ready in under 30 seconds p95; retrieval and model time tracked separately.</li>
+                <li>Zero runs lost to a crash, deploy, or customer-side 503 (durable steps).</li>
+              </ul>
+            </div>
+            <div className="card">
+              <span className="eyebrow">Quality</span>
+              <h3>No unsupported critical claims</h3>
+              <ul>
+                <li>Every finding cites evidence the agent read; unknown citations fail the run.</li>
+                <li>Correct abstention on every known incomplete case.</li>
+                <li>Human review of 20 pilot reports before expansion.</li>
+              </ul>
+            </div>
+            <div className="card">
+              <span className="eyebrow">Business</span>
+              <h3>Less coordination, more certainty</h3>
+              <ul>
+                <li>20 percent fewer responder-minutes across teams per incident.</li>
+                <li>Cost per investigation under $0.05, visible per run and per month in Gateway.</li>
+                <li>First customer update sent sooner and never retracted.</li>
+              </ul>
+            </div>
           </div>
-          <div className="card">
-            <span className="eyebrow">Quality</span>
-            <h3>No unsupported critical claims</h3>
-            <ul>
-              <li>Every finding cites evidence the agent read; unknown citations fail the run.</li>
-              <li>Correct abstention on every known incomplete case.</li>
-              <li>Human review of 20 pilot reports before expansion.</li>
-            </ul>
-          </div>
-          <div className="card">
-            <span className="eyebrow">Business</span>
-            <h3>Less coordination, more certainty</h3>
-            <ul>
-              <li>20 percent fewer responder-minutes across teams per incident.</li>
-              <li>Cost per investigation under $0.05, visible per run and per month in Gateway.</li>
-              <li>First customer update sent sooner and never retracted.</li>
-            </ul>
-          </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* 7. Risks */}
       <section className="section" id="risks">
-        <div className="section-intro">
-          <span className="section-n">07 / KNOWN LIMITATIONS AND RISKS</span>
-          <div>
-            <h2>What we would say before kickoff.</h2>
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">07 / KNOWN LIMITATIONS AND RISKS</span>
+            <div>
+              <h2>What we would say before kickoff.</h2>
+            </div>
           </div>
-        </div>
-        <div className="cols-2">
-          <div className="card">
-            <h3>This demo is synthetic</h3>
-            <p>
-              The telemetry, the customer, and the incidents are fictional. The reviewer code is a shared gate, not SSO.
-              Reads are open because nothing is sensitive. A pilot gets SSO, tenant authorization, and per-user cost
-              attribution.
-            </p>
+          <div className="cols-2 stagger">
+            <div className="card">
+              <h3>This demo is synthetic</h3>
+              <p>
+                The telemetry, the customer, and the incidents are fictional. The reviewer code is a shared gate, not
+                SSO. Reads are open because nothing is sensitive. A pilot gets SSO, tenant authorization, and per-user
+                cost attribution.
+              </p>
+            </div>
+            <div className="card">
+              <h3>Data placement</h3>
+              <p>
+                Workflow run state is pinned to {config.region} and retained per plan. The model hop goes through AI
+                Gateway; Gateway's provider allow-list keeps inference on Bedrock if required. If no data may transit
+                Vercel's gateway, the AI SDK provider is swapped to direct Bedrock and fallback moves into the
+                application.
+              </p>
+            </div>
+            <div className="card">
+              <h3>Model output is a draft</h3>
+              <p>
+                Schema, citation, and policy checks catch structural failures and the regressions we have seen. They do
+                not prove a claim is true. Service owners approve every action. Nothing in Relay writes to a production
+                system.
+              </p>
+            </div>
+            <div className="card">
+              <h3>Operational</h3>
+              <p>
+                Runs cost about $0.01 to $0.03 each in Gateway; a monthly hard limit returns 402 past budget. There is
+                no global rate limiter beyond the session gate. Durable execution is not exactly-once inference billing:
+                a retried model call can be billed twice.
+              </p>
+            </div>
           </div>
-          <div className="card">
-            <h3>Data placement</h3>
-            <p>
-              Workflow run state is pinned to {config.region} and retained per plan. The model hop goes through AI
-              Gateway; Gateway's provider allow-list keeps inference on Bedrock if required. If no data may transit
-              Vercel's gateway, the AI SDK provider is swapped to direct Bedrock and fallback moves into the
-              application.
-            </p>
-          </div>
-          <div className="card">
-            <h3>Model output is a draft</h3>
-            <p>
-              Schema, citation, and policy checks catch structural failures and the regressions we have seen. They do
-              not prove a claim is true. Service owners approve every action. Nothing in Relay writes to a production
-              system.
-            </p>
-          </div>
-          <div className="card">
-            <h3>Operational</h3>
-            <p>
-              Runs cost about $0.01 to $0.03 each in Gateway; a monthly hard limit returns 402 past budget. There is no
-              global rate limiter beyond the session gate. Durable execution is not exactly-once inference billing: a
-              retried model call can be billed twice.
-            </p>
-          </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* 8. Development tooling */}
       <section className="section" id="tooling">
-        <div className="section-intro">
-          <span className="section-n">08 / DEVELOPMENT TOOLING AND AI VALIDATION</span>
-          <div>
-            <h2>Built with AI tools. Validated with a harness, not vibes.</h2>
-            <p>
-              A first iteration (single model call, no tools) was scaffolded with OpenAI Codex and reviewed. This
-              rebuild was done with Claude Code in a terminal; the agent, Gateway routing, rendering, persistence, and
-              evaluation layers were redesigned from that review. Every file is mine to explain.
-            </p>
-          </div>
-        </div>
-        <div className="cols-2">
-          <div className="card">
-            <h3>How behaviour is validated</h3>
-            <ul>
-              <li>
-                <code>npm test</code>: 20 unit tests on contracts, access, the customer API, tool wiring, accounting,
-                and the eval cases.
-              </li>
-              <li>
-                <code>npm run eval</code>: seven cases through the real agent; checks structure, citations, expected
-                assessment, tool use, and regressions. Artifacts carry prompt and evidence hashes.
-              </li>
-              <li>
-                <code>npm run smoke</code>: five end-to-end runs including the 503 retry, the provider-outage drill, and
-                a full outage, against the offline fake Gateway or a deployment.
-              </li>
-              <li>
-                Human review rubric per case; the known failure (one observed 504 becoming "frequent 504s") is a
-                committed fixture and a deterministic guard.
-              </li>
-            </ul>
-          </div>
-          <div className="card">
-            <h3>Latest evaluation</h3>
-            {evaluation ? (
-              <>
-                <p>
-                  {new Date(evaluation.evaluatedAt).toLocaleString()} · {evaluation.model} · {evaluation.cases} cases ·{" "}
-                  {evaluation.failures} failures
-                </p>
-                <table className="table" style={{ marginTop: 10 }}>
-                  <thead>
-                    <tr>
-                      <th>Case</th>
-                      <th>Assessment</th>
-                      <th>Checks</th>
-                      <th>Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {evaluation.results.map((r) => (
-                      <tr key={r.name}>
-                        <td>{r.name}</td>
-                        <td>{r.report?.assessment ?? r.error ?? "—"}</td>
-                        <td>
-                          {r.error
-                            ? "failed"
-                            : [
-                                r.assessmentPassed ? "assessment ✓" : "assessment ✗",
-                                r.allToolsCalled ? "tools ✓" : "tools ✗",
-                                r.regressionFailures?.length
-                                  ? `regressions: ${r.regressionFailures.join("; ")}`
-                                  : "regressions ✓",
-                              ].join(" · ")}
-                        </td>
-                        <td>{r.totalCostUsd ? `$${Number(r.totalCostUsd).toFixed(4)}` : "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            ) : (
+        <Reveal>
+          <div className="section-intro">
+            <span className="section-n">08 / DEVELOPMENT TOOLING AND AI VALIDATION</span>
+            <div>
+              <h2>Built with AI tools. Validated with a harness, not vibes.</h2>
               <p>
-                Run <code>npm run eval</code> with Gateway access to produce <code>artifacts/evaluation.json</code>; it
-                renders here. Iteration-1 artifacts, including the regression that motivated the wording guard, are in{" "}
-                <code>artifacts/</code>.
+                A first iteration (single model call, no tools) was scaffolded with OpenAI Codex and reviewed. This
+                rebuild was done with Claude Code in a terminal; the agent, Gateway routing, rendering, persistence, and
+                evaluation layers were redesigned from that review. Every file is mine to explain.
               </p>
-            )}
+            </div>
           </div>
-        </div>
+          <div className="cols-2 stagger">
+            <div className="card">
+              <h3>How behaviour is validated</h3>
+              <ul>
+                <li>
+                  <code>npm test</code>: 20 unit tests on contracts, access, the customer API, tool wiring, accounting,
+                  and the eval cases.
+                </li>
+                <li>
+                  <code>npm run eval</code>: seven cases through the real agent; checks structure, citations, expected
+                  assessment, tool use, and regressions. Artifacts carry prompt and evidence hashes.
+                </li>
+                <li>
+                  <code>npm run smoke</code>: five end-to-end runs including the 503 retry, the provider-outage drill,
+                  and a full outage, against the offline fake Gateway or a deployment.
+                </li>
+                <li>
+                  Human review rubric per case; the known failure (one observed 504 becoming "frequent 504s") is a
+                  committed fixture and a deterministic guard.
+                </li>
+              </ul>
+            </div>
+            <div className="card">
+              <h3>Latest evaluation</h3>
+              {evaluation ? (
+                <>
+                  <p>
+                    {new Date(evaluation.evaluatedAt).toLocaleString()} · {evaluation.model} · {evaluation.cases} cases
+                    · {evaluation.failures} failures
+                  </p>
+                  <table className="table" style={{ marginTop: 10 }}>
+                    <thead>
+                      <tr>
+                        <th>Case</th>
+                        <th>Assessment</th>
+                        <th>Checks</th>
+                        <th>Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {evaluation.results.map((r) => (
+                        <tr key={r.name}>
+                          <td>{r.name}</td>
+                          <td>{r.report?.assessment ?? r.error ?? "—"}</td>
+                          <td>
+                            {r.error
+                              ? "failed"
+                              : [
+                                  r.assessmentPassed ? "assessment ✓" : "assessment ✗",
+                                  r.allToolsCalled ? "tools ✓" : "tools ✗",
+                                  r.regressionFailures?.length
+                                    ? `regressions: ${r.regressionFailures.join("; ")}`
+                                    : "regressions ✓",
+                                ].join(" · ")}
+                          </td>
+                          <td>{r.totalCostUsd ? `$${Number(r.totalCostUsd).toFixed(4)}` : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              ) : (
+                <p>
+                  Run <code>npm run eval</code> with Gateway access to produce <code>artifacts/evaluation.json</code>;
+                  it renders here. Iteration-1 artifacts, including the regression that motivated the wording guard, are
+                  in <code>artifacts/</code>.
+                </p>
+              )}
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       <div className="cta">

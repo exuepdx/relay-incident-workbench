@@ -69,57 +69,65 @@ export function DependencyMap({ incident }: { incident: Incident }) {
               </span>
             ))}
           </div>
-          <div className="map" role="group" aria-label="Dependency map; arrows show dependency direction">
-            <svg viewBox="0 0 600 440" preserveAspectRatio="none" aria-hidden="true" className="map-lines">
-              <defs>
-                <marker
-                  id="arrow"
-                  viewBox="0 0 10 10"
-                  refX="8"
-                  refY="5"
-                  markerWidth="6"
-                  markerHeight="6"
-                  orient="auto-start-reverse"
+          <div className="map-stage">
+            <div className="map" role="group" aria-label="Dependency map; arrows show dependency direction">
+              <svg viewBox="0 0 600 440" preserveAspectRatio="none" aria-hidden="true" className="map-lines">
+                <defs>
+                  <marker
+                    id="arrow"
+                    viewBox="0 0 10 10"
+                    refX="8"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#a89fb8" />
+                  </marker>
+                </defs>
+                {topology.edges.map((edge) => {
+                  const from = positions[edge.from];
+                  const to = positions[edge.to];
+                  if (!from || !to) return null;
+                  const horizontal = from[1] === to[1];
+                  const status = (id: string) => topology.nodes.find((n) => n.id === id)?.status;
+                  const hot = status(edge.from) === "affected" && status(edge.to) === "affected";
+                  const toUnknown = status(edge.to) === "unknown";
+                  return (
+                    <line
+                      key={`${edge.from}-${edge.to}`}
+                      className={hot ? "hot" : undefined}
+                      x1={from[0] * 6 + (horizontal ? 119 : 0)}
+                      y1={from[1] * 4.4 + (horizontal ? 0 : 38)}
+                      x2={to[0] * 6 - (horizontal ? 121 : 0)}
+                      y2={to[1] * 4.4 - (horizontal ? 0 : 40)}
+                      markerEnd="url(#arrow)"
+                      strokeDasharray={toUnknown ? "4 4" : undefined}
+                    />
+                  );
+                })}
+              </svg>
+              {topology.nodes.map((n, i) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  className={`node ${n.status} ${node.id === n.id ? "selected" : ""}`}
+                  style={{
+                    left: `${positions[n.id]?.[0] ?? 75}%`,
+                    top: `${positions[n.id]?.[1] ?? 38}%`,
+                    ["--i" as string]: i,
+                  }}
+                  aria-pressed={node.id === n.id}
+                  onClick={() => setSelected(n.id)}
                 >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#a89fb8" />
-                </marker>
-              </defs>
-              {topology.edges.map((edge) => {
-                const from = positions[edge.from];
-                const to = positions[edge.to];
-                if (!from || !to) return null;
-                const horizontal = from[1] === to[1];
-                return (
-                  <line
-                    key={`${edge.from}-${edge.to}`}
-                    x1={from[0] * 6 + (horizontal ? 119 : 0)}
-                    y1={from[1] * 4.4 + (horizontal ? 0 : 38)}
-                    x2={to[0] * 6 - (horizontal ? 121 : 0)}
-                    y2={to[1] * 4.4 - (horizontal ? 0 : 40)}
-                    markerEnd="url(#arrow)"
-                    stroke="#a89fb8"
-                    strokeWidth="1.5"
-                    strokeDasharray={edge.to === "underlay" ? "4 4" : undefined}
-                  />
-                );
-              })}
-            </svg>
-            {topology.nodes.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                className={`node ${node.id === n.id ? "selected" : ""}`}
-                style={{ left: `${positions[n.id]?.[0] ?? 75}%`, top: `${positions[n.id]?.[1] ?? 38}%` }}
-                aria-pressed={node.id === n.id}
-                onClick={() => setSelected(n.id)}
-              >
-                <span className={`status ${n.status}`}>
-                  <i /> {statusLabel[n.status]}
-                </span>
-                <strong>{n.label}</strong>
-                <small>{n.owner}</small>
-              </button>
-            ))}
+                  <span className={`status ${n.status}`}>
+                    <i /> {statusLabel[n.status]}
+                  </span>
+                  <strong>{n.label}</strong>
+                  <small>{n.owner}</small>
+                </button>
+              ))}
+            </div>
           </div>
           <p className="map-caption">
             Arrows are catalog dependencies, not proven fault propagation. "Within baseline" describes the supplied

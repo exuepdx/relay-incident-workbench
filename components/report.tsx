@@ -17,7 +17,7 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
     URL.revokeObjectURL(url);
   };
   return (
-    <div className="report">
+    <div className="report stagger">
       <div className="report-top">
         <span className="chip violet">
           <Icon name="spark" size={12} /> Draft · review before sharing

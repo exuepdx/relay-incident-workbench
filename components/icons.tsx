@@ -1,4 +1,4 @@
-export function Icon({ name, size = 18 }: { name: string; size?: number }) {
+export function Icon({ name, size = 18, className }: { name: string; size?: number; className?: string }) {
   const paths: Record<string, React.ReactNode> = {
     pulse: <path d="M2 12h4l3-8 5 16 3-8h5" />,
     layers: (
@@ -57,6 +57,7 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       {paths[name] || paths.pulse}
     </svg>
