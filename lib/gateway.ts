@@ -1,5 +1,4 @@
 import type { LanguageModel, StepResult, ToolSet } from "ai";
-import { createGateway } from "@ai-sdk/gateway";
 import { config } from "./config";
 import type { InvestigationInput, ModelStep } from "./contracts";
 
@@ -10,16 +9,14 @@ import type { InvestigationInput, ModelStep } from "./contracts";
  */
 
 /**
- * The model for a run. A Gateway slug in every real environment (the
- * Gateway authenticates with the project's OIDC token on Vercel or
- * AI_GATEWAY_API_KEY locally). For offline tests a fake Gateway URL can be
- * supplied; the instance serializes across workflow steps by configuration.
+ * The model for a run: always a Gateway slug. On Vercel the Gateway
+ * authenticates with the project's OIDC token; locally with
+ * AI_GATEWAY_API_KEY. The offline harness redirects Gateway traffic at the
+ * fetch layer (lib/fake-gateway.ts) rather than passing a model instance,
+ * because instances carry async auth headers that cannot be serialized
+ * across workflow steps.
  */
 export function resolveModel(): LanguageModel {
-  const fake = process.env.RELAY_FAKE_GATEWAY_URL;
-  if (fake && process.env.NODE_ENV !== "production") {
-    return createGateway({ baseURL: fake, apiKey: "fake-gateway-key" }).languageModel(config.model);
-  }
   return config.model;
 }
 

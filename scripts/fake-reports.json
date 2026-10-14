@@ -1,0 +1,158 @@
+{
+  "INC-0241": {
+    "title": "Checkout slowdown consistent with DB pool contention",
+    "assessment": "supported-hypothesis",
+    "summary": "From 14:15\u201314:30 UTC, checkout-api p95 latency and API error rate increased while request rate stayed near baseline. Slow trace samples are dominated by waiting to acquire a DB connection in inventory-path work, which is consistent with connection-pool contention but not yet a confirmed root cause.",
+    "findings": [
+      {
+        "text": "From 14:15\u201314:30 UTC, checkout-api p95 rose 420ms\u21922840ms and API error rate 0.3%\u21926.8%, while request rate stayed near ~120 rps.",
+        "citations": [
+          "E1"
+        ]
+      },
+      {
+        "text": "In one representative checkout trace, most time is spent in inventory.reserve with db.pool.acquire taking 2190ms; 18 of 20 slow sampled traces show pool waits >1800ms.",
+        "citations": [
+          "E2"
+        ]
+      },
+      {
+        "text": "A release at 14:12 changed the inventory client connection pool max from 20 to 5; the latency increase starts at 14:15, which is temporally consistent but not proof.",
+        "citations": [
+          "E3"
+        ]
+      },
+      {
+        "text": "Database CPU stayed near baseline (36% vs 34%) and payment authorization p95 stayed near baseline (140ms vs 135ms), while pool pending requests increased from 0 to 84.",
+        "citations": [
+          "E4"
+        ]
+      }
+    ],
+    "nextSteps": [
+      "Collect time-series for inventory-api DB pool metrics (max, in-use, pending, acquire time) and correlate to checkout p95/error rate over 14:00\u201314:30 UTC without changing configuration.",
+      "Request the DB team provide DB-side connection counts, connection wait events, and max_connections headroom for the same window to validate whether waits are app-pool versus DB-limited.",
+      "With inventory/checkout service-owner approval, validate the release 8f2c1d pool-size change via config audit and compare latency/error metrics between instances/cohorts running old versus new pool limits during the window."
+    ],
+    "uncertainty": "Evidence is limited to a 30-minute query window plus 20 slow trace samples; this does not establish behavior for all requests or confirm causality for the pool-size change. Stable DB CPU cannot exclude non-CPU DB constraints (e.g., connections), and no controlled mitigation has been measured.",
+    "customerUpdate": "Between 14:15\u201314:30 UTC, checkout latency and API error rate increased. Sampled slow traces show most delay waiting for a DB connection in the inventory path, consistent with connection-pool contention; a recent release reduced a pool limit and may be related, but this is unconfirmed. Next we will gather DB/pool metrics and compare cohorts; any configuration change would require service-owner approval."
+  },
+  "INC-0242": {
+    "title": "Checkout slowness consistent with payment authorization delay",
+    "assessment": "supported-hypothesis",
+    "summary": "Within the sampled slow traces, checkout latency and errors rose while request rate stayed stable. Slowdowns are dominated by the payments.authorize span, consistent with a dependency issue on the payment path. No provider-side evidence is available to confirm an external incident.",
+    "findings": [
+      {
+        "text": "At 15:18 UTC, checkout p95 rose 460ms\u21923210ms and errors 0.4%\u21928.2%, with stable request rate; old and new release cohorts show similar impact.",
+        "citations": [
+          "E1"
+        ]
+      },
+      {
+        "text": "One representative trace shows payments.authorize 2880ms of a 3210ms checkout, recording upstream HTTP 504; 17 of 20 slow sampled traces show slow payment authorization.",
+        "citations": [
+          "E2"
+        ]
+      },
+      {
+        "text": "A 15:10 presentation-only deploy preceded the alert, but the symptoms also affect the old release cohort, which is not consistent with a new-code-only regression.",
+        "citations": [
+          "E3",
+          "E1"
+        ]
+      },
+      {
+        "text": "Inventory latency (~150ms vs 145ms baseline), DB CPU (33%), and pool pending (0) are within observed baselines in this window; provider-side incident confirmation is not available.",
+        "citations": [
+          "E4",
+          "E5"
+        ]
+      }
+    ],
+    "nextSteps": [
+      "Collect and compare payment-path timing by dependency (DNS/TLS/connect/TTFB if available) and response outcomes for both slow and non-slow trace samples during the window.",
+      "Request the payment service owner to obtain provider-side status/incident evidence and correlate with internal authorize latency/error metrics for the same time range.",
+      "Validate trace/metric representativeness by sampling more transactions and confirming whether the 17/20 slow-trace authorization pattern holds across a broader, time-bucketed dataset."
+    ],
+    "uncertainty": "Localization is based on 20 sampled slow traces and aggregate checkout metrics; this does not quantify overall blast radius. Only one representative trace records a specific upstream code, and there is no provider-side tracing or confirmed provider status to confirm the external dependency state.",
+    "customerUpdate": "We\u2019re seeing increased checkout latency and errors in the 15:00\u201315:30 UTC window, with slow payment authorization dominating the sampled slow traces. This is consistent with a payment-path dependency issue, but we do not yet have provider-side confirmation. Next we will gather broader trace/metric breakdowns and request provider status evidence via the payment service owner."
+  },
+  "INC-0243": {
+    "title": "Checkout slowdown with missing dependency traces",
+    "assessment": "insufficient-evidence",
+    "summary": "Aggregate metrics show a checkout p95 increase and higher API error rate, but missing child spans prevent localizing the delay to any dependency. Two simultaneous changes are noted without per-cohort or dependency evidence to distinguish them. Telemetry and comparative measurements are needed before selecting a leading cause.",
+    "findings": [
+      {
+        "text": "Aggregate checkout metrics show p95 rising from 440ms to 1920ms and API error rate rising from 0.4% to 4.1%; only aggregate checkout metrics are available.",
+        "citations": [
+          "E1"
+        ]
+      },
+      {
+        "text": "Tracing is missing child spans for inventory, database, and payments due to a collector sampling/configuration fault, leaving only the root span and no dependency breakdown.",
+        "citations": [
+          "E2"
+        ]
+      },
+      {
+        "text": "A checkout release and a network-policy update both occurred at 16:12 UTC, but there are no per-cohort metrics or dependency measurements to distinguish their effects.",
+        "citations": [
+          "E3"
+        ]
+      },
+      {
+        "text": "No order-completion or revenue measurements are available, so impact cannot be translated into financial loss from this bundle.",
+        "citations": [
+          "E4"
+        ]
+      }
+    ],
+    "nextSteps": [
+      "Collect per-cohort checkout latency and error metrics comparing pre/post 16:12 UTC and broken down by release version and network-policy cohort, if available.",
+      "Request or recover existing dependency latency/error measurements (inventory, database, payments) from any other telemetry sources during the window to compensate for missing spans.",
+      "With service-owner approval, validate and remediate the collector sampling/configuration fault, then re-sample traces to confirm dependency-level timing is captured."
+    ],
+    "uncertainty": "Dependency localization is blocked by missing child spans, and two simultaneous changes lack per-cohort comparisons. Aggregate p95 and error rate increases indicate a real symptom, but this evidence cannot support a specific causal mechanism or owner.",
+    "customerUpdate": "We see a significant increase in checkout latency and API errors in aggregate metrics, but current tracing is missing downstream spans, so we cannot yet identify which dependency is slow. Next we\u2019ll gather per-cohort comparisons around 16:12 and recover any existing dependency measurements; with owner approval, we\u2019ll then fix collector configuration to restore full traces."
+  },
+  "INC-0244": {
+    "title": "Checkout slowdown consistent with DB path connection rejects",
+    "assessment": "supported-hypothesis",
+    "summary": "During the sampled window, checkout latency and errors rose while request rate stayed near baseline. Slow-trace samples localize most delay to inventory waiting on the database TCP connect/handshake. In parallel, path-scoped flow telemetry shows elevated rejected connections to the database port after a firewall policy update, consistent with a network-path contribution.",
+    "findings": [
+      {
+        "text": "At 17:14 UTC, checkout p95 increased 480ms\u21923,180ms and API error rate 0.4%\u21927.4%, while request rate stayed ~115 rps; both old/new checkout release cohorts show similar degradation.",
+        "citations": [
+          "E1",
+          "E5"
+        ]
+      },
+      {
+        "text": "In one representative trace, checkout is 3,180ms with inventory.reserve 2,810ms; tcp.connect to inventory-db is 2,450ms while the subsequent SELECT is 160ms and pool.acquire is 22ms.",
+        "citations": [
+          "E2"
+        ]
+      },
+      {
+        "text": "Across the slow-sampled set, 16 of 20 traces show database connection handshakes above 2,000ms; sampling does not establish population-wide prevalence.",
+        "citations": [
+          "E2"
+        ]
+      },
+      {
+        "text": "From 17:14 UTC, sampled flow records on the inventory subnet to inventory-db:5432 show 18% rejected connections vs 0.1% baseline; a firewall policy update on that path occurred at 17:11, without request-level linkage yet.",
+        "citations": [
+          "E3",
+          "E5"
+        ]
+      }
+    ],
+    "nextSteps": [
+      "Inventory Services and Network Platform should correlate the 16 slow trace samples to flow logs using timestamps, source identity, destination endpoint, and connection attempt outcomes for the same window.",
+      "Network Platform should perform a read-only diff/review of the 17:11 firewall policy update versus prior state, focusing on inventory\u2192inventory-db:5432 rules and any new denies or rate limits.",
+      "Infrastructure Operations should provide existing router/switch interface counters and route-change/health evidence for the scoped path and time window to validate or challenge an underlay contribution."
+    ],
+    "uncertainty": "Trace sampling (20) cannot quantify overall prevalence, and flow records are path-scoped sampled telemetry without per-request linkage. Database metrics cover successful queries and do not measure failed or retried connection attempts. Physical underlay counters and packet captures are missing, so hardware vs policy vs other connectivity factors remain uncertain.",
+    "customerUpdate": "We see a checkout slowdown and elevated errors, with slow traces indicating most time spent waiting on inventory\u2019s database connection handshake. Network telemetry also shows increased rejected connections on the inventory-to-database path after a firewall policy update, but per-request linkage is not yet proven. Next we will correlate traces to flow records and review the policy change and device health data to confirm the contributing factor(s)."
+  }
+}
