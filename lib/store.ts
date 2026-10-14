@@ -47,12 +47,37 @@ class MemoryStore implements Store {
 class FileStore extends MemoryStore {
   constructor(private readonly path: string) {
     super("file");
+    this.load();
+  }
+  /**
+   * Route handlers and workflow steps are separate bundles in development,
+   * each with its own module instance, so every operation re-reads the file
+   * and writes are read-modify-write. Postgres is the real answer; this just
+   * keeps local development honest.
+   */
+  private load() {
     try {
-      const rows = JSON.parse(readFileSync(path, "utf8")) as InvestigationRecord[];
-      for (const row of rows) this.rows.set(row.runId, row);
+      const rows = JSON.parse(readFileSync(this.path, "utf8")) as InvestigationRecord[];
+      this.rows = new Map(rows.map((r) => [r.runId, r]));
     } catch {
-      /* first run */
+      this.rows = new Map();
     }
+  }
+  override async create(record: InvestigationRecord) {
+    this.load();
+    await super.create(record);
+  }
+  override async update(runId: string, patch: Partial<InvestigationRecord>) {
+    this.load();
+    await super.update(runId, patch);
+  }
+  override async get(runId: string) {
+    this.load();
+    return super.get(runId);
+  }
+  override async list(options?: { incidentId?: string; limit?: number }) {
+    this.load();
+    return super.list(options);
   }
   protected override persist() {
     mkdirSync(join(this.path, ".."), { recursive: true });

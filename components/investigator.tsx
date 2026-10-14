@@ -28,6 +28,7 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
   const [auth, setAuth] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
   const [fault, setFault] = useState<Fault>("none");
+  const [streamNote, setStreamNote] = useState("");
   const generation = useRef(0);
 
   useEffect(() => {
@@ -45,11 +46,16 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
       setEvents([]);
       setResult(null);
       setError("");
+      setStreamNote("");
       const controller = new AbortController();
       // 1. Replay and follow the persisted progress stream.
       (async () => {
         try {
           const response = await fetch(`/api/investigations/${id}/events`, { signal: controller.signal, cache: "no-store" });
+          if (response.status === 404) {
+            setStreamNote("Step timeline is no longer retained by Workflows for this run; the report below was loaded from the investigation index.");
+            return;
+          }
           if (!response.ok || !response.body) return;
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
@@ -219,6 +225,7 @@ export function Investigator({ incidentId, question, demoControls, model, fallba
         {phase !== "idle" && (
           <>
             <RunTimeline rows={rows} />
+            {streamNote && <p className="note">{streamNote}</p>}
             {phase === "running" && (
               <p className="note">
                 <span className="pulse" /> You can refresh or close this tab. The run continues and is listed under saved investigations.
