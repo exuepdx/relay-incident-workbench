@@ -3,8 +3,9 @@
   "active": true,
   "limitUsd": 1,
   "refreshPeriod": "none",
-  "reportedModelSpendUsd": 0.23206155,
+  "reportedModelSpendUsd": 0.4358172,
   "byokSpendUsd": 0,
   "note": "Snapshot of reported project model spend; excludes other platform usage. No credits purchased.",
-  "checkedOn": "2026-10-13"
+  "checkedOn": "2026-10-13",
+  "checkedAt": "2026-10-14T04:25:11.992568+00:00"
 }

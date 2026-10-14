@@ -112,3 +112,25 @@ The two counterfactual network cases remove the original derived topology and
 handoff plan, so those annotations do not leak the original answer. These cases
 informed development; they are not held out. The physical device remains unknown,
 baseline signals do not clear teams, and no model-generated action is executed.
+
+## Hosted cascade release review
+
+The final hosted suite is `artifacts/deployment-live-cascade.json`, from source
+`1d0ff81` on deployment `dpl_GDS9WVMz6eetcYu2WN7vjF1dCW9T`. All four live
+scenarios completed with validated reports and retained identical output across
+fresh reads. The provider's first retrieval returned 503, then recovered on the
+second attempt. Total reported model cost was **$0.03927770**.
+
+Assistant review found the intended behavior: pool contention stays a hypothesis;
+the provider report keeps the single observed HTTP 504 singular; incomplete
+coverage withholds localization; and the network report requests trace-to-flow
+correlation, a read-only policy review, and existing underlay measurements. No
+physical device is named as failed, and no team is cleared. End-to-end times were
+12.672s (checkout), 12.840s (provider with retry), 7.937s (incomplete), and 9.458s
+(network). These are individual runs, not percentile measurements.
+
+An additional production browser network run completed with 2,571 input tokens,
+572 output tokens, 8.069s model time, and $0.00988645 reported model cost. It
+retained its fetched topology after refresh/reconnect. Its claims remained scoped
+to the supplied samples and requested read-only evidence. Human review remains
+required for future generated drafts, including output that passes these checks.

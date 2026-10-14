@@ -100,3 +100,35 @@ The authored sample mode is a rehearsal aid, never evidence of live AI quality.
   and a sample run with retrieved topology. Mobile map/cards had no horizontal
   overflow. A limited DOM contrast check found no below-threshold leaf text; it
   is not a full accessibility audit.
+
+## Cascading incident release: production verification
+
+- App deployment `dpl_GDS9WVMz6eetcYu2WN7vjF1dCW9T` and mock deployment
+  `dpl_FqH5oMdQR21Py1Ahk4DbqHC1XbzM` are ready, using source `1d0ff81`.
+  Local and Vercel production builds passed. Live AI remains enabled.
+- The mock deployed first. Authenticated version 1 and version 2 requests for
+  provider and network cases returned the appropriate legacy/extended shape;
+  unauthenticated retrieval returned 401.
+- Hosted sample smoke passed checkout/network success, provider transient retry,
+  permanent outage without a report, invalid input and cross-origin rejection,
+  denied unscoped reads, and retained result equality. See
+  `artifacts/deployment-smoke.json`.
+- All four hosted live scenarios passed reviewer-session/access checks, actual
+  Gateway generation, report validation, token/cost accounting, and persisted
+  result equality. See `artifacts/deployment-live-cascade.json` and semantic review.
+- A live report from the previous deployment still opened in the browser and
+  displayed the notice that it predates the latest wording checks.
+- A new browser live network run completed, refreshed, and reconnected with the
+  fetched six-node topology. Evidence navigation opened the correct source.
+  Clipboard readback verified the owner, scope, window, supporting sources,
+  challenging evidence, and limits in the copied Network Platform handoff.
+  Confirm/challenge expansion worked, and no browser console errors were captured.
+- App, proposal, and repository returned HTTP 200 without account cookies. The
+  proposal's four-case proof section was reviewed on desktop and 390px mobile.
+- Final reported Gateway spend was **$0.43581720**, with the existing **$1**
+  non-refreshing project cap still active. No credits or plan upgrades were
+  purchased. Platform costs are separate. See `artifacts/deployment-budget.json`.
+
+The map is curated synthetic context, not complete topology discovery or confirmed
+fault propagation. The narrow wording guard fixes the observed regression; it
+does not certify every generated claim. Candidate review and rehearsal remain.
