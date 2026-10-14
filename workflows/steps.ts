@@ -14,6 +14,7 @@ import {
 } from "@/lib/contracts";
 import { totals } from "@/lib/gateway";
 import { getStore } from "@/lib/store";
+import { installFakeGatewayRedirect } from "@/lib/fake-gateway";
 import "@/lib/store-postgres";
 
 /**
@@ -152,6 +153,7 @@ fetchRegisterStep.maxRetries = config.telemetryRetries;
 
 export async function modelPhase(status: "started" | "completed", model?: string, ms?: number) {
   "use step";
+  installFakeGatewayRedirect(); // offline harness only; no-op otherwise
   await emit({ type: "model", status, model, ms, at: now() });
 }
 
