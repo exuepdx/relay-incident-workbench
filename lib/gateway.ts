@@ -1,6 +1,12 @@
 import type { LanguageModel, StepResult, ToolSet } from "ai";
 import { config } from "./config";
 import type { InvestigationInput, ModelStep } from "./contracts";
+import { installFakeGatewayRedirect } from "./fake-gateway";
+
+// Offline harness only (no-op unless RELAY_FAKE_GATEWAY_URL is set outside production).
+// Installed here as well as in instrumentation.ts because workflow steps run in
+// their own bundle and a dev-server worker restart can skip the instrumentation hook.
+installFakeGatewayRedirect();
 
 /**
  * Everything that touches Vercel AI Gateway: which model to call, how the
