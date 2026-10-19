@@ -13,6 +13,7 @@ export function Hero({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<"pending" | "scene" | "static">("pending");
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const phone = window.matchMedia("(max-width: 760px)").matches;
     let webgl = false;
     try {
       const canvas = document.createElement("canvas");
@@ -20,7 +21,7 @@ export function Hero({ children }: { children: React.ReactNode }) {
     } catch {
       webgl = false;
     }
-    setMode(reduced || !webgl ? "static" : "scene");
+    setMode(reduced || phone || !webgl ? "static" : "scene");
   }, []);
   return (
     <section className="hero3d">

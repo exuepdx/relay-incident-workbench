@@ -5,6 +5,8 @@ import { Icon, Logo } from "@/components/icons";
 import { Hero } from "@/components/hero";
 import { Reveal } from "@/components/motion";
 import { BoundaryConduit } from "@/components/boundary-conduit";
+import { Presenter } from "@/components/presenter";
+import { Suspense } from "react";
 import { customer } from "@/lib/customer";
 import { config } from "@/lib/config";
 
@@ -111,6 +113,9 @@ export default function Proposal() {
   const evaluation = loadEval();
   return (
     <main className="proposal">
+      <Suspense fallback={null}>
+        <Presenter />
+      </Suspense>
       <Hero>
         <nav className="hero-nav" aria-label="Proposal">
           <Link href="/" aria-label="Relay home">
@@ -122,6 +127,9 @@ export default function Proposal() {
             <a href="#demo">Demo</a>
             <a href="#rollout">Rollout</a>
             <a href="#risks">Risks</a>
+            <Link href="/proposal?present=1" className="btn btn-ghost present-link" title="Presenter mode (P)">
+              Present
+            </Link>
             <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary">
               Open the workbench <Icon name="arrow" size={14} />
             </Link>

@@ -51,7 +51,7 @@ export function LatencyChart({ incident }: { incident: Incident }) {
         </defs>
         {ticks.map((t) => (
           <g key={t.v}>
-            <line x1={left} x2={w - right} y1={t.y} y2={t.y} stroke="rgba(31,29,36,0.08)" strokeDasharray="3 4" />
+            <line x1={left} x2={w - right} y1={t.y} y2={t.y} className="chart-grid" strokeDasharray="3 4" />
             <text x={left - 8} y={t.y + 4} textAnchor="end" className="chart-label">
               {t.v >= 1000 ? `${(t.v / 1000).toFixed(1)}s` : `${t.v}ms`}
             </text>
