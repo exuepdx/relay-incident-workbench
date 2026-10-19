@@ -1,0 +1,29 @@
+name: preview smoke
+# Vercel's GitHub integration reports each deployment; when a Preview is
+# ready, run the end-to-end smoke against it. The result appears as a check
+# on the pull request, which is the gate before promotion.
+on:
+  deployment_status:
+jobs:
+  smoke:
+    if: github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.environment, 'Preview')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/smoke.ts
+        env:
+          DEMO_URL: ${{ github.event.deployment_status.target_url }}
+          DEMO_ACCESS_CODE: ${{ secrets.DEMO_ACCESS_CODE }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-smoke
+          path: artifacts/deployment-smoke.json

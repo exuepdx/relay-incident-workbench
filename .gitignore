@@ -5,9 +5,14 @@ node_modules/
 !.env.example
 *.tsbuildinfo
 .workflow-data/
+.data/
 app/.well-known/
 .DS_Store
 coverage/
-artifacts/local-*
 /.swc
-.vercel
+customer-api/dist/
+customer-api/*.zip
+artifacts/local-*
+
+output/
+tmp/

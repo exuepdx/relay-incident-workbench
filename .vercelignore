@@ -8,3 +8,9 @@ artifacts/local-*
 mock/.vercel/
 mock/.env*
 mock/node_modules/
+
+.data/
+output/
+tmp/
+customer-api/.vercel/
+customer-api/.env*

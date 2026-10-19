@@ -1,32 +1,25 @@
 import { z } from "zod";
 
-export const scenarioIds = [
-  "checkout",
-  "provider",
-  "incomplete",
-  "network",
-] as const;
-export type ScenarioId = (typeof scenarioIds)[number];
-export const requestSchema = z
-  .object({
-    scenario: z.enum(scenarioIds),
-    mode: z.enum(["live", "sample"]),
-    fault: z.enum(["none", "transient", "outage"]).default("none"),
-  })
-  .strict();
-export type InvestigationInput = z.infer<typeof requestSchema>;
+/**
+ * Consumer-side contracts. Everything that crosses the boundary from the
+ * customer's telemetry API is validated here before the agent or the UI sees
+ * it, and everything the model produces is validated before it is stored.
+ */
 
 export const evidenceSchema = z.object({
   id: z.string().regex(/^E[1-9][0-9]*$/),
   kind: z.enum(["metric", "trace", "change", "coverage"]),
   title: z.string().max(200),
   detail: z.string().max(2000),
-  source: z.string().max(100),
+  source: z.string().max(120),
 });
+export type Evidence = z.infer<typeof evidenceSchema>;
+
 const citations = z
   .array(z.string().regex(/^E[1-9][0-9]*$/))
   .min(1)
   .max(6);
+
 export const topologySchema = z.object({
   scope: z.string().min(1).max(300),
   nodes: z
@@ -43,14 +36,7 @@ export const topologySchema = z.object({
     .min(2)
     .max(12),
   edges: z
-    .array(
-      z.object({
-        from: z.string(),
-        to: z.string(),
-        label: z.string().min(1).max(100),
-        citations,
-      }),
-    )
+    .array(z.object({ from: z.string(), to: z.string(), label: z.string().min(1).max(100), citations }))
     .min(1)
     .max(20),
   handoffs: z
@@ -67,116 +53,259 @@ export const topologySchema = z.object({
     .min(1)
     .max(6),
 });
-export const bundleSchema = z
-  .object({
-    scenario: z.enum(scenarioIds),
-    synthetic: z.literal(true),
-    window: z.string(),
-    evidence: z.array(evidenceSchema).min(1).max(12),
-    // Optional for retained v1 runs. New topology travels with its evidence snapshot.
-    topology: topologySchema.optional(),
-    reportPolicy: z
-      .object({
-        singleObservedHttpCodes: z
-          .array(z.number().int().min(100).max(599))
-          .max(6)
-          .optional(),
-        diagnosis: z.enum(["hypothesis-permitted", "withhold"]).optional(),
-      })
-      .optional(),
-  })
-  .strict()
-  .superRefine((bundle, context) => {
-    const ids = new Set(bundle.evidence.map((e) => e.id));
-    if (ids.size !== bundle.evidence.length)
-      context.addIssue({ code: "custom", message: "Duplicate evidence IDs" });
-    if (!bundle.topology) return;
-    const { nodes, edges, handoffs } = bundle.topology;
-    const nodeIds = new Set(nodes.map((n) => n.id));
-    if (nodeIds.size !== nodes.length)
-      context.addIssue({ code: "custom", message: "Duplicate topology nodes" });
-    for (const item of [...nodes, ...edges, ...handoffs]) {
-      if (item.citations.some((id) => !ids.has(id)))
-        context.addIssue({
-          code: "custom",
-          message: "Unknown topology citation",
-        });
-    }
-    if (
-      edges.some(
-        (e) => !nodeIds.has(e.from) || !nodeIds.has(e.to) || e.from === e.to,
-      )
-    )
-      context.addIssue({ code: "custom", message: "Invalid topology edge" });
-    if (handoffs.some((h) => !nodeIds.has(h.nodeId)))
-      context.addIssue({
-        code: "custom",
-        message: "Unknown handoff owner node",
-      });
-  });
-export type Evidence = z.infer<typeof evidenceSchema>;
-export type Bundle = z.infer<typeof bundleSchema>;
 export type Topology = z.infer<typeof topologySchema>;
 
-const finding = z.object({
-  text: z.string().min(1).max(600),
-  citations: z.array(z.string()).min(1).max(6),
+export const spanSchema = z.object({
+  name: z.string(),
+  service: z.string(),
+  start: z.number().min(0),
+  duration: z.number().min(0),
+  color: z.enum(["purple", "orange", "red", "teal"]),
 });
+
+export const reportPolicySchema = z.object({
+  singleObservedHttpCodes: z.array(z.number().int().min(100).max(599)).max(6).optional(),
+  diagnosis: z.enum(["hypothesis-permitted", "withhold"]).optional(),
+});
+
+/** GET /incidents/:id — what the responder sees and what the agent is briefed with. */
+export const incidentSchema = z
+  .object({
+    id: z.string().regex(/^INC-\d{4}$/),
+    title: z.string().max(120),
+    short: z.string().max(60),
+    subtitle: z.string().max(240),
+    question: z.string().max(240),
+    severity: z.string().max(40),
+    window: z.string(),
+    services: z.array(z.string()).max(12),
+    owners: z.array(z.string().min(2).max(80)).max(12).optional(),
+    kpis: z.object({
+      p95Ms: z.number(),
+      baselineMs: z.number(),
+      errorRatePct: z.number(),
+      change: z.string(),
+    }),
+    series: z.array(z.number()).min(4).max(60),
+    spans: z.array(spanSchema).max(12),
+    /** Incident-record notes: what is known to be missing or unauthorized. */
+    coverage: z.array(evidenceSchema).max(8),
+    topology: topologySchema.optional(),
+    reportPolicy: reportPolicySchema,
+  })
+  .strict();
+export type Incident = z.infer<typeof incidentSchema>;
+
+export const incidentListSchema = z.array(
+  z.object({ id: z.string(), short: z.string(), title: z.string(), severity: z.string(), window: z.string() }),
+);
+
+/** Tool responses: a bounded list of evidence of one kind. */
+export const evidenceListSchema = z.object({
+  incidentId: z.string(),
+  kind: z.enum(["metric", "trace", "change", "all"]),
+  evidence: z.array(evidenceSchema).max(12),
+});
+export type EvidenceList = z.infer<typeof evidenceListSchema>;
+
+/** Request to start an investigation. Finite inputs only. */
+export const investigationInputSchema = z
+  .object({
+    incidentId: z.string().regex(/^INC-\d{4}$/),
+    /**
+     * Demo controls. `transient` makes the first telemetry call fail with 503,
+     * `outage` makes every call fail, `provider-outage` routes the primary
+     * model to a provider that does not serve it so Gateway falls back, and
+     * `pause` holds the run before the model phase so a redeploy can land.
+     */
+    fault: z.enum(["none", "transient", "outage", "provider-outage", "pause"]).default("none"),
+    /** Optional model override from the comparison allow-list (validated by the route). */
+    model: z
+      .string()
+      .regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/)
+      .optional(),
+  })
+  .strict();
+export type InvestigationInput = z.infer<typeof investigationInputSchema>;
+
+/**
+ * The agent's only write-shaped tool. It records a request; it never acts.
+ * The workflow pauses on a hook until a service owner decides.
+ */
+export const mitigationProposalSchema = z.object({
+  action: z.string().min(10).max(200),
+  owner: z.string().min(2).max(80),
+  rationale: z.string().min(20).max(500),
+  expectedEffect: z.string().min(10).max(300),
+  citations: z
+    .array(z.string().regex(/^E[1-9][0-9]*$/))
+    .min(1)
+    .max(6),
+});
+export type MitigationProposal = z.infer<typeof mitigationProposalSchema>;
+
+export const approvalDecisionSchema = z.object({
+  decision: z.enum(["approved", "declined"]),
+  by: z.string().min(1).max(80),
+  note: z.string().max(300).optional(),
+});
+export type ApprovalDecision = z.infer<typeof approvalDecisionSchema>;
+
+export type ApprovalOutcome = {
+  proposal: MitigationProposal;
+  decision: "approved" | "declined" | "expired";
+  by: string | null;
+  note: string | null;
+  requestedAt: string;
+  decidedAt: string;
+};
+
+const finding = z.object({ text: z.string().min(1).max(600), citations: z.array(z.string()).min(1).max(6) });
 export const reportSchema = z.object({
   title: z.string().min(1).max(160),
   assessment: z.enum(["supported-hypothesis", "insufficient-evidence"]),
   summary: z.string().min(1).max(1000),
   findings: z.array(finding).min(2).max(4),
-  nextSteps: z.array(z.string().min(20).max(400)).min(2).max(3),
+  nextSteps: z.array(z.string().min(20).max(400)
+    .regex(/^[A-Z][\s\S]*[.!?]$/)
+    .describe("A complete actionable sentence, starting with a capital letter and ending in punctuation. Plain prose only: never return schema paths, citation metadata, or placeholder text."))
+    .min(2).max(3),
   uncertainty: z.string().min(1).max(600),
   customerUpdate: z.string().min(1).max(700),
 });
 export type Report = z.infer<typeof reportSchema>;
-export type InvestigationResult = {
-  schemaVersion: 1;
-  validationVersion?: 2;
-  scenario: ScenarioId;
-  mode: "live" | "sample";
-  report: Report;
-  bundle: Bundle;
-  telemetry: {
-    startedAt: string;
-    completedAt: string;
-    retrievalMs: number;
-    retrievalAttempts: number;
-    modelMs: number;
-    model: string | null;
-    inputTokens: number | null;
-    outputTokens: number | null;
-    costUsd: string | null;
-    gatewayRequestId: string | null;
-  };
+
+/** Progress events written to the run's stream by workflow steps. */
+export const progressEventSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("run"),
+    status: z.enum(["started", "completed", "failed"]),
+    at: z.string(),
+    detail: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("tool"),
+    tool: z.string(),
+    status: z.enum(["started", "completed", "retrying", "failed"]),
+    attempt: z.number().int().min(1),
+    ms: z.number().optional(),
+    summary: z.string().optional(),
+    at: z.string(),
+  }),
+  z.object({
+    type: z.literal("model"),
+    status: z.enum(["started", "completed"]),
+    model: z.string().optional(),
+    ms: z.number().optional(),
+    at: z.string(),
+  }),
+  z.object({
+    type: z.literal("approval"),
+    status: z.enum(["requested", "approved", "declined", "expired"]),
+    detail: z.string(),
+    at: z.string(),
+  }),
+  z.object({ type: z.literal("pause"), status: z.enum(["started", "completed"]), seconds: z.number(), at: z.string() }),
+]);
+export type ProgressEvent = z.infer<typeof progressEventSchema>;
+
+/** One model step as recorded by the agent loop. */
+export type ModelStep = {
+  model: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  costUsd: string | null;
+  generationId: string | null;
+  toolCalls: string[];
+  modelAttempts: Array<{ model: string; success: boolean; provider?: string; error?: string }>;
 };
 
-export function validateReport(value: unknown, bundle: Bundle): Report {
+export type Accounting = {
+  startedAt: string;
+  completedAt: string;
+  modelSteps: ModelStep[];
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCostUsd: string | null;
+  servedBy: string | null;
+  fallbackUsed: boolean;
+};
+
+export type InvestigationResult = {
+  schemaVersion: 2;
+  incidentId: string;
+  input: InvestigationInput;
+  report: Report;
+  evidence: Evidence[];
+  accounting: Accounting;
+  approval?: ApprovalOutcome;
+};
+
+/** Stored index row for an investigation. */
+export const investigationRecordSchema = z.object({
+  runId: z.string(),
+  incidentId: z.string(),
+  status: z.enum(["running", "completed", "failed"]),
+  fault: investigationInputSchema.shape.fault,
+  createdAt: z.string(),
+  completedAt: z.string().nullable(),
+  model: z.string().nullable(),
+  costUsd: z.string().nullable(),
+  title: z.string().nullable(),
+  result: z.unknown().nullable(),
+  /** Pending or decided mitigation approval. The hook token never leaves the server. */
+  approval: z
+    .object({
+      status: z.enum(["pending", "approved", "declined", "expired"]),
+      token: z.string().optional(),
+      proposal: mitigationProposalSchema,
+      evidence: z.array(evidenceSchema).max(24).optional(),
+      requestedAt: z.string(),
+      decidedAt: z.string().nullable().optional(),
+      by: z.string().nullable().optional(),
+      note: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+});
+export type InvestigationRecord = z.infer<typeof investigationRecordSchema>;
+
+/**
+ * Validate a generated report against the evidence the agent actually
+ * retrieved. Unknown citations fail closed. A deliberately incomplete incident
+ * cannot carry a confident diagnosis. Known wording regressions are rejected.
+ */
+export function validateReport(value: unknown, evidence: Evidence[], policy: Incident["reportPolicy"]): Report {
   const report = reportSchema.parse(value);
-  const ids = new Set(bundle.evidence.map((e) => e.id));
+  const ids = new Set(evidence.map((e) => e.id));
   for (const item of report.findings) {
     if (item.citations.some((id) => !ids.has(id)))
-      throw new Error("Unknown evidence citation");
+      throw new Error(`Unknown evidence citation in finding: ${item.citations.join(",")}`);
   }
-  // A deliberately incomplete case must not produce a confident diagnosis.
-  // This validates a known fixture constraint; it does not prove semantic truth.
-  if (
-    (bundle.scenario === "incomplete" ||
-      bundle.reportPolicy?.diagnosis === "withhold") &&
-    report.assessment !== "insufficient-evidence"
-  ) {
+  if (policy.diagnosis === "withhold" && report.assessment !== "insufficient-evidence") {
     throw new Error("Evidence coverage does not support a diagnosis");
   }
-  validateObservationScope(report, bundle);
+  if (report.assessment === "insufficient-evidence") {
+    for (const step of report.nextSteps) {
+      if (operationalAction.test(step)) throw new Error("Operational mitigation proposed before localization");
+    }
+  }
+  // An HTTP status is a measurement, not harmless illustrative language.
+  // This closes a live regression where a prompt example leaked into another incident.
+  const sourceText = evidence.map((e) => `${e.title} ${e.detail}`).join(" ");
+  for (const match of JSON.stringify(report).matchAll(/\bHTTP(?:\s+status)?(?:\s+code)?\s+([1-5]\d{2})\b/gi)) {
+    if (!new RegExp(`\\b${match[1]}\\b`).test(sourceText)) throw new Error(`Unobserved HTTP status ${match[1]}`);
+  }
+  validateObservationScope(report, policy);
   return report;
 }
 
-// A narrow regression guard, not a general semantic judge. Numeric status-code
-// claims with single-observation provenance must remain explicitly singular.
-// Reject unsupported wording; never silently rewrite a generated report.
-export function validateObservationScope(report: Report, bundle: Bundle) {
+/**
+ * Deterministic regression guard for a failure we observed in development:
+ * one representative HTTP 504 became "frequent 504s" in a live report. Not a
+ * general semantic verifier; the eval harness and human review cover that.
+ */
+export function validateObservationScope(report: Report, policy: Incident["reportPolicy"]) {
   const fields = [
     report.title,
     report.summary,
@@ -185,29 +314,42 @@ export function validateObservationScope(report: Report, bundle: Bundle) {
     ...report.findings.map((f) => f.text),
     ...report.nextSteps,
   ];
-  for (const code of bundle.reportPolicy?.singleObservedHttpCodes ?? []) {
+  for (const code of policy.singleObservedHttpCodes ?? []) {
     for (const field of fields) {
       if (!new RegExp(`\\b${code}\\b`).test(field)) continue;
-      const sentences = field.split(/(?<=[.!?])\s+/);
-      for (const sentence of sentences.filter((s) =>
-        new RegExp(`\\b${code}\\b`).test(s),
-      )) {
-        const explicitlySingle =
-          /\b(one|single|a representative|a sampled)\b/i.test(sentence);
-        const pluralCode = new RegExp(
-          `\\b${code}s\\b|\\b${code}\\s+(errors|responses|timeouts|traces)\\b`,
-          "i",
-        ).test(sentence);
-        const frequency =
-          /\b(frequently|often|repeated|repeatedly|multiple|widespread)\b/i.test(
-            sentence,
-          );
-        if (!explicitlySingle || pluralCode || frequency)
-          throw new Error(`Observation scope rejected for HTTP ${code}`);
+      for (const sentence of field.split(/(?<=[.!?])\s+/).filter((s) => new RegExp(`\\b${code}\\b`).test(s))) {
+        const explicitlySingle = /\b(one|single|a representative|a sampled)\b/i.test(sentence);
+        const plural = new RegExp(`\\b${code}s\\b|\\b${code}\\s+(errors|responses|timeouts|traces)\\b`, "i").test(
+          sentence,
+        );
+        const frequency = /\b(frequently|often|repeated|repeatedly|multiple|widespread)\b/i.test(sentence);
+        if (!explicitlySingle || plural || frequency) throw new Error(`Observation scope rejected for HTTP ${code}`);
       }
     }
-    // Plural forms do not match the numeric word boundary above.
     if (fields.some((s) => new RegExp(`\\b${code}s\\b`, "i").test(s)))
       throw new Error(`Observation scope rejected for HTTP ${code}`);
   }
+}
+
+/** Conservative known-action guard, not a general semantic proof. */
+export const operationalAction =
+  /\b(bypass|relax|allowlist|rollback|roll\s+back|revert|restart|redeploy|reroute|disable|scale|reconfigure)\w*\b|\benable\b.{0,40}\b(traffic|rule|firewall|replica|retry|retries|routing)\b|\b(change|restore|adjust|increase|decrease|reset)\b.{0,60}\b(config|setting|pool|limit|firewall|rule|policy|traffic|replica)/i;
+
+export function incidentOwners(incident: Incident): string[] {
+  return [...new Set([...(incident.owners ?? []), ...(incident.topology?.nodes.map((n) => n.owner) ?? [])])];
+}
+
+export function validateProposal(
+  value: unknown,
+  evidence: Evidence[],
+  incident: Incident,
+  report?: Report,
+): MitigationProposal {
+  const proposal = mitigationProposalSchema.parse(value);
+  if (incident.reportPolicy.diagnosis === "withhold" || report?.assessment === "insufficient-evidence")
+    throw new Error("Mitigation is not permitted before localization");
+  if (!incidentOwners(incident).includes(proposal.owner)) throw new Error("Unknown mitigation owner");
+  const ids = new Set(evidence.map((e) => e.id));
+  if (proposal.citations.some((id) => !ids.has(id))) throw new Error("Unknown proposal evidence citation");
+  return proposal;
 }

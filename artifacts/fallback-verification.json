@@ -1,0 +1,41 @@
+{
+  "verifiedAt": "2026-10-19T06:14:29.991Z",
+  "mode": "live",
+  "requestedModel": "openai/gpt-5.2",
+  "routing": {
+    "gateway": {
+      "only": [
+        "google"
+      ],
+      "models": [
+        "google/gemini-2.5-flash"
+      ]
+    }
+  },
+  "totalInputTokens": 9,
+  "totalOutputTokens": 16,
+  "totalCostUsd": "0.000043",
+  "servedBy": "google/gemini-2.5-flash",
+  "fallbackUsed": true,
+  "modelSteps": [
+    {
+      "model": "google/gemini-2.5-flash",
+      "inputTokens": 9,
+      "outputTokens": 16,
+      "costUsd": "0.0000427",
+      "generationId": "gen_01M59CR5M74AYA32NM2CA26B1W",
+      "toolCalls": [],
+      "modelAttempts": [
+        {
+          "model": "openai/gpt-5.2",
+          "success": false
+        },
+        {
+          "model": "google/gemini-2.5-flash",
+          "success": true,
+          "provider": "google"
+        }
+      ]
+    }
+  ]
+}

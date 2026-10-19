@@ -1,86 +1,246 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 
+/**
+ * End-to-end smoke against a running app (local or deployed).
+ *
+ *   DEMO_URL=http://127.0.0.1:3000 DEMO_ACCESS_CODE=... npm run smoke
+ *
+ * Starts runs for the healthy path, abstention, the transient 503, the
+ * provider-outage drill with an approved mitigation, a model override with a
+ * declined mitigation, optionally the redeploy hold (SMOKE_PAUSE=1), and a
+ * full outage. Follows the progress stream, checks the terminal status and
+ * the stored result, and verifies the access gates. Locally this runs
+ * against the fake Gateway; deployed it spends real Gateway credit.
+ */
 const base = process.env.DEMO_URL || "http://127.0.0.1:3000";
+const code = process.env.DEMO_ACCESS_CODE || "local-dev-code";
+const origin = new URL(base).origin;
 const log: unknown[] = [];
-async function run(
-  fault: "none" | "transient" | "outage",
-  scenario = "checkout",
-) {
-  const started = Date.now();
-  const response = await fetch(`${base}/api/investigations`, {
+
+// Vercel preview deployments with Deployment Protection accept an automation bypass header.
+const bypass: Record<string, string> = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+  ? { "x-vercel-protection-bypass": process.env.VERCEL_AUTOMATION_BYPASS_SECRET }
+  : {};
+function http(path: string, init: RequestInit & { headers?: Record<string, string> } = {}) {
+  return fetch(`${base}${path}`, { ...init, headers: { ...bypass, ...(init.headers ?? {}) } });
+}
+
+type Result = {
+  report: { assessment: string; findings: Array<{ citations: string[] }> };
+  evidence: Array<{ id: string }>;
+  accounting: {
+    servedBy: string | null;
+    fallbackUsed: boolean;
+    totalCostUsd: string | null;
+    modelSteps: Array<{ toolCalls: string[] }>;
+  };
+  approval?: { decision: string; by: string | null };
+};
+type Status = {
+  status: string;
+  result?: Result | null;
+  record?: {
+    approval?: {
+      status: string;
+      token?: string;
+      evidence?: Array<{ id: string }>;
+      proposal?: { citations: string[] };
+    } | null;
+  } | null;
+};
+type Event = { type: string; tool?: string; status: string; attempt?: number };
+
+async function session() {
+  const denied = await http("/api/investigations", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Origin: new URL(base).origin,
-    },
-    body: JSON.stringify({ scenario, mode: "sample", fault }),
+    headers: { "Content-Type": "application/json", Origin: origin },
+    body: JSON.stringify({ incidentId: "INC-0244" }),
+  });
+  assert.equal(denied.status, 401, "runs must require the reviewer session");
+  const bad = await http("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin },
+    body: JSON.stringify({ code: "wrong-code" }),
+  });
+  assert.equal(bad.status, 401);
+  const login = await http("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin },
+    body: JSON.stringify({ code }),
+  });
+  assert.equal(login.status, 200, await login.clone().text());
+  const cookie = (login.headers.get("set-cookie") || "").split(";")[0];
+  assert.match(login.headers.get("set-cookie") || "", /HttpOnly/i);
+  return cookie;
+}
+
+async function run(
+  cookie: string,
+  incidentId: string,
+  fault: string,
+  expect: "completed" | "failed",
+  options: { model?: string; approve?: "approved" | "declined" } = {},
+) {
+  // Live calls on this account share a small per-model request-rate window.
+  // Pacing belongs in the harness, not in the production investigation path.
+  const delay = Number(process.env.SMOKE_DELAY_MS ?? (base.includes("127.0.0.1") ? "0" : "65000"));
+  if (log.length && delay > 0) await new Promise(r => setTimeout(r, delay));
+  const started = Date.now();
+  const requestKey = randomUUID();
+  const response = await http("/api/investigations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie, "Idempotency-Key": requestKey },
+    body: JSON.stringify({ incidentId, fault, ...(options.model ? { model: options.model } : {}) }),
   });
   assert.equal(response.status, 202, await response.clone().text());
-  const { runId, runToken } = await response.json();
-  const denied = await fetch(`${base}/api/investigations/${runId}`);
-  assert.equal(denied.status, 403);
-  for (let i = 0; i < 80; i++) {
-    const statusResponse = await fetch(`${base}/api/investigations/${runId}`, {
-      headers: { "x-run-token": runToken },
-    });
-    assert.equal(
-      statusResponse.status,
-      200,
-      await statusResponse.clone().text(),
-    );
-    const body = await statusResponse.json();
-    if (body.status === "completed" || body.status === "failed") {
-      assert.equal(body.status, fault === "outage" ? "failed" : "completed");
-      if (fault !== "outage") {
-        assert.equal(
-          body.result.telemetry.retrievalAttempts,
-          fault === "transient" ? 2 : 1,
-        );
-        assert.equal(body.result.mode, "sample");
-        assert.equal(body.result.telemetry.model, null);
-        assert.equal(body.result.validationVersion, 2);
-        if (scenario === "network") {
-          assert.equal(body.result.bundle.topology.nodes.length, 6);
-          assert.equal(body.result.bundle.topology.handoffs.length, 3);
-        }
-        // Re-fetch with a fresh HTTP request to demonstrate persisted output access.
-        const reconnected = await fetch(`${base}/api/investigations/${runId}`, {
-          headers: { "x-run-token": runToken },
-        });
-        assert.deepEqual((await reconnected.json()).result, body.result);
-      } else assert.equal(body.result, null);
-      const item = {
-        scenario,
-        fault,
-        status: body.status,
-        runId,
-        elapsedMs: Date.now() - started,
-        attempts: body.result?.telemetry.retrievalAttempts ?? null,
-        unauthorizedRead: "denied",
-      };
-      log.push(item);
-      console.log(JSON.stringify(item));
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-  }
-  throw new Error(`Workflow did not settle: ${runId}`);
-}
-async function main() {
-  await run("none");
-  await run("none", "network");
-  await run("transient", "provider");
-  await run("outage");
-  const invalid = await fetch(`${base}/api/investigations`, {
+  const { runId } = await response.json();
+  const repeated = await http("/api/investigations", {
     method: "POST",
-    body: '{"scenario":"unknown","mode":"sample"}',
+    headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie, "Idempotency-Key": requestKey },
+    body: JSON.stringify({ incidentId, fault, ...(options.model ? { model: options.model } : {}) }),
+  });
+  assert.equal(repeated.status, 202);
+  assert.equal((await repeated.json()).runId, runId, "lost-response retry must reconnect to the same run");
+
+  const events: Event[] = [];
+  const streamDone = (async () => {
+    const r = await http(`/api/investigations/${runId}/events`);
+    assert.equal(r.status, 200);
+    const reader = r.body!.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const l of lines) if (l) events.push(JSON.parse(l));
+      }
+    } catch {
+      /* stream closed */
+    }
+  })();
+
+  let body: Status = { status: "pending" };
+  let decided = false;
+  for (let i = 0; i < 180; i++) {
+    body = await (await http(`/api/investigations/${runId}`)).json();
+    if (body.status === "completed" || body.status === "failed") break;
+    if (body.record?.approval?.status === "pending" && !decided) {
+      assert.equal(body.record.approval.token, undefined, "hook token must never reach the client");
+      const sourceIds = new Set(body.record.approval.evidence?.map((e) => e.id));
+      for (const citation of body.record.approval.proposal?.citations ?? [])
+        assert.ok(sourceIds.has(citation), "pending approval must retain its exact evidence");
+      const unauth = await http(`/api/investigations/${runId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: origin },
+        body: JSON.stringify({ decision: "approved" }),
+      });
+      assert.equal(unauth.status, 401, "approval must require the session");
+      const r = await http(`/api/investigations/${runId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie },
+        body: JSON.stringify({ decision: options.approve ?? "approved", note: "smoke" }),
+      });
+      assert.equal(r.status, 202, await r.clone().text());
+      decided = true;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  assert.equal(body.status, expect, `${incidentId}/${fault}: ${JSON.stringify(body).slice(0, 300)}`);
+  await Promise.race([streamDone, new Promise((r) => setTimeout(r, 2000))]);
+  const result = body.result ?? null;
+
+  if (expect === "completed") {
+    assert.ok(result, "completed run must carry a result");
+    const ids = new Set(result.evidence.map((e) => e.id));
+    for (const f of result.report.findings)
+      for (const c of f.citations) assert.ok(ids.has(c), `citation ${c} not in register`);
+    const tools = result.accounting.modelSteps.flatMap((s) => s.toolCalls);
+    for (const t of ["getServiceMetrics", "getSlowTraces", "getRecentChanges"])
+      assert.ok(tools.includes(t), `tool ${t} not called`);
+    if (incidentId === "INC-0243") assert.equal(result.report.assessment, "insufficient-evidence");
+    if (fault === "transient")
+      assert.ok(
+        events.some((e) => e.type === "tool" && e.tool === "getSlowTraces" && e.attempt === 2),
+        "transient fault must show a second attempt",
+      );
+    if (fault === "provider-outage") assert.equal(result.accounting.fallbackUsed, true, "drill must use the fallback");
+    if (fault === "pause")
+      assert.ok(
+        events.some((e) => e.type === "pause" && e.status === "completed"),
+        "pause drill must hold and resume",
+      );
+    if (options.model) assert.equal(result.accounting.servedBy, options.model, "model override must be honoured");
+    if (options.approve) {
+      assert.ok(decided, "a proposal was expected for this incident");
+      assert.equal(result.approval?.decision, options.approve, "approval outcome must be recorded");
+      assert.ok(
+        events.some((e) => e.type === "approval" && e.status === options.approve),
+        "approval event must stream",
+      );
+    }
+    const again = await (await http(`/api/investigations/${runId}`)).json();
+    assert.deepEqual(again.result, result, "stored result must be stable across reads");
+  } else {
+    assert.ok(
+      events.some((e) => e.type === "tool" && e.status === "failed"),
+      "outage must show a failed step",
+    );
+    assert.ok(!events.some((e) => e.type === "model"), "outage must not reach the model");
+  }
+  const item = {
+    incidentId,
+    fault,
+    model: options.model ?? null,
+    status: body.status,
+    runId,
+    elapsedMs: Date.now() - started,
+    events: events.length,
+    servedBy: result?.accounting.servedBy ?? null,
+    fallbackUsed: result?.accounting.fallbackUsed ?? null,
+    costUsd: result?.accounting.totalCostUsd ?? null,
+    approval: result?.approval?.decision ?? null,
+  };
+  log.push(item);
+  console.log(JSON.stringify(item));
+}
+
+async function main() {
+  const cookie = await session();
+  await run(cookie, "INC-0244", "none", "completed");
+  await run(cookie, "INC-0243", "none", "completed");
+  await run(cookie, "INC-0242", "transient", "completed");
+  await run(cookie, "INC-0241", "provider-outage", "completed", { approve: "approved" });
+  await run(cookie, "INC-0241", "none", "completed", {
+    model: process.env.SMOKE_ALT_MODEL || "google/gemini-2.5-flash",
+    approve: "declined",
+  });
+  if (process.env.SMOKE_PAUSE === "1") await run(cookie, "INC-0244", "pause", "completed");
+  await run(cookie, "INC-0244", "outage", "failed");
+
+  const list = await (await http("/api/investigations?incident=INC-0244")).json();
+  assert.ok(list.runs.length >= 2, "index lists runs");
+  const invalid = await http("/api/investigations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie },
+    body: '{"incidentId":"nope"}',
   });
   assert.equal(invalid.status, 400);
-  const crossOrigin = await fetch(`${base}/api/investigations`, {
+  const badModel = await http("/api/investigations", {
     method: "POST",
-    headers: { Origin: "https://untrusted.example" },
-    body: '{"scenario":"checkout","mode":"sample"}',
+    headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie },
+    body: '{"incidentId":"INC-0244","model":"openai/not-allowed"}',
+  });
+  assert.equal(badModel.status, 400, "models outside the allow-list are rejected");
+  const crossOrigin = await http("/api/investigations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "https://untrusted.example", Cookie: cookie },
+    body: '{"incidentId":"INC-0244"}',
   });
   assert.equal(crossOrigin.status, 403);
   await mkdir("artifacts", { recursive: true });
@@ -88,16 +248,17 @@ async function main() {
     `artifacts/${base.includes("127.0.0.1") ? "local" : "deployment"}-smoke.json`,
     JSON.stringify(
       {
+        mode: base.includes("127.0.0.1") ? "simulated" : "live",
         testedAt: new Date().toISOString(),
         base,
-        invalidInput: "rejected",
-        crossOrigin: "rejected",
+        store: list.store,
         results: log,
       },
       null,
       2,
     ) + "\n",
   );
+  console.log("smoke ok");
 }
 void main().catch((e) => {
   console.error(e);

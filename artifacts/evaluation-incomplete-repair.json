@@ -1,0 +1,91 @@
+{
+  "mode": "live",
+  "evaluatedAt": "2026-10-19T05:52:01.035Z",
+  "model": "openai/gpt-5.2",
+  "fallbackModels": [],
+  "promptSha256": "5f785f35ec27fac1983be042bff1e8daf80b2804b5e2489ea38843fb3f6489fa",
+  "cases": 1,
+  "failures": 1,
+  "results": [
+    {
+      "name": "incomplete-coverage",
+      "humanReviewRubric": "Withholds diagnosis and mitigation; asks for missing measurements; does not infer onset from the window.",
+      "error": "Operational mitigation proposed before localization",
+      "rawOutput": {
+        "title": "INC-0243 checkout latency and errors: telemetry can’t localize cause",
+        "assessment": "insufficient-evidence",
+        "summary": "Telemetry shows a real checkout-api regression (higher p95 latency and error rate), but tracing is missing key child spans and there are no dependency-level metrics. Two changes landed during the window, but available evidence cannot distinguish which (if either) is responsible.",
+        "findings": [
+          {
+            "text": "Observed symptom: checkout-api p95 latency rose from 440ms to 1920ms and error rate from 0.4% to 4.1% during the incident window; metrics are aggregate-only.",
+            "citations": [
+              "E1"
+            ]
+          },
+          {
+            "text": "Downstream trace coverage is missing: collector sampling/config fault omitted child spans for inventory, database, and payments, so traces cannot identify which dependency is slow.",
+            "citations": [
+              "E2"
+            ]
+          },
+          {
+            "text": "Two concurrent changes occurred (checkout release and network-policy update at 16:12 UTC), but there are no cohort or dependency measurements to separate their effects.",
+            "citations": [
+              "E3"
+            ]
+          },
+          {
+            "text": "Business impact cannot be quantified from current telemetry because order-completion/revenue measurements are not available for this incident.",
+            "citations": [
+              "E4"
+            ]
+          }
+        ],
+        "nextSteps": [
+          "Validate and repair collector/trace configuration so child spans for inventory, database, and payments are emitted and attributed correctly, coordinated by the Observability Platform team. ",
+          "Pull dependency-level latency/error metrics (payments, inventory, database, and network) for the same window to see which component’s behavior is consistent with the checkout-path delay. ",
+          "Have Checkout Experience review the 16:12 UTC release and network-policy update for risk and reversibility, but treat any rollback as requiring the service owner’s approval and additional comparative evidence. "
+        ],
+        "uncertainty": "Diagnosis is withheld by policy and telemetry gaps prevent localizing the slow component. With missing child spans and only aggregate service metrics, we cannot distinguish a code change from a network-policy effect or an external dependency regression.",
+        "customerUpdate": "We’re seeing increased checkout latency and some increase in errors during the incident window. Current tracing is missing key downstream details, so we can’t yet confirm which underlying dependency or change is responsible. We’re restoring telemetry and collecting more targeted measurements to narrow this down."
+      },
+      "modelSteps": [
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1262,
+          "outputTokens": 58,
+          "costUsd": "0.0030205",
+          "generationId": "gen_01M59BEPZYQYVTJKN7N9DYWS48",
+          "toolCalls": [
+            "getServiceMetrics",
+            "getSlowTraces",
+            "getRecentChanges"
+          ],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "azure"
+            }
+          ]
+        },
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1539,
+          "outputTokens": 465,
+          "costUsd": "0.00699269",
+          "generationId": "gen_01M59BERNZ33EXMCYQSA6RR7HX",
+          "toolCalls": [],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "azure"
+            }
+          ]
+        }
+      ],
+      "elapsedMs": 10564
+    }
+  ]
+}

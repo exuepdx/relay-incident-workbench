@@ -1,0 +1,136 @@
+{
+  "mode": "live",
+  "evaluatedAt": "2026-10-19T05:47:57.718Z",
+  "model": "openai/gpt-5.2",
+  "fallbackModels": [
+    "google/gemini-2.5-flash"
+  ],
+  "promptSha256": "5f785f35ec27fac1983be042bff1e8daf80b2804b5e2489ea38843fb3f6489fa",
+  "cases": 1,
+  "failures": 0,
+  "results": [
+    {
+      "name": "pool-contention",
+      "structuralValidation": "passed",
+      "assessmentPassed": true,
+      "allToolsCalled": true,
+      "regressionFailures": [],
+      "evidenceSha256": "5905947a02cc4db6eaab23a803e801603ee875f9cd475530e6b814b7c2358968",
+      "humanReviewRubric": "Pool contention stays a hypothesis; cites waits and the pool-size change; no confirmed cause, invented loss, or unapproved change.",
+      "humanReview": "pending",
+      "report": {
+        "title": "INC-0241: Checkout slowed by inventory DB pool waits",
+        "assessment": "supported-hypothesis",
+        "summary": "During the window, checkout latency and API errors increased while request volume stayed steady. Slow traces show time dominated by waiting to acquire a database connection in the inventory path. A nearby release reduced the inventory client pool maximum, which is temporally consistent with increased pool contention.",
+        "findings": [
+          {
+            "text": "Checkout-api p95 rose to 2840ms and error rate to 6.8% while request rate stayed ~120 rps during part of the window.",
+            "citations": [
+              "E1"
+            ]
+          },
+          {
+            "text": "Slow traces show checkout delay dominated by inventory.reserve, with db.pool.acquire wait ~2190ms in one representative trace; 18/20 slow samples show pool waits >1800ms.",
+            "citations": [
+              "E2"
+            ]
+          },
+          {
+            "text": "Payment authorization latency and database CPU stayed near baseline, while pool pending requests rose to 84, which is consistent with connection-pool contention rather than provider or CPU saturation.",
+            "citations": [
+              "E4"
+            ]
+          },
+          {
+            "text": "A checkout release at 14:12 changed the inventory client connection pool maximum from 20 to 5; the latency increase begins around 14:15, a correlation consistent with the pool-wait pattern.",
+            "citations": [
+              "E3",
+              "E1"
+            ]
+          }
+        ],
+        "nextSteps": [
+          "Review inventory-api DB connection pool metrics (max, active, idle, pending, acquire time) and compare to the pre-14:12 baseline to confirm the contention signature.",
+          "citations notwithstanding, if Checkout Experience owns the pool change, request their approval to revert the inventory client pool maximum from 5 back to 20 and monitor checkout p95 and error rate.",
+          "Validate inventory-db connection limits and saturation indicators (total connections, rejected connections, slow queries) to ensure raising the client pool will not exceed Data Platform constraints."
+        ],
+        "uncertainty": "The pool-wait pattern is strong in sampled slow traces but does not prove it affects all requests. The release change is temporally correlated with latency but is not confirmed as the sole cause. We also lack direct evidence of inventory-db connection exhaustion versus client-side pool starvation.",
+        "customerUpdate": "Between 14:15–14:30 UTC we saw elevated checkout latency and API errors. Traces indicate most delay is in the inventory step waiting for a database connection; payment provider latency looks normal. We are validating connection-pool and database connection metrics to confirm the driver before proposing any changes."
+      },
+      "proposal": null,
+      "retrievedEvidence": [
+        {
+          "id": "E1",
+          "kind": "metric",
+          "title": "Checkout latency and errors rose",
+          "detail": "From 14:15 to 14:30 UTC, checkout-api p95 increased from 420ms baseline to 2840ms; error rate rose from 0.3% to 6.8%. Request rate stayed near 120 requests/second. This is API error rate, not measured lost orders or revenue.",
+          "source": "Metrics · checkout-api"
+        },
+        {
+          "id": "E2",
+          "kind": "trace",
+          "title": "Most sampled time is waiting for a DB connection",
+          "detail": "Representative trace trc_checkout_241: POST /checkout 2840ms; inventory.reserve 2520ms; db.pool.acquire 2190ms; SELECT inventory 180ms; payments.authorize 130ms. 18 of 20 slow sampled traces have pool waits above 1800ms. Samples do not prove all requests behave the same way.",
+          "source": "Traces · inventory-api"
+        },
+        {
+          "id": "E3",
+          "kind": "change",
+          "title": "Pool limit changed during the release",
+          "detail": "At 14:12 UTC checkout release 8f2c1d changed the inventory client connection pool maximum from 20 to 5. The latency increase starts at 14:15. Temporal correlation supports a hypothesis but does not establish causality.",
+          "source": "Changes · release 8f2c1d"
+        },
+        {
+          "id": "E4",
+          "kind": "metric",
+          "title": "Database CPU and payment time stayed stable",
+          "detail": "Database CPU is 36%, baseline 34%. Payment authorization p95 is 140ms, baseline 135ms. Pool pending requests rose from 0 to 84. These observations favor pool contention over a payment-provider slowdown or database CPU saturation.",
+          "source": "Metrics · dependencies"
+        },
+        {
+          "id": "E5",
+          "kind": "coverage",
+          "title": "No controlled mitigation has been measured",
+          "detail": "There has been no rollback, load test, pool-size experiment, or measured revenue-impact analysis. No writes or remediation are authorized. A human must approve any operational change.",
+          "source": "Incident record"
+        }
+      ],
+      "briefingSha256": "88f8f1aca20eff138391840fd0c4cf09885a82067d4066c2065c946f2848dc44",
+      "toolsCalled": [
+        "getServiceMetrics",
+        "getSlowTraces",
+        "getRecentChanges"
+      ],
+      "elapsedMs": 9900,
+      "totalInputTokens": 2955,
+      "totalOutputTokens": 564,
+      "totalCostUsd": "0.013067",
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "modelSteps": [
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1227,
+          "outputTokens": 58,
+          "costUsd": "0.00295925",
+          "generationId": "gen_01M59B7A18XF5XTCYSJRK5740N",
+          "toolCalls": [
+            "getServiceMetrics",
+            "getSlowTraces",
+            "getRecentChanges"
+          ],
+          "modelAttempts": []
+        },
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1728,
+          "outputTokens": 506,
+          "costUsd": "0.010108",
+          "generationId": "gen_01M59B7BTHQ2MR8D5KNH5S1S5R",
+          "toolCalls": [],
+          "modelAttempts": []
+        }
+      ]
+    }
+  ]
+}

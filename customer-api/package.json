@@ -1,0 +1,16 @@
+{
+  "name": "northstar-telemetry-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:lambda": "esbuild lambda.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && cd dist && zip -q -r ../lambda.zip index.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "@types/node": "^22.20.5",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

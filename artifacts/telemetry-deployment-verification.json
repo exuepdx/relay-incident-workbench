@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-10-19T06:12:20.843Z",
+  "base": "https://relay-telemetry-mock.vercel.app",
+  "results": [
+    {
+      "path": "/health",
+      "auth": false,
+      "status": 200
+    },
+    {
+      "path": "/incidents",
+      "auth": false,
+      "status": 401
+    },
+    {
+      "path": "/incidents",
+      "auth": true,
+      "status": 200,
+      "count": 4
+    },
+    {
+      "path": "/incidents/INC-0244",
+      "auth": true,
+      "status": 200
+    },
+    {
+      "path": "/incidents/INC-0244/evidence",
+      "auth": true,
+      "status": 200
+    },
+    {
+      "path": "/api/telemetry?scenario=network",
+      "auth": true,
+      "status": 200
+    }
+  ]
+}

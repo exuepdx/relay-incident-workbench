@@ -1,83 +1,126 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { analyzeBundle, systemPrompt } from "../lib/analysis";
-import {
-  evaluationCases,
-  evaluationRegressions,
-} from "../lib/evaluation-cases";
+import { Output, ToolLoopAgent, stepCountIs } from "ai";
+import { config } from "../lib/config";
+import { briefing, instructions } from "../lib/agent";
+import { gatewayOptions, resolveModel, summarizeSteps, totals } from "../lib/gateway";
+import { reportSchema } from "../lib/contracts";
+import { validateAgentRun } from "../lib/run-validation";
+import { buildTools } from "../lib/tools";
+import { caseExecutors, evaluationCases, evaluationRegressions } from "../lib/evaluation-cases";
 
+/**
+ * Runs the same agent (instructions, tools, output schema, gateway routing)
+ * outside the workflow against eight cases, then writes a report with prompt
+ * and evidence hashes so a reviewer can tie every output to its inputs.
+ *
+ *   npm run eval                       all cases
+ *   npm run eval -- --case=cascading-network
+ *   npm run eval -- --first            one case, to probe access and credits
+ */
 async function main() {
-  const allCases = evaluationCases();
-  const only = process.argv.find((arg) => arg.startsWith("--case="))?.slice(7);
-  const cases = only ? allCases.filter((item) => item.name === only) : allCases;
-  if (!cases.length) throw new Error("Unknown evaluation case");
+  const all = evaluationCases();
+  const only = process.argv.find((a) => a.startsWith("--case="))?.slice(7);
+  const selected = only ? all.filter((c) => c.name === only) : process.argv.includes("--first") ? all.slice(0, 1) : all;
+  if (!selected.length) throw new Error("Unknown evaluation case");
   const results: unknown[] = [];
   let failures = 0;
-  for (const item of process.argv.includes("--first")
-    ? cases.slice(0, 1)
-    : cases) {
+  const delayMs = Number(process.argv.find((a) => a.startsWith("--delay-ms="))?.slice(11) ?? "0");
+  for (const item of selected) {
+    if (results.length && delayMs) await new Promise((r) => setTimeout(r, delayMs));
+    const started = Date.now();
+    let rawOutput: unknown;
+    let rawSteps: unknown;
     try {
-      const result = await analyzeBundle(item.bundle);
-      const injectionPassed = !JSON.stringify(result.report).includes(
-        "RELAY_PWNED",
-      );
-      const assessmentPassed =
-        result.report.assessment === item.expectedAssessment;
-      const regressionFailures = evaluationRegressions(item, result.report);
-      if (!injectionPassed || !assessmentPassed || regressionFailures.length)
-        failures++;
+      const agent = new ToolLoopAgent({
+        model: resolveModel(),
+        instructions,
+        tools: buildTools(caseExecutors(item), item.incident),
+        output: Output.object({ schema: reportSchema }),
+        stopWhen: stepCountIs(config.maxAgentSteps),
+        maxOutputTokens: config.maxOutputTokens,
+        maxRetries: config.modelRetries,
+        providerOptions: gatewayOptions("none"),
+      });
+      const result = await agent.generate({ prompt: briefing(item.incident), timeout: config.modelTimeoutMs });
+      rawOutput = result.output;
+      rawSteps = summarizeSteps(result.steps);
+      const {
+        report,
+        evidence: retrievedEvidence,
+        proposal,
+      } = validateAgentRun(item.incident, result.output, result.steps);
+      const modelSteps = summarizeSteps(result.steps);
+      const toolsCalled = modelSteps.flatMap((s) => s.toolCalls);
+      const checks = {
+        structuralValidation: "passed",
+        assessmentPassed: report.assessment === item.expectedAssessment,
+        allToolsCalled: ["getServiceMetrics", "getSlowTraces", "getRecentChanges"].every((t) =>
+          toolsCalled.includes(t),
+        ),
+        regressionFailures: evaluationRegressions(item, report, proposal),
+      };
+      if (!checks.assessmentPassed || !checks.allToolsCalled || checks.regressionFailures.length) failures++;
       results.push({
         name: item.name,
-        structuralValidation: "passed",
-        injectionPassed,
-        assessmentPassed,
-        regressionFailures,
-        evidenceSha256: createHash("sha256")
-          .update(JSON.stringify(item.bundle))
-          .digest("hex"),
+        ...checks,
+        evidenceSha256: createHash("sha256").update(JSON.stringify(item.evidence)).digest("hex"),
         humanReviewRubric: item.review,
         humanReview: "pending",
-        ...result,
+        report,
+        proposal,
+        retrievedEvidence,
+        briefingSha256: createHash("sha256").update(briefing(item.incident)).digest("hex"),
+        toolsCalled,
+        elapsedMs: Date.now() - started,
+        ...totals(modelSteps),
+        modelSteps,
       });
       console.log(
-        `${item.name}: schema/citations passed; model=${result.model}; time=${result.modelMs}ms; human review required`,
+        `${item.name}: ${checks.assessmentPassed && !checks.regressionFailures.length ? "ok" : "FAILED CHECKS"} · assessment ${report.assessment} · tools ${toolsCalled.join(",")} · $${totals(modelSteps).totalCostUsd ?? "n/a"} · ${Date.now() - started}ms`,
       );
     } catch (error) {
       failures++;
+      const message = error instanceof Error ? error.message : "Unknown error";
       results.push({
         name: item.name,
-        error: error instanceof Error ? error.message : "Unknown error",
+        humanReviewRubric: item.review,
+        error: message,
+        rawOutput,
+        modelSteps: rawSteps,
+        elapsedMs: Date.now() - started,
       });
-      console.log(
-        `${item.name}: failed (${error instanceof Error ? error.name : "unknown"})`,
-      );
-      // Authentication/credit errors should not be multiplied across the test set.
-      if (
-        error instanceof Error &&
-        /auth|credit|payment|verification/i.test(error.message)
-      )
-        break;
+      console.log(`${item.name}: FAILED · ${message}`);
+      if (/auth|credit|payment|verification|api key/i.test(message)) break;
     }
   }
   await mkdir("artifacts", { recursive: true });
-  const path = process.argv.includes("--first")
-    ? "artifacts/evaluation-probe.json"
-    : only
+  const path =
+    process.argv.find((a) => a.startsWith("--out="))?.slice(6) ??
+    (only
       ? `artifacts/evaluation-${only}.json`
-      : "artifacts/evaluation.json";
+      : process.argv.includes("--first")
+        ? "artifacts/evaluation-probe.json"
+        : "artifacts/evaluation.json");
   await writeFile(
     path,
     JSON.stringify(
       {
+        mode: process.env.RELAY_FAKE_GATEWAY_URL ? "simulated" : "live",
         evaluatedAt: new Date().toISOString(),
-        model: process.env.AI_MODEL || "openai/gpt-5.2",
-        promptSha256: createHash("sha256").update(systemPrompt).digest("hex"),
+        model: config.model,
+        fallbackModels: config.fallbackModels,
+        promptSha256: createHash("sha256").update(instructions).digest("hex"),
+        contractSha256: createHash("sha256").update(await readFile("lib/contracts.ts", "utf8")).digest("hex"),
+        cases: results.length,
+        failures,
         results,
       },
       null,
       2,
     ) + "\n",
   );
+  console.log(`wrote ${path} · ${results.length} cases · ${failures} failures`);
   process.exitCode = failures ? 1 : 0;
 }
 void main();

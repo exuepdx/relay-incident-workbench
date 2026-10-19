@@ -2,7 +2,14 @@ import { withWorkflow } from "workflow/next";
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
+  // Cache Components: static shell at build, "use cache" segments tagged per
+  // incident, uncached data streams behind Suspense at request time.
+  cacheComponents: true,
+  partialPrefetching: true,
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: "/", destination: "/incidents/INC-0244", permanent: false }];
+  },
   async headers() {
     return [
       {
@@ -16,4 +23,5 @@ const config: NextConfig = {
     ];
   },
 };
+
 export default withWorkflow(config);

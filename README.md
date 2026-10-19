@@ -1,207 +1,91 @@
-# Relay — from signals to a next step
+# Relay
 
-An evidence-first incident workbench for a fictional enterprise retailer. The
-customer already has observability; Relay helps responders assemble the relevant
-evidence, assess a hypothesis, and prepare a clear customer update.
+An incident investigation agent for Northstar Commerce, a fictional enterprise
+retailer on AWS. Relay runs on Vercel, reads the telemetry the customer already
+has through a read-only API, calls three tools as durable workflow steps, and
+returns a cited report with the next check and a draft customer update.
+Nothing it does changes a production system. People decide.
 
-- **Demo:** https://relay-incident-workbench.vercel.app
-- **Customer proposal:** https://relay-incident-workbench.vercel.app/proposal
-- **Repository:** https://github.com/exuepdx/relay-incident-workbench
-- **Mock service:** https://relay-telemetry-mock.vercel.app/api/telemetry
-  (requires a server-only token)
+- **Proposal (the customer-ready artifact):** `/proposal`
+- **Workbench:** `/incidents/INC-0244`
+- **Demo script and curveball prep:** [docs/demo-script.md](docs/demo-script.md)
+- **Deploying:** [docs/deploy.md](docs/deploy.md)
+- **Verified state and remaining release gate:** [docs/repair-verification.md](docs/repair-verification.md)
 
-All telemetry and customer details are synthetic. The mock represents an existing
-customer API and is deployed separately on Vercel; it is not hosted on AWS and is
-not an integration with a commercial observability vendor.
+## Architecture in one paragraph
 
-## Try it
-
-1. Start with **Cascading network incident**. Select a dependency to inspect its
-   owner and evidence, compare baseline and unknown signals, and copy a proposed
-   handoff with confirming/challenging checks. Then run an **Authored sample** investigation.
-   This crosses the real authenticated HTTP boundary and runs a durable workflow,
-   but returns a clearly labeled authored report with no model call.
-2. Inspect a finding's evidence citation. Export the JSON or copy the customer update.
-3. Under **Test resilience**, select **First request returns 503** and run again.
-   Run details should show two retrieval attempts. **Persistent 503 outage** must
-   fail without producing a diagnosis.
-4. Refresh, open **Saved investigations**, and reconnect to a run.
-5. Choose **Live AI** and enter the reviewer code supplied separately. Live AI
-   requires enabled Gateway access; sample mode is never silently substituted.
-
-The public UI and samples need no login. Live inference uses a one-hour reviewer
-session. The access code is deliberately absent from the public repository.
-
-## The architecture
-
-Current state:
-
-```mermaid
-flowchart LR
-  A[AWS checkout and inventory services] --> O[Existing observability platform]
-  D[Database and payment dependencies] --> O
-  C[Deployment events] --> O
-  O --> M[Responder manually assembles evidence]
-  M --> H[Human decision and customer update]
-```
-
-Target state:
-
-```mermaid
-flowchart LR
-  U[Responder] --> N[Next.js on Vercel]
-  N --> R[Validated API / scoped run access]
-  R --> W[Vercel Workflow]
-  W -->|Read-only HTTPS + server credential| E[Customer telemetry API]
-  E --> O[Existing observability platform]
-  W --> S[AI SDK structured report]
-  S --> G[AI Gateway]
-  G --> L[Model provider]
-  W --> P[Persisted workflow result]
-  P --> N
-  N --> H[Human reviews and decides]
-```
-
-What stays: AWS workloads, Postgres, telemetry ingestion/storage/retention,
-alerting, and operational ownership. The demo has no arbitrary query tool,
-production credentials, or remediation action. Bounded evidence is passed to the
-model; retained step inputs and outputs are also data that must be governed.
-
-## Vercel choices
-
-| Primitive                 | Deliberate role                                   | Trade-off                                                      |
-| ------------------------- | ------------------------------------------------- | -------------------------------------------------------------- |
-| AI SDK                    | Schema-validated report generation                | Structural validity is not semantic truth                      |
-| AI Gateway                | Model access, token/cost metadata, project budget | Provider behavior and data policies still matter               |
-| Workflows                 | Durable steps and retained results                | Adds state, versioning, retention, and recovery concerns       |
-| Functions / Fluid Compute | API routes and workflow steps                     | External service capacity and cross-cloud latency still matter |
-| Preview Deployments       | Review deployment changes                         | Preview environment must not expose production data            |
-
-No cross-model fallback is configured. Gateway can route/fail over among providers
-of the same model under its default policy; SDK and workflow retry settings do not
-disable that service-level routing. We did not inject a Gateway provider outage.
-See [Gateway routing](https://vercel.com/docs/ai-gateway/models-and-providers/provider-options).
-`AI_MODEL` is a server setting; rerun
-the evaluation rubric when changing it. Retrieval retries twice with a delay;
-model generation does not automatically retry because a lost response may still
-be billed. The project has a $1 non-refreshing Gateway budget; budgets are not a
-hard zero-overshoot guarantee for requests already in flight.
+Next.js 16 with Cache Components renders a static shell, caches each incident
+as a tagged segment, and streams the live run. A Vercel Workflow briefs a
+`WorkflowAgent` (AI SDK) from the customer's telemetry API, runs its three
+read-only tools as retried steps, validates the report and any proposal against the exact retrieved evidence,
+then pauses on a workflow hook for a demo reviewer decision if appropriate, and persists to
+a Postgres index. AI Gateway is
+the model boundary: provider routing and per-run accounting. Automatic cross-model
+fallback is disabled until a candidate passes the report-quality gate; explicit
+comparison and outage drills can still exercise candidate routing. The customer's API is a separately deployed synthetic service, with Lambda and
+Vercel adapters. Its actual deployment is recorded in the verification notes.
 
 ## Run locally
 
-Use Node.js 22 and npm. Vercel production is pinned to Node 22.
+Node 22. Three processes: the customer API, the app, and (optionally) a fake
+Gateway so everything works without model credit.
 
 ```sh
 npm ci
-cp .env.example .env.local
-npm run mock
-# In another terminal:
-npm run dev
+cp .env.example .env.local        # defaults point at the local customer API
+npm run customer-api              # terminal 1, port 4319
+npm run dev -- --webpack           # terminal 2, http://127.0.0.1:3000
 ```
 
-Open http://127.0.0.1:3000. The separate mock listens on port 4319. For local live
-AI, configure `AI_GATEWAY_API_KEY`, or use a valid Vercel project OIDC session.
-Set `ENABLE_LIVE_AI=true` only after verifying credits/model access. Never commit
-credentials. Local `.env*`, `.vercel`, and workflow state are ignored.
-
-Required production configuration:
-
-| Variable              | Purpose                                                  |
-| --------------------- | -------------------------------------------------------- |
-| `TELEMETRY_API_URL`   | Fixed HTTPS endpoint; callers cannot override it         |
-| `TELEMETRY_API_TOKEN` | Server-only credential shared with the synthetic service |
-| `SESSION_SECRET`      | Random secret for session and run capabilities           |
-| `DEMO_ACCESS_CODE`    | Shared reviewer gate for live inference                  |
-| `ENABLE_LIVE_AI`      | Explicit live inference switch                           |
-| `AI_MODEL`            | Gateway model ID (default `openai/gpt-5.2`)              |
-
-Vercel deployments use OIDC for Gateway; a provider key is not shipped to the
-browser. Production and preview configuration are distinct Vercel targets. The
-demo targets share the same synthetic service; a customer pilot should use
-separate credentials and isolated test data.
-
-## Validation
+Live model calls locally need `AI_GATEWAY_API_KEY` in `.env.local`. To run
+fully offline instead, add `RELAY_FAKE_GATEWAY_URL=http://127.0.0.1:4321`
+and `AI_GATEWAY_API_KEY=fake` to `.env.local` and start the fake Gateway:
 
 ```sh
-npm test
-npm run typecheck
-npx tsc -p mock/tsconfig.json --noEmit
-npm run build
-npm run smoke
-# Live AI eval; consumes model allowance:
-npm run eval
-# Hosted live integration test; uses the reviewer code from your local secret file:
-DEMO_URL=https://relay-incident-workbench.vercel.app node --env-file=.env.deploy --import tsx scripts/live-smoke.ts
+npx tsx scripts/fake-gateway.ts   # terminal 3, port 4321
 ```
 
-`scripts/smoke.ts` supports `DEMO_URL` for deployed checks. It verifies a successful
-run, transient retry, persistent failure, retrieval of persisted results, invalid
-input rejection, cross-origin rejection, and denied unscoped reads. It uses
-sample mode and makes no model calls.
+The reviewer code defaults to whatever `DEMO_ACCESS_CODE` is in `.env.local`.
 
-`scripts/evaluate.ts` tests seven cases: pool contention, a single observed payment
-error, incomplete coverage, cascading network delay, missing path evidence,
-rejects on an unrelated subnet, and instructions embedded in an untrusted device
-log. It checks structure, citation IDs, assessment, observation scope, and targeted
-regressions, saving reports with prompt/evidence hashes for review. Review source
-support, uncertainty, counter-evidence, and safe next steps independently. This
-small development set is not a statistically robust evaluation.
+## Validate
 
-The default model is `openai/gpt-5.2`. See the preserved comparison failures and
-[evaluation review](docs/evaluation-review.md) for the choice and its limits.
+```sh
+npm test                 # contracts, access, provenance, approvals, persistence and evaluations
+npm run typecheck && npm run typecheck:customer-api
+npm run build
+DEMO_ACCESS_CODE=... npm run smoke    # 6 end-to-end runs: 503 retry, fallback, approval, model override, outage
+SMOKE_PAUSE=1 DEMO_ACCESS_CODE=... npm run smoke       # also the redeploy hold
+npm run eval -- --delay-ms=65000  # 8 agent cases through AI Gateway (uses real credit)
+npm run probe:fallback   # verifies the provider-outage drill before a live demo
+```
 
-See [assessment coverage](docs/brief-audit.md), [verification](docs/verification.md), [presentation notes](docs/presentation.md),
-[architectural decisions](docs/decisions.md), and [product feedback](docs/product-feedback.md).
+## Layout
 
-## Deployment and rollout
+| Path                                             | What                                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `app/incidents/[id]`                             | the workbench route: static shell, cached incident segment, streamed run         |
+| `app/api/investigations`                         | start, status, list, and the NDJSON progress stream                              |
+| `workflows/`                                     | the durable investigation and its steps                                          |
+| `lib/agent.ts`, `lib/tools.ts`, `lib/gateway.ts` | instructions, tool boundary, Gateway routing and accounting                      |
+| `lib/contracts.ts`                               | every schema that crosses a boundary, plus report validation                     |
+| `lib/store.ts`, `lib/store-postgres.ts`          | the investigation index                                                          |
+| `lib/config.ts`                                  | every knob a live change might touch                                             |
+| `customer-api/`                                  | the customer's telemetry API: handler, Lambda and Vercel adapters, deploy script |
+| `scripts/`                                       | eval, smoke, fallback probe, fake Gateway                                        |
+| `artifacts/`                                     | evaluation and smoke results with hashes                                         |
 
-The mock deploys from `mock/`; the application deploys from the repository root.
-Both target iad1. First deploy the mock and verify an authenticated request, then
-configure and deploy the application. Model inference, workflow state, and logs
-have separate placement concerns; an application region is not a residency guarantee.
+## Trust and persistence boundaries
 
-The new app requests `x-relay-evidence-version: 2`. The adapter omits topology and
-report-policy additions for legacy clients, so the old strict contract remains
-usable during rollout and app rollback. Completed runs retain their original
-evidence; legacy live reports are labeled as predating the latest wording checks.
+`lib/run-validation.ts` replays the successful tool results, requires all three
+reads, and validates report/proposal citations before any approval is offered.
+Reports and approval cards retain that exact snapshot. The model briefing does
+not contain chart measurements or curated handoff answers.
 
-Use preview → contract/AI validation → small responder cohort → expansion.
-Native traffic-percentage Rolling Releases are not part of this Hobby demo.
-Before promoting a preview, verify its environment configuration and access.
+Production requires `DATABASE_URL`; there is no process-local memory fallback.
+Starts reserve an idempotency key before dispatch, and the workflow creates its
+index record before inference. An ambiguous dispatch is not automatically
+repeated; inspect saved runs before creating a new request. Local file storage
+is for one developer process, not concurrent deployment instances.
 
-These deployments were created with the Vercel CLI. Automatic GitHub deployments
-are not connected: Vercel requires the account owner to add a GitHub Login
-Connection before the repository can be linked. CLI previews remain available.
-
-For rollback, restore the previous compatible application deployment or remove
-pilot access. Restoring application code does not undo workflow results, database
-changes, or external side effects. This demo performs no operational writes.
-
-## Known limits
-
-- The charts are illustrative fixed snapshots; the investigation fetches the
-  authoritative synthetic evidence bundle from the separate service. This is not
-  live production monitoring or an OTLP collector.
-- The shared reviewer code is not SSO or tenant isolation. Run capabilities are
-  scoped to one run but remain valid while the signing secret and retained run do.
-- History stores the latest 12 run references in this browser. Workflow state
-  persists separately. Browser storage deletion loses the local index.
-- No global application rate limiter or request deduplication. Fixed inputs,
-  token limits, reviewer access, and the Gateway budget bound some risks, not all.
-- No guarantee that a citation actually supports a claim; human review remains.
-- The dependency map and handoff plan are curated synthetic context, not model
-  discovery. They travel with the fetched evidence and saved run. Status describes
-  supplied measurements, not whole-team innocence or a complete blast radius.
-- The HTTP 504 guard rejects specific singular-to-plural/frequency regressions.
-  It may reject awkward but valid wording and cannot detect every semantic error.
-- No claim of measured MTTR/revenue improvement. Establish a customer baseline and
-  compare responder effort and time to an approved update in a pilot.
-- Durable execution is not exactly-once inference billing. A successful remote
-  model call followed by a lost response/checkpoint can still create uncertainty.
-
-## Development tooling
-
-Built using Codex in a local workspace, npm, TypeScript, Vercel CLI, GitHub CLI,
-and browser inspection. The real incremental commit history is retained. No
-customer engagement, performance benchmark, or human review result is fabricated.
-The candidate should review and rehearse the implementation before submission.
+The proposal's six-screen presenter mode is the main story. Detailed limitations,
+alternatives, tooling disclosure and validation remain in its appendix.
