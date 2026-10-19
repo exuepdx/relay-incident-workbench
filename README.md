@@ -4,7 +4,7 @@ An incident investigation agent for Northstar Commerce, a fictional enterprise
 retailer on AWS. Relay runs on Vercel, reads the telemetry the customer already
 has through a read-only API, calls three tools as durable workflow steps, and
 returns a cited report with the next check and a draft customer update.
-Nothing it does changes a production system. People decide.
+Approval records a reviewer decision; the demo has no integration that executes changes.
 
 - **Customer presentation:** [six-screen presenter view](https://relay-incident-workbench.vercel.app/proposal?present=1)
 - **Live workbench:** [cascading network incident](https://relay-incident-workbench.vercel.app/incidents/INC-0244)

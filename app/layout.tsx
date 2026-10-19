@@ -5,9 +5,9 @@ import "./globals.css";
 import "./interface.css";
 
 export const metadata: Metadata = {
-  title: "Relay — from signals to a next step",
+  title: "Relay — Incident workbench",
   description:
-    "An incident investigation agent that reads the customer's existing telemetry and proposes the next check. Built on Vercel.",
+    "Investigate retail outages with service dependencies, team ownership and AI reports linked to telemetry. A technical demo built on Vercel.",
   robots: { index: false, follow: false },
 };
 

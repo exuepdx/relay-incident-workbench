@@ -31,16 +31,13 @@ export async function SavedRuns({ incidentId }: { incidentId: string }) {
       <div className="panel-head">
         <div>
           <h3>Saved investigations</h3>
-          <p>
-            {runs.length ? `${runs.length} on record` : "None yet"} · index in{" "}
-            {store.kind === "postgres" ? "Postgres" : store.kind === "file" ? "a local file" : "memory"}
-          </p>
+          <p>{runs.length ? `${runs.length} recent runs` : "No saved runs"}</p>
         </div>
         <Icon name="clock" size={16} />
       </div>
       <div className="panel-body" style={{ paddingTop: 8, paddingBottom: 8 }}>
         {runs.length === 0 ? (
-          <p className="empty">Run an investigation and it will be listed here, across browsers and refreshes.</p>
+          <p className="empty">Your investigations will appear here. Open a saved run to view its status or report.</p>
         ) : (
           <div className="runs">
             {runs.map((run) => (

@@ -39,7 +39,7 @@ export function foldTimeline(events: ProgressEvent[], terminal: "completed" | "f
         title:
           e.status === "completed"
             ? `Report written by ${e.model ?? "model"}`
-            : `Agent reasoning with ${e.model ?? "model"}`,
+            : `Generating report with ${e.model ?? "model"}`,
         detail: e.status === "completed" ? undefined : "Calls tools as durable steps, then writes the report.",
         ms: e.ms,
       });
@@ -49,9 +49,9 @@ export function foldTimeline(events: ProgressEvent[], terminal: "completed" | "f
         state: e.status === "completed" ? "done" : "waiting",
         title:
           e.status === "completed"
-            ? `Held ${e.seconds} s · resumed on the current deployment`
+            ? `Held ${e.seconds} s · investigation resumed`
             : `Holding ${e.seconds} s · push a deploy now`,
-        detail: e.status === "completed" ? undefined : "A durable sleep. The run survives a redeploy and resumes here.",
+        detail: e.status === "completed" ? undefined : "The run stays on its starting deployment while paused.",
       });
     } else if (e.type === "approval") {
       rows.delete("approval");

@@ -11,7 +11,7 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
       <aside className="sidebar">
         <Link href="/" aria-label="Relay home" className="brand-link">
           <Logo />
-          <span className="brand-edition">RESPONSE SYSTEM</span>
+          <span className="brand-edition">INCIDENT WORKBENCH</span>
         </Link>
         <div className="workspace">
           <span className="workspace-icon">N</span>
@@ -42,19 +42,10 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
           <span className="eyebrow nav-label">Workspace</span>
           <Link className="nav-item" href="/proposal">
             <Icon name="layers" size={16} />
-            Proposal
+            Presentation
             <Icon name="arrow" size={14} />
           </Link>
         </nav>
-        <div className="sidebar-foot">
-          <div className="authority-mark">
-            <Icon name="shield" size={18} />
-            <strong>Human authority.</strong>
-          </div>
-          Evidence first.
-          <br />
-          Every decision stays with your team.
-        </div>
       </aside>
       <div className="main">{children}</div>
     </div>
@@ -71,7 +62,7 @@ export function Topbar({ crumbs, children }: { crumbs: React.ReactNode; children
         </span>
         {children}
         <Link href="/proposal" className="btn btn-ghost">
-          Proposal <Icon name="arrow" size={14} />
+          Presentation <Icon name="arrow" size={14} />
         </Link>
       </div>
     </header>

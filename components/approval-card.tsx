@@ -72,8 +72,8 @@ export function ApprovalCard({
         </button>
       </div>
       <p className="note" style={{ textAlign: "left", margin: "10px 0 0" }}>
-        The demo reviewer records a decision; production requires verified owner identity. The durable wait holds no
-        running function. Relay never executes changes.
+        Records your review decision only. No change is executed. Production approval would require the service owner's
+        verified identity.
       </p>
       {error && (
         <div className="alert error" role="alert">

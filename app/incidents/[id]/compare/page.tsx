@@ -73,11 +73,8 @@ async function Compare({
         <div className="incident-head enter">
           <div>
             <span className="eyebrow">{id} · side by side</span>
-            <h1>Same incident, two investigations.</h1>
-            <p>
-              Pick any two completed runs. Swapping the model is a Gateway setting, not an application change, so the
-              reports can be judged on evidence, cost, and time.
-            </p>
+            <h1>Compare investigations</h1>
+            <p>Select two completed runs to compare findings, citations, model cost and elapsed time.</p>
           </div>
           <Link href={`/incidents/${id}`} className="btn">
             <Icon name="arrow" size={14} /> Back to the workbench

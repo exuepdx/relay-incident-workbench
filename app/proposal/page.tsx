@@ -72,7 +72,7 @@ const rollout = [
   [
     "04",
     "Cutover",
-    "Expand only after the quality and cost gates hold. Compare against the same rotation's baseline, not an invented benchmark.",
+    "Expand after the quality and cost targets hold. Compare results against the same rotation's baseline.",
   ],
   [
     "05",
@@ -108,7 +108,7 @@ export default function Proposal() {
           <nav>
             <a href="#architecture">Architecture</a>
             <a href="#demo">Demo</a>
-            <a href="#measures">Value</a>
+            <a href="#measures">Pilot targets</a>
             <a href="#tooling">Validation</a>
             <Link href="/proposal?present=1" className="btn btn-ghost present-link">
               Present
@@ -120,22 +120,22 @@ export default function Proposal() {
         </nav>
         <div className="hero-body">
           <div className="hero-copy">
-            <span className="eyebrow">Relay · technical exercise · fictional retail scenario</span>
+            <span className="eyebrow">Relay · incident investigation demo</span>
             <h1>
-              Agree on the next check.
+              Investigating a
               <br />
-              <em>Show the evidence.</em>
+              <em>retail checkout outage.</em>
             </h1>
             <p>
-              Connect existing telemetry to a response workspace that helps teams identify the affected dependency, name
-              the next owner, and draft a source-backed update. People retain operational authority.
+              Relay brings service dependencies, team ownership and telemetry into one workbench. An AI agent reads the
+              incident evidence and drafts a report with citations and suggested next checks.
             </p>
             <div className="hero-cta">
               <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary btn-lg">
-                Investigate the cascade <Icon name="arrow" size={16} />
+                Open incident INC-0244 <Icon name="arrow" size={16} />
               </Link>
               <a href="#architecture" className="btn btn-lg">
-                See the boundary
+                View architecture
               </a>
             </div>
           </div>
@@ -149,15 +149,15 @@ export default function Proposal() {
           Vercel's role <strong>Connect telemetry; augment response</strong>
         </div>
         <div>
-          Decision <strong>Next check and owner, with evidence</strong>
+          Output <strong>Investigation report and team handoffs</strong>
         </div>
       </div>
 
       <section className="section" id="problem" data-present="true">
         <Reveal>
-          <Intro n="01 / CUSTOMER PROBLEM" title="The dashboards are available. Agreement takes time.">
-            Based on an anonymized enterprise retail pattern: frequent outage bridges, fragmented tools, and several
-            teams establishing whether their systems are involved.
+          <Intro n="01 / CUSTOMER PROBLEM" title="Too many teams troubleshooting the same outage">
+            Based on my work with an enterprise retailer: teams had telemetry, but spent time correlating symptoms
+            across systems and working out who needed to act.
           </Intro>
           <div className="cols-2">
             <div className="card">
@@ -167,8 +167,8 @@ export default function Proposal() {
                 Each team sees a different slice. A downstream failure can look like several upstream failures.
               </p>
               <p className="muted">
-                Representative demo stack: EKS, RDS Postgres, an observability platform and a Jenkins release pipeline.
-                These are scenario assumptions, not asserted facts about the original customer.
+                The fictional Northstar stack uses EKS, RDS Postgres, an observability platform and Jenkins to
+                illustrate this problem.
               </p>
             </div>
             <div className="card">
@@ -188,9 +188,9 @@ export default function Proposal() {
 
       <section className="section" id="architecture" data-present="true">
         <Reveal>
-          <Intro n="02 / TARGET ARCHITECTURE" title="Keep the operational systems. Connect a response layer.">
-            The boundary is an authenticated, read-only telemetry API. Selected evidence crosses into Vercel and the
-            configured model; it does not all stay inside the customer's cloud.
+          <Intro n="02 / TARGET ARCHITECTURE" title="Connect the existing telemetry API to Relay">
+            An authenticated, read-only API supplies incident evidence to the Vercel application and configured model.
+            Services, alerting and operational changes stay with the customer's existing teams and systems.
           </Intro>
           <div className="arch">
             <div className="zone">
@@ -221,7 +221,7 @@ export default function Proposal() {
             </div>
             <BoundaryConduit />
             <div className="zone customer">
-              <span className="eyebrow">Customer estate · retained authority</span>
+              <span className="eyebrow">Customer systems</span>
               <h3>Existing systems</h3>
               <div className="zone-node">
                 <b>Services, databases and network</b>
@@ -268,14 +268,14 @@ export default function Proposal() {
 
       <section className="section" id="demo" data-present="true">
         <Reveal>
-          <Intro n="03 / WORKING DEMO" title="One cascade. One next check. Sources you can inspect.">
-            Use INC-0244 as the main story. The dependency map and handoff guidance are curated scenario context; the
-            report is generated from retrieved evidence.
+          <Intro n="03 / WORKING DEMO" title="Trace the checkout delay to the inventory connection path">
+            INC-0244 includes a prepared dependency map and team handoffs. The AI report is generated from evidence
+            retrieved during the investigation.
           </Intro>
           <div className="cols-3">
             <div className="card">
               <span className="eyebrow">01 · Localize</span>
-              <h3>Follow connection waiting</h3>
+              <h3>Inspect the connection delay</h3>
               <p>
                 Inspect E2's trace and E3's path measurements. Engage Network Platform with Inventory Services. A
                 connection-path hypothesis does not identify a failed physical device.
@@ -291,7 +291,7 @@ export default function Proposal() {
             </div>
             <div className="card">
               <span className="eyebrow">03 · Challenge</span>
-              <h3>Retry, reconnect, then abstain</h3>
+              <h3>Test failures and missing data</h3>
               <p>
                 Use one transient telemetry failure and refresh while it runs. Then open INC-0243: missing evidence
                 should lead to collection, not an operational experiment.
@@ -300,7 +300,7 @@ export default function Proposal() {
           </div>
           <div className="hero-cta" style={{ marginTop: 24 }}>
             <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary btn-lg">
-              Open the lead incident <Icon name="arrow" size={16} />
+              Open incident INC-0244 <Icon name="arrow" size={16} />
             </Link>
           </div>
           <div className="cols-2" style={{ marginTop: 24 }}>
@@ -336,7 +336,7 @@ export default function Proposal() {
 
       <section className="section" id="measures" data-present="true">
         <Reveal>
-          <Intro n="04 / SUCCESS MEASURES" title="Agree pilot gates. Measure before claiming improvement.">
+          <Intro n="04 / SUCCESS MEASURES" title="Pilot targets and measurement plan">
             These are proposed targets, not demonstrated customer outcomes. Establish the baseline with responders using
             the same sanitized historical incidents.
           </Intro>
@@ -372,9 +372,9 @@ export default function Proposal() {
 
       <section className="section" id="rollout" data-present="true">
         <Reveal>
-          <Intro n="05 / ROLLOUT" title="Pilot with one rotation. Keep the existing process available.">
-            This is the proposed rollout. Preview, rollback and persistence rehearsals must be recorded for the actual
-            hosted revision before calling it ready.
+          <Intro n="05 / ROLLOUT" title="Start with one on-call rotation">
+            The proposed pilot starts with sanitized incidents, then introduces a limited set of customer telemetry.
+            Responders continue using their existing incident process while evaluating Relay.
           </Intro>
           <div className="rollout">
             <div className="rollout-line" aria-hidden="true" />
@@ -387,7 +387,7 @@ export default function Proposal() {
             ))}
           </div>
           <div className="card highlight" style={{ marginTop: 24 }}>
-            <h3>The decision to make together</h3>
+            <h3>Choose the pilot's primary outcome</h3>
             <p>
               Which would justify a pilot: fewer people on each bridge, an earlier evidence-backed customer update, or
               less time to assign the next check? Choose one primary business measure before expanding scope.
@@ -398,10 +398,10 @@ export default function Proposal() {
 
       <section className="section" id="risks">
         <Reveal>
-          <Intro n="APPENDIX / LIMITATIONS & ALTERNATIVES" title="Boundaries to defend before kickoff." />
+          <Intro n="APPENDIX / LIMITATIONS & ALTERNATIVES" title="Production requirements and alternatives" />
           <div className="cols-2">
             <div className="card">
-              <h3>Drafts require judgment</h3>
+              <h3>Report accuracy and approval</h3>
               <p>
                 Schema, retrieved-citation, owner and policy checks reject known failures. They cannot prove that a
                 natural-language conclusion is true. The demo approval records a reviewer decision, never a production
@@ -409,7 +409,7 @@ export default function Proposal() {
               </p>
             </div>
             <div className="card">
-              <h3>Residency is more than provider choice</h3>
+              <h3>Data residency</h3>
               <p>
                 A Bedrock allow-list does not pin inference to us-east-1. Account for Gateway routing, model processing,
                 workflow state, cache, logs and the index. If a strict boundary cannot be met, change the design or
@@ -441,10 +441,10 @@ export default function Proposal() {
 
       <section className="section" id="tooling">
         <Reveal>
-          <Intro n="APPENDIX / TOOLING & VALIDATION" title="AI-assisted development, with inspectable checks.">
-            The first version used OpenAI Codex; Fable supplied a substantial rebuild. Codex reviewed and repaired
-            evidence provenance, approval ordering, evaluation inputs and persistence handling. The presenter must be
-            able to explain and modify the resulting code.
+          <Intro n="APPENDIX / TOOLING & VALIDATION" title="Development tools and test results">
+            I used Codex for the initial build and Fable for a substantial redesign. The review that followed addressed
+            citation provenance, approval ordering, evaluation inputs and persistence. The repository includes the
+            tests, live evaluation results and deployment checks.
           </Intro>
           <div className="cols-2">
             <div className="card">
@@ -519,7 +519,7 @@ export default function Proposal() {
           </div>
           {candidate && (
             <div className="card" style={{ marginTop: 24 }}>
-              <h3>Availability is not the same as report quality</h3>
+              <h3>Why automatic model fallback is disabled</h3>
               <p>
                 The earlier candidate evaluation for {candidate.model} had {candidate.failures} failure(s) in{" "}
                 {candidate.cases} cases. Normal runs therefore have automatic cross-model fallback disabled. Explicit

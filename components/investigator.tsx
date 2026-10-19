@@ -243,9 +243,8 @@ export function Investigator({
             <Icon name="spark" size={16} />
           </span>
           <div>
-            <span className="eyebrow panel-kicker">03 / REASONING WORKSPACE</span>
             <h2>Investigate</h2>
-            <p>Agent on Vercel · tools read {incidentId} from your telemetry</p>
+            <p>Generate a report from {incidentId}'s metrics, traces and recent changes.</p>
           </div>
         </div>
         {runId && (
@@ -305,8 +304,8 @@ export function Investigator({
               </select>
             </div>
             <p className="note">
-              {chosenModel} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}. Reads
-              telemetry; never executes changes. Duration and cost are recorded per run.
+              {chosenModel} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}.
+              Read-only analysis; cost and duration appear in the report.
             </p>
             {demoControls && (
               <details className="controls">
@@ -314,9 +313,9 @@ export function Investigator({
                   <Icon name="bolt" size={14} /> Test resilience
                 </summary>
                 <div className="field">
-                  <label htmlFor="fault">Break something on purpose</label>
+                  <label htmlFor="fault">Simulated failure</label>
                   <select id="fault" value={fault} onChange={(e) => setFault(e.target.value as Fault)}>
-                    <option value="none">Nothing · healthy path</option>
+                    <option value="none">None</option>
                     <option value="transient">Telemetry API returns 503 once (step retries)</option>
                     <option value="outage">Telemetry API is down (run fails, no model call)</option>
                     <option value="provider-outage">Primary unavailable (test candidate fallback)</option>
@@ -359,7 +358,7 @@ export function Investigator({
 
         {error && (
           <div className={`alert ${phase === "failed" ? "error" : "info"}`} role="alert">
-            <strong>{phase === "failed" ? "No diagnosis" : "Heads up"}</strong>
+            <strong>{phase === "failed" ? "Investigation stopped" : "Investigation status"}</strong>
             {error}
           </div>
         )}
@@ -375,18 +374,15 @@ export function Investigator({
         )}
       </div>
       {phase === "idle" && (
-        <div className="steps-explainer">
-          <div>
-            <span>01</span> The agent reads the incident record and asks your telemetry for metrics, traces, and
-            changes.
-          </div>
-          <div>
-            <span>02</span> Every tool call is a durable step: retried on 503, resumed after a crash or deploy.
-          </div>
-          <div>
-            <span>03</span> The report is validated against the evidence it read. Your team decides what to do.
-          </div>
-        </div>
+        <details className="steps-explainer">
+          <summary>How investigations work</summary>
+          <p>The agent retrieves metrics, traces and recent changes through three read-only tools.</p>
+          <p>Workflow steps retry temporary failures and preserve progress if you close the tab.</p>
+          <p>
+            Citation and policy checks run before the report is saved. Review the conclusions against the linked
+            sources.
+          </p>
+        </details>
       )}
     </section>
   );

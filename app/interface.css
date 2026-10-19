@@ -154,21 +154,6 @@ body::after,
 .shell .nav-item[aria-current="page"] > svg {
   color: var(--violet);
 }
-.authority-mark {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin-bottom: 8px;
-  color: var(--teal);
-}
-.authority-mark strong {
-  color: var(--ink-2);
-  font-size: 12px;
-}
-.sidebar-foot {
-  font-size: 11px;
-  padding: 20px 8px 0;
-}
 .shell .topbar {
   height: 64px;
   background: color-mix(in srgb, var(--bg) 86%, transparent);
@@ -546,13 +531,9 @@ body::after,
   background: transparent;
   padding: 18px 20px;
 }
-.steps-explainer > div {
-  font-size: 11px;
+.steps-explainer p {
+  font-size: 12px;
   line-height: 1.7;
-}
-.steps-explainer > div > span {
-  font-family: var(--mono);
-  color: var(--violet);
 }
 .shell .note {
   font-size: 11px;

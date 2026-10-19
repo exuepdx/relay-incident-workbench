@@ -36,6 +36,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
   if (!incident) notFound();
   const evidence = await getIncidentEvidence(id);
   const k = incident.kpis;
+  const display = customer.incidents.find((item) => item.id === incident.id);
   return (
     <Shell current={incident.id}>
       <Topbar
@@ -56,11 +57,10 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
           <div className="incident-head enter">
             <div>
               <span className="eyebrow incident-kicker">
-                <span className="section-index">01 /</span> INCIDENT INTELLIGENCE{" "}
-                <span className="incident-code">{incident.id}</span>
+                INCIDENT <span className="incident-code">{incident.id}</span>
               </span>
-              <h1>{incident.title}</h1>
-              <p>{incident.subtitle}</p>
+              <h1>{display?.title ?? incident.title}</h1>
+              <p>{display?.description ?? incident.subtitle}</p>
               <span className="incident-window">
                 <Icon name="clock" size={12} /> {incident.window.replace(" / ", " → ")}
               </span>
@@ -115,7 +115,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
               <div className="value">
                 {incident.coverage.length} <small>coverage notes</small>
               </div>
-              <span className="foot">What the record says is missing</span>
+              <span className="foot">Missing telemetry in this incident</span>
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
                   <div className="panel">
                     <div className="panel-head">
                       <div>
-                        <h2>Follow the slow request</h2>
+                        <h2>Request trace</h2>
                         <p>Representative trace · {incident.spans.length} spans</p>
                       </div>
                     </div>

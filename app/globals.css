@@ -489,20 +489,6 @@ code {
   background: var(--amber);
   box-shadow: 0 0 0 3px rgba(162, 106, 31, 0.15);
 }
-.sidebar-foot {
-  margin-top: auto;
-  padding: 14px 10px 0;
-  border-top: 1px solid var(--border);
-  font-size: var(--text-xs);
-  color: var(--muted);
-  line-height: 1.6;
-}
-.sidebar-foot strong {
-  display: block;
-  color: var(--ink-2);
-  font-weight: 600;
-  font-size: var(--text-sm);
-}
 
 .main {
   margin-left: var(--sidebar);
@@ -1520,24 +1506,20 @@ button.cite:hover {
   margin: 12px 0 4px;
 }
 .steps-explainer {
-  display: grid;
-  gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid var(--border);
   background: rgba(253, 252, 254, 0.6);
   border-radius: 0 0 var(--radius) var(--radius);
 }
-.steps-explainer div {
-  display: flex;
-  gap: 12px;
+.steps-explainer summary {
+  cursor: pointer;
   font-size: var(--text-sm);
   color: var(--ink-2);
 }
-.steps-explainer span {
-  font-family: var(--mono);
-  font-size: var(--text-xs);
-  color: var(--muted);
-  margin-top: 2px;
+.steps-explainer p {
+  margin: 12px 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
 }
 
 .gate {
@@ -2406,7 +2388,6 @@ button.cite:hover {
   .shell {
     display: block;
   }
-  .sidebar-foot,
   .workspace,
   .nav-label {
     display: none;

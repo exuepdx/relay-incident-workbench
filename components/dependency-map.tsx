@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import type { Evidence, Incident, Topology } from "@/lib/contracts";
 import { Icon } from "./icons";
 import { CitationButton } from "./citation-button";
+import { customer } from "@/lib/customer";
 
 const statusLabel = { affected: "Affected", baseline: "Within baseline", unknown: "Unknown" } as const;
 // Curated catalog geometry. Connections show dependencies, never inferred causality.
@@ -29,7 +30,7 @@ export function handoffText(incident: Incident, topology: Topology, index: numbe
   const node = topology.nodes.find((n) => n.id === h.nodeId)!;
   return [
     `Relay — proposed handoff to ${node.owner}`,
-    `Incident: ${incident.id} · ${incident.title}`,
+    `Incident: ${incident.id} · ${customer.incidents.find((item) => item.id === incident.id)?.title ?? incident.title}`,
     `Scope: ${topology.scope}`,
     `Window: ${incident.window}`,
     `Next check: ${h.action}`,
@@ -37,7 +38,7 @@ export function handoffText(incident: Incident, topology: Topology, index: numbe
     `Evidence to seek: ${h.confirm}`,
     `What would challenge it: ${h.challenge}`,
     `Sources: ${h.citations.join(", ")}`,
-    "Proposed check, not an assignment. Operational changes require the service owner's approval.",
+    "Share this handoff with the named team to confirm ownership and the next check.",
   ].join("\n\n");
 }
 
@@ -64,8 +65,7 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
       <div className="panel topology-panel">
         <div className="panel-head">
           <div>
-            <span className="eyebrow panel-kicker">02 / DEPENDENCY FIELD</span>
-            <h2>Where the symptoms meet</h2>
+            <h2>Service dependencies</h2>
             <p>{topology.scope}</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
           </div>
           <div className="map-stage">
             <div className="map-coordinates" aria-hidden="true">
-              <span>SCOPED TOPOLOGY</span>
+              <span>SCENARIO MAP</span>
               <span>{topology.nodes.length.toString().padStart(2, "0")} COMPONENTS</span>
             </div>
             <div className="map" role="group" aria-label="Dependency map; arrows show dependency direction">
@@ -155,7 +155,7 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
                 <Icon name={nodeIcons[node.id] ?? "server"} size={22} />
               </span>
               <div>
-                <span className="eyebrow">Accountable team</span>
+                <span className="eyebrow">Service owner</span>
                 <h4>{node.owner}</h4>
               </div>
               <span className="detail-arrow" aria-hidden="true">
@@ -188,8 +188,8 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
       <div className="panel">
         <div className="panel-head">
           <div>
-            <h2>Coordinate the next check</h2>
-            <p>Copy a brief for a team. Relay proposes; it does not assign or notify.</p>
+            <h2>Suggested team handoffs</h2>
+            <p>Prepared for this scenario. Copy a handoff to share with the named team; no notification is sent.</p>
           </div>
         </div>
         <div className="panel-body handoffs">

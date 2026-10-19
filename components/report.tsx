@@ -35,7 +35,7 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
         <h3>{report.title}</h3>
       </div>
       <p className="summary">{report.summary}</p>
-      <h4>What the evidence says</h4>
+      <h4>Findings</h4>
       {report.findings.map((f, i) => (
         <div className="finding" key={i}>
           <span className="n">0{i + 1}</span>
