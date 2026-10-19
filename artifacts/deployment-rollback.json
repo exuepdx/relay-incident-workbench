@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-10-19T17:31:08.510Z",
+  "base": "https://relay-incident-workbench.vercel.app",
+  "rollbackDeployment": "dpl_6Hxew2tkckErZWoayumwUkJEVBU2",
+  "restoreDeployment": "dpl_FNmMx9sEP1XieNgiV2kYrze57dgy",
+  "runId": "wrun_41M5AK8GJ90GTC9BG4JWGA9PGD",
+  "status": "completed",
+  "httpStatus": 200,
+  "reportSha256": "08c1093252244dddd5ee06becd53ae277d739744d211eb6a90edc92926fd8454",
+  "passed": true,
+  "checks": [
+    "Completed production report remains readable after rollback",
+    "Report content and evidence unchanged across rollback"
+  ]
+}

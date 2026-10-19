@@ -10,13 +10,13 @@ The customer is fictional. Its EKS/RDS/observability/Jenkins stack is a scenario
 
 ## Deployment status
 
-The telemetry service is deployed at `https://relay-telemetry-mock.vercel.app`. Free Neon Postgres is connected to Production and Preview and passed the hosted integration checks. A rebuilt preview is running; production promotion follows the hosted workflow checks.
+The workbench is live at `https://relay-incident-workbench.vercel.app`; its six-screen presentation is at `/proposal?present=1`. The telemetry service is deployed separately at `https://relay-telemetry-mock.vercel.app`. Free Neon Postgres is connected to Production and Preview and passed the hosted integration checks. Seven hosted workflow scenarios passed with real Gateway calls. A production workflow completed across promotion, and its retained report remained unchanged after rollback and restoration.
 
 The owner approved a $2 total, non-renewing AI Gateway project cap. All eight primary evaluation cases passed under the final prompt/contract version. Four were resumed after the original budget blocked them; batch provenance and the blocked attempt are retained. No credits were purchased.
 
 Preserve the existing reviewer access code, session secret and telemetry token in the ignored `.env.deploy` file. `TELEMETRY_API_URL` uses the telemetry service's **base URL**, without `/api/telemetry`. Settings: `DEMO_CONTROLS=true`, primary `openai/gpt-5.2`, empty `AI_FALLBACK_MODELS`, and comparison candidate `google/gemini-2.5-flash`. The authorized preview test credential lives only in ignored local configuration; do not publish it.
 
-Deploy a preview, verify real runs and saved approvals, then promote. Reopen a completed report from a fresh browser context and rehearse rollback/redeployment continuity. Do not mark those checks complete based on local simulation.
+For future changes, deploy a preview, verify real runs and saved approvals, then promote. The current release's hosted smoke, production continuity and rollback evidence are in `artifacts/deployment-smoke.json`, `artifacts/deployment-continuity.json` and `artifacts/deployment-rollback.json`. These checks used the real hosted services. The preview automation credential stays in ignored local configuration; GitHub's automated preview gate is not configured.
 
 ## Important decisions
 

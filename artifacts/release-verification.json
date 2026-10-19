@@ -1,0 +1,69 @@
+{
+  "verifiedAt": "2026-10-19T17:33:09.752Z",
+  "deploymentId": "dpl_6JCEkv92RMQppgVUY7QUu9QnPoAA",
+  "base": "https://relay-incident-workbench.vercel.app",
+  "passed": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/proposal?present=1",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/incidents/INC-0244",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/api/session",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "primary model and disabled automatic fallback",
+      "passed": true
+    },
+    {
+      "path": "/api/investigations/wrun_41M5AK8GJ90GTC9BG4JWGA9PGD",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "retained completed report unchanged after final deployment",
+      "passed": true
+    }
+  ],
+  "retainedRunId": "wrun_41M5AK8GJ90GTC9BG4JWGA9PGD",
+  "reportSha256": "08c1093252244dddd5ee06becd53ae277d739744d211eb6a90edc92926fd8454",
+  "budget": {
+    "limitUsd": 2,
+    "spentUsd": 1.11925249,
+    "remainingUsd": 0.88074751,
+    "refreshPeriod": "none"
+  },
+  "testSummary": {
+    "unit": 36,
+    "primaryLiveEvaluation": 8,
+    "hostedWorkflowScenarios": 7
+  },
+  "limitations": [
+    "Synthetic customer telemetry",
+    "Demo reviewer identity, not enterprise SSO",
+    "Automatic cross-model fallback disabled pending candidate quality",
+    "Draft customer updates require action-status review",
+    "Manual CLI preview gate; automated GitHub deployment gate not configured"
+  ],
+  "browserChecks": [
+    "Public saved report loads without Vercel bypass or reviewer sign-in",
+    "Saved timestamps explicitly show UTC",
+    "Unavailable timeline copy does not infer expiry",
+    "Report E3 opens the retained run evidence snapshot",
+    "Escape closes the source dialog and returns focus to its citation",
+    "Presenter Right arrow advances from screen 1 of 6 to 2 of 6"
+  ]
+}

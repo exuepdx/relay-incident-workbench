@@ -1,0 +1,18 @@
+{
+  "runId": "wrun_41M5AK8GJ90GTC9BG4JWGA9PGD",
+  "startedAt": "2026-10-19T17:27:34.265Z",
+  "startedDeployment": "dpl_6Hxew2tkckErZWoayumwUkJEVBU2",
+  "expectedDeployment": "dpl_FNmMx9sEP1XieNgiV2kYrze57dgy",
+  "base": "https://relay-incident-workbench.vercel.app",
+  "verifiedAt": "2026-10-19T17:28:21.949Z",
+  "passed": true,
+  "checks": [
+    "Started a real workflow on production deployment A",
+    "Observed its durable pause before promoting B",
+    "Read its completed result through production deployment B",
+    "Retained report and evidence in Postgres"
+  ],
+  "reportSha256": "08c1093252244dddd5ee06becd53ae277d739744d211eb6a90edc92926fd8454",
+  "servedBy": "openai/gpt-5.2",
+  "costUsd": "0.010568"
+}

@@ -6,11 +6,11 @@ has through a read-only API, calls three tools as durable workflow steps, and
 returns a cited report with the next check and a draft customer update.
 Nothing it does changes a production system. People decide.
 
-- **Proposal (the customer-ready artifact):** `/proposal`
-- **Workbench:** `/incidents/INC-0244`
+- **Customer presentation:** [six-screen presenter view](https://relay-incident-workbench.vercel.app/proposal?present=1)
+- **Live workbench:** [cascading network incident](https://relay-incident-workbench.vercel.app/incidents/INC-0244)
 - **Demo script and curveball prep:** [docs/demo-script.md](docs/demo-script.md)
 - **Deploying:** [docs/deploy.md](docs/deploy.md)
-- **Verified state and remaining release gate:** [docs/repair-verification.md](docs/repair-verification.md)
+- **Verification record:** [docs/repair-verification.md](docs/repair-verification.md)
 
 ## Architecture in one paragraph
 

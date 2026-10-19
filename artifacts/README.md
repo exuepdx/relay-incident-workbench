@@ -10,7 +10,10 @@
 - `telemetry-deployment-verification.json`: authenticated and unauthenticated HTTP checks against the independently deployed mock API.
 - `postgres-verification.json`: created only after the real hosted integration check passes.
 - `hosted-workflow-first-attempt.json`: the production-only adapter registration failure found before promotion, and its repair.
-- `deployment-smoke.json`: created only by a completed hosted workflow smoke run for this implementation.
+- `deployment-smoke.json`: seven passing hosted workflow scenarios using real Gateway calls and Postgres.
+- `deployment-continuity.json`: a real production workflow started before promotion and completed after promotion; its original deployment continued executing it.
+- `deployment-rollback.json`: the same completed report and evidence hash remained readable after rollback, before restoring the newer deployment.
+- `release-verification.json`: final public deployment, route checks, retained report hash and budget snapshot.
 - `local-*`: ignored local verification data, screenshots and backups. Offline costs/models are simulated.
 - `v1-*`: historical original-implementation evaluations; not evidence for the rebuilt tool-loop agent.
 

@@ -55,7 +55,8 @@ export async function SavedRuns({ incidentId }: { incidentId: string }) {
                           : "Investigation")}
                   </strong>
                   <small>
-                    {new Date(run.createdAt).toLocaleString()} · {run.model ?? "model pending"}
+                    {new Date(run.createdAt).toISOString().slice(0, 19).replace("T", " ")} UTC ·{" "}
+                    {run.model ?? "model pending"}
                     {run.costUsd ? ` · $${Number(run.costUsd).toFixed(4)}` : ""}
                     {run.fault !== "none" ? ` · drill: ${run.fault}` : ""}
                   </small>

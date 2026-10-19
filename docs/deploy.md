@@ -51,7 +51,8 @@ The comparison model is an evaluation candidate. The explicit provider-outage dr
 
 AI Gateway authenticates with the project's OIDC token; no provider key is
 needed. Enable AI Gateway for the team, add a card to unlock credit, and set
-a monthly budget under AI Gateway → Usage & Budgets.
+a project budget under AI Gateway → Usage & Budgets. This demo uses an approved
+$2 total, non-renewing cap; no credits were purchased.
 
 Preview environments: set the same variables for Preview with a different
 `TELEMETRY_API_TOKEN` if the Lambda is configured with two, or the same one
@@ -68,15 +69,19 @@ gates who can start a run; these rules bound how fast.
 
 GitHub Actions in `.github/workflows/`:
 
-- `ci.yml` runs tests, typechecks, and the production build on every push and
+- `ci.yml` runs tests, typechecks, and the production build on pushes to main and
   pull request. Label a PR `eval` (or run the workflow manually) to run the
   eight-case agent evaluation; it needs the `AI_GATEWAY_API_KEY` secret and
   uses real Gateway credit.
-- `preview-smoke.yml` listens for Vercel's deployment events and runs the
-  end-to-end smoke against each Preview URL, so the check on the PR is the
-  gate before promotion. Secrets: `DEMO_ACCESS_CODE` and, if Deployment
+- `preview-smoke.yml` can run the end-to-end suite from Vercel's Preview deployment events
+  once the GitHub integration and repository secrets are configured. This release
+  uses a manually verified CLI preview; an enforced GitHub promotion gate is not claimed.
+  Secrets: `DEMO_ACCESS_CODE` and, if Deployment
   Protection is on, `VERCEL_AUTOMATION_BYPASS_SECRET` from the project's
   Deployment Protection settings.
+
+The local preview test credential was authorized for testing and remains in ignored
+configuration. It has not been installed as a GitHub Actions secret.
 
 ## 6. Observability
 

@@ -1,0 +1,99 @@
+{
+  "mode": "live",
+  "testedAt": "2026-10-19T17:26:55.023Z",
+  "base": "https://relay-incident-workbench-phhj0d7du-exue27-9113.vercel.app",
+  "store": "postgres",
+  "results": [
+    {
+      "incidentId": "INC-0244",
+      "fault": "none",
+      "model": null,
+      "status": "completed",
+      "runId": "wrun_41M5AJQ38T0GWNVYNFHN1BPZMT",
+      "elapsedMs": 19704,
+      "events": 12,
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "costUsd": "0.010274",
+      "approval": null
+    },
+    {
+      "incidentId": "INC-0243",
+      "fault": "none",
+      "model": null,
+      "status": "completed",
+      "runId": "wrun_41M5AJSP1P0GWQWA1BZKYZDEY1",
+      "elapsedMs": 15767,
+      "events": 12,
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "costUsd": "0.010377",
+      "approval": null
+    },
+    {
+      "incidentId": "INC-0242",
+      "fault": "transient",
+      "model": null,
+      "status": "completed",
+      "runId": "wrun_41M5AJW4Y10GW8D73FNB8GANDY",
+      "elapsedMs": 17812,
+      "events": 14,
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "costUsd": "0.012969",
+      "approval": null
+    },
+    {
+      "incidentId": "INC-0241",
+      "fault": "provider-outage",
+      "model": null,
+      "status": "completed",
+      "runId": "wrun_41M5AJYNSZ0GY5421NGT69YHNX",
+      "elapsedMs": 17920,
+      "events": 15,
+      "servedBy": "google/gemini-2.5-flash",
+      "fallbackUsed": true,
+      "costUsd": "0.005699",
+      "approval": "approved"
+    },
+    {
+      "incidentId": "INC-0241",
+      "fault": "none",
+      "model": "google/gemini-2.5-flash",
+      "status": "completed",
+      "runId": "wrun_41M5AK16RK0GYWDQTBMD3YCW7C",
+      "elapsedMs": 17854,
+      "events": 15,
+      "servedBy": "google/gemini-2.5-flash",
+      "fallbackUsed": false,
+      "costUsd": "0.006691",
+      "approval": "declined"
+    },
+    {
+      "incidentId": "INC-0244",
+      "fault": "pause",
+      "model": null,
+      "status": "completed",
+      "runId": "wrun_41M5AK3QQ00GN6C985DCN0MZMN",
+      "elapsedMs": 47163,
+      "events": 14,
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "costUsd": "0.012393",
+      "approval": null
+    },
+    {
+      "incidentId": "INC-0244",
+      "fault": "outage",
+      "model": null,
+      "status": "failed",
+      "runId": "wrun_41M5AK75710GHTTB5YHTFXXJPE",
+      "elapsedMs": 8528,
+      "events": 8,
+      "servedBy": null,
+      "fallbackUsed": null,
+      "costUsd": null,
+      "approval": null
+    }
+  ]
+}

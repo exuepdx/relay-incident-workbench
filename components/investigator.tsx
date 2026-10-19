@@ -90,9 +90,7 @@ export function Investigator({
             cache: "no-store",
           });
           if (response.status === 404) {
-            setStreamNote(
-              "Step timeline is no longer retained by Workflows for this run; the report below was loaded from the investigation index.",
-            );
+            setStreamNote("The step timeline is unavailable. This report was restored from saved investigation data.");
             return;
           }
           if (!response.ok || !response.body) return;
