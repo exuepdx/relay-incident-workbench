@@ -1,6 +1,6 @@
 # Relay technical exercise — handoff
 
-This workspace contains the imported Fable rebuild plus repairs from the adversarial review. Start with `README.md`, `docs/demo-script.md`, and `docs/repair-verification.md`. The original review in `docs/review-2026-10-18.md` describes the imported revision, not the repaired state.
+Start with `README.md` for the demo and setup, `docs/decisions.md` for architecture choices, and `docs/demo-script.md` for the walkthrough. This workspace contains the imported Fable rebuild plus the documented repairs. The review in `docs/review-2026-10-18.md` describes the imported revision; `docs/repair-verification.md` records the fixes and later visual and copy changes.
 
 ## The presentation
 
