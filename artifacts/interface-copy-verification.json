@@ -1,0 +1,44 @@
+{
+  "verifiedAt": "2026-10-19T20:41:34.419Z",
+  "base": "https://relay-incident-workbench.vercel.app",
+  "deploymentId": "dpl_7pxCvXvk5ATbCSUq5qk9wzKWC2ds",
+  "applicationSourceCommit": "15988c063581f4422caa1fab8ec26b634bad5b4f",
+  "scope": "Interface and presentation copy; inference inputs, runtime validation and workflows unchanged.",
+  "passed": true,
+  "checks": [
+    {
+      "path": "/incidents/INC-0244",
+      "expectedTitle": "Checkout and inventory degradation",
+      "passed": true
+    },
+    {
+      "path": "/incidents/INC-0241",
+      "expectedTitle": "Checkout latency after a release",
+      "passed": true
+    },
+    {
+      "path": "/incidents/INC-0242",
+      "expectedTitle": "Payment request timeouts",
+      "passed": true
+    },
+    {
+      "path": "/incidents/INC-0243",
+      "expectedTitle": "Checkout latency with missing traces",
+      "passed": true
+    },
+    {
+      "path": "/proposal?present=1",
+      "expectedTitle": "retail checkout outage.",
+      "passed": true
+    }
+  ],
+  "retainedRunId": "wrun_41M5AK8GJ90GTC9BG4JWGA9PGD",
+  "reportSha256": "08c1093252244dddd5ee06becd53ae277d739744d211eb6a90edc92926fd8454",
+  "savedReportUnchanged": true,
+  "ci": {
+    "url": "https://github.com/exuepdx/relay-incident-workbench/actions/runs/39320023663",
+    "conclusion": "success",
+    "unitTestsPassed": 36
+  },
+  "liveEvaluationsRerun": false
+}

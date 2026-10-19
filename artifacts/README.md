@@ -13,7 +13,8 @@
 - `deployment-smoke.json`: seven passing hosted workflow scenarios using real Gateway calls and Postgres.
 - `deployment-continuity.json`: a real production workflow started before promotion and completed after promotion; its original deployment continued executing it.
 - `deployment-rollback.json`: the same completed report and evidence hash remained readable after rollback, before restoring the newer deployment.
-- `release-verification.json`: final public deployment, route checks, retained report hash and budget snapshot.
+- `release-verification.json`: hosted functional-release verification before the later visual and copy updates, including its route checks, retained report hash and budget snapshot.
+- `interface-copy-verification.json`: the later UI/copy deployment, public route checks, unchanged saved report and corresponding CI result. Inference inputs and behavior did not change in this pass.
 - `local-*`: ignored local verification data, screenshots and backups. Offline costs/models are simulated.
 - `v1-*`: historical original-implementation evaluations; not evidence for the rebuilt tool-loop agent.
 

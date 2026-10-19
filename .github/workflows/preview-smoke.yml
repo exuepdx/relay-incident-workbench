@@ -1,7 +1,7 @@
 name: preview smoke
-# Vercel's GitHub integration reports each deployment; when a Preview is
-# ready, run the end-to-end smoke against it. The result appears as a check
-# on the pull request, which is the gate before promotion.
+# Optional integration: requires Vercel's GitHub deployment events and repository
+# secrets. The current demo uses manually verified CLI deployments; this workflow
+# is not an enforced promotion gate. See docs/deploy.md before enabling it.
 on:
   deployment_status:
 jobs:
