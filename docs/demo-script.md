@@ -52,10 +52,12 @@ the Gateway monthly hard limit. Rerun the eval before claiming equivalence.
 Keep the citation validation; it is free.
 
 **"Make it roll the service back automatically."**
-Relay is read-only by design and every next step says who approves. A write
-tool would be a workflow hook: the run pauses, a human approves in the
-customer's system, the run resumes. Show `createHook` in the Workflow SDK
-docs rather than promising it in the demo.
+Show INC-0241. The agent already has the one write-shaped tool it is allowed:
+`proposeMitigation`, which records a request and pauses the run on a
+workflow hook until the owner decides (`workflows/investigate.ts`). Making
+it execute is a second tool behind the same hook plus an audit record, and
+you would still want the owner's click. The approval window expires on its
+own (`APPROVAL_TIMEOUT`), so a forgotten proposal never leaves a run hanging.
 
 **"Why not Eve?"**
 Eve is Vercel's filesystem-first agent framework on the same Workflows and
@@ -65,8 +67,16 @@ responder chat with channels and approvals is where Eve would be the next
 step.
 
 **"Change the model live."**
-Edit `AI_MODEL` in project settings, redeploy, run. Or for the room: change
-the default in `lib/config.ts`, push, Preview URL in under two minutes.
+Pick it from the Model dropdown; the allow-list is `AI_COMPARISON_MODELS`.
+For a new default, edit `AI_MODEL` in project settings and redeploy, or
+change `lib/config.ts`, push, and open the Preview URL.
+
+## Presenting the proposal
+
+Press **P** on `/proposal` (or open `/proposal?present=1`) for presenter
+mode: one section per screen, arrow keys to move, Esc to leave. The theme
+toggle in the workbench top bar switches to dark mode, which matches the
+hero on a projector.
 
 ## Live change rehearsal
 

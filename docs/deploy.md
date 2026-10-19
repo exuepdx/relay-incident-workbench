@@ -50,7 +50,35 @@ Preview environments: set the same variables for Preview with a different
 `TELEMETRY_API_TOKEN` if the Lambda is configured with two, or the same one
 for the demo.
 
-## 4. Verify
+## 4. Protect the start endpoint
+
+In the project's Firewall tab add a rate-limit rule: path `/api/investigations`,
+method `POST`, 10 requests per minute per IP, action `deny`. Add a second rule
+for `/api/session` at 5 per minute. Turn on Bot Protection. The reviewer code
+gates who can start a run; these rules bound how fast.
+
+## 5. CI and the promotion gate
+
+GitHub Actions in `.github/workflows/`:
+
+- `ci.yml` runs tests, typechecks, and the production build on every push and
+  pull request. Label a PR `eval` (or run the workflow manually) to run the
+  seven-case agent evaluation; it needs the `AI_GATEWAY_API_KEY` secret and
+  costs about $0.10.
+- `preview-smoke.yml` listens for Vercel's deployment events and runs the
+  end-to-end smoke against each Preview URL, so the check on the PR is the
+  gate before promotion. Secrets: `DEMO_ACCESS_CODE` and, if Deployment
+  Protection is on, `VERCEL_AUTOMATION_BYPASS_SECRET` from the project's
+  Deployment Protection settings.
+
+## 6. Observability
+
+`instrumentation.ts` registers `@vercel/otel`; the AI SDK emits spans for
+every model and tool call under `relay.investigate`. On Pro, add an OTLP
+trace drain (Team Settings → Drains) to forward both application traces and
+AI Gateway traces to the customer's observability platform.
+
+## 7. Verify
 
 ```sh
 DEMO_URL=https://<app>.vercel.app DEMO_ACCESS_CODE=<code> npm run smoke

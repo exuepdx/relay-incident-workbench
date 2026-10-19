@@ -16,8 +16,10 @@ Nothing it does changes a production system. People decide.
 Next.js 16 with Cache Components renders a static shell, caches each incident
 as a tagged segment, and streams the live run. A Vercel Workflow briefs a
 `WorkflowAgent` (AI SDK) from the customer's telemetry API, runs its three
-read-only tools as retried steps, validates the structured report against the
-evidence it actually read, and persists it to a Postgres index. AI Gateway is
+read-only tools as retried steps, pauses on a workflow hook if the agent
+proposes a mitigation until a service owner decides, validates the
+structured report against the evidence it actually read, and persists it to
+a Postgres index. AI Gateway is
 the only model boundary: ordered model fallbacks, provider allow-lists, and
 cost per run. The customer's API lives on an AWS Lambda function URL in
 us-east-1 (the "what stays" side of the boundary).
@@ -50,7 +52,8 @@ The reviewer code defaults to whatever `DEMO_ACCESS_CODE` is in `.env.local`.
 npm test                 # 20 unit tests: contracts, access, customer API, tools, accounting, evals
 npm run typecheck && npm run typecheck:customer-api
 npm run build
-DEMO_ACCESS_CODE=... npm run smoke    # 5 end-to-end runs incl. 503 retry, provider-outage drill, outage
+DEMO_ACCESS_CODE=... npm run smoke    # 7 end-to-end runs: 503 retry, fallback, approval, model override, outage
+SMOKE_PAUSE=1 ... npm run smoke       # also the redeploy hold
 npm run eval             # 7 agent cases through AI Gateway (needs credit, ~$0.10)
 npm run probe:fallback   # verifies the provider-outage drill before a live demo
 ```
