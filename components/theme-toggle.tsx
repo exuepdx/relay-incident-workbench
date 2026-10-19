@@ -16,9 +16,9 @@ export function applyTheme(theme: Theme) {
 
 /** Light or dark. The initial value is applied before paint by the inline script in the layout. */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => {
-    setTheme((document.documentElement.dataset.theme as Theme) || "light");
+    setTheme((document.documentElement.dataset.theme as Theme) || "dark");
   }, []);
   const next: Theme = theme === "dark" ? "light" : "dark";
   return (

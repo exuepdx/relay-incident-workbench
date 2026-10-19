@@ -11,8 +11,8 @@ import { Investigator } from "@/components/investigator";
 import { SavedRuns } from "@/components/saved-runs";
 import { RefreshButton } from "@/components/refresh-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SignalCanvas } from "@/components/signal-canvas";
-import { CountUp } from "@/components/motion";
+import { SignalSculpture } from "@/components/signal-sculpture";
+import { MetricSignal } from "@/components/metric-signal";
 import { getIncident, getIncidentEvidence } from "@/lib/incidents";
 import { customer } from "@/lib/customer";
 import { config } from "@/lib/config";
@@ -52,14 +52,18 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
       </Topbar>
       <main id="main" className="page">
         <div className="hero-band">
-          <SignalCanvas />
+          <SignalSculpture />
           <div className="incident-head enter">
             <div>
-              <span className="eyebrow">
-                {incident.id} · {incident.window.replace(" / ", " → ")}
+              <span className="eyebrow incident-kicker">
+                <span className="section-index">01 /</span> INCIDENT INTELLIGENCE{" "}
+                <span className="incident-code">{incident.id}</span>
               </span>
               <h1>{incident.title}</h1>
               <p>{incident.subtitle}</p>
+              <span className="incident-window">
+                <Icon name="clock" size={12} /> {incident.window.replace(" / ", " → ")}
+              </span>
             </div>
             <div className="incident-meta">
               <span className="chip amber">
@@ -73,24 +77,43 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
 
           <div className="kpis stagger">
             <div className="kpi">
-              <span className="label">Checkout p95 latency</span>
+              <span className="label">
+                <Icon name="pulse" size={15} /> Checkout p95 latency
+              </span>
               <div className="value">
-                <CountUp value={k.p95Ms} from={k.baselineMs} /> <small>ms</small>
+                {k.p95Ms.toLocaleString("en-US")} <small>ms</small>
                 <span className="delta">{k.change}</span>
               </div>
               <span className="foot">Baseline {k.baselineMs} ms</span>
+              <MetricSignal values={incident.series} />
             </div>
             <div className="kpi">
-              <span className="label">API error rate</span>
+              <span className="label">
+                <Icon name="bolt" size={15} /> API error rate
+              </span>
               <div className="value">
-                <CountUp value={k.errorRatePct} decimals={1} delay={150} /> <small>%</small>
+                {k.errorRatePct.toFixed(1)} <small>%</small>
               </div>
               <span className="foot">Checkout API, incident window</span>
+              <svg className="error-orbit" viewBox="0 0 40 40" aria-hidden="true">
+                <circle cx="20" cy="20" r="16" className="orbit-track" />
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="16"
+                  pathLength="100"
+                  strokeDasharray={`${Math.min(100, Math.max(0, k.errorRatePct))} 100`}
+                  transform="rotate(-90 20 20)"
+                  className="orbit-value"
+                />
+              </svg>
             </div>
             <div className="kpi">
-              <span className="label">Known gaps</span>
+              <span className="label">
+                <Icon name="layers" size={15} /> Known gaps
+              </span>
               <div className="value">
-                <CountUp value={incident.coverage.length} delay={300} /> <small>coverage notes</small>
+                {incident.coverage.length} <small>coverage notes</small>
               </div>
               <span className="foot">What the record says is missing</span>
             </div>

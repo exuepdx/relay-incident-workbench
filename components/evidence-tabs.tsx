@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icon } from "./icons";
 
 type Tab = "topology" | "overview" | "register";
 
@@ -58,6 +59,7 @@ export function EvidenceTabs({
               document.getElementById(`tab-${tabs[next]}`)?.focus();
             }}
           >
+            <Icon name={t === "topology" ? "network" : t === "overview" ? "pulse" : "layers"} size={15} />
             {labels[t]}
           </button>
         ))}

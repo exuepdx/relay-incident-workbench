@@ -40,13 +40,13 @@ export function LatencyChart({ incident }: { incident: Incident }) {
       >
         <defs>
           <linearGradient id="fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#6d4fd2" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#6d4fd2" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--violet)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--violet)" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="stroke" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#14b8a6" />
-            <stop offset="45%" stopColor="#6d4fd2" />
-            <stop offset="100%" stopColor="#b4432b" />
+            <stop offset="0%" stopColor="var(--teal)" />
+            <stop offset="45%" stopColor="var(--violet)" />
+            <stop offset="100%" stopColor="var(--red)" />
           </linearGradient>
         </defs>
         {ticks.map((t) => (
@@ -57,7 +57,14 @@ export function LatencyChart({ incident }: { incident: Incident }) {
             </text>
           </g>
         ))}
-        <line x1={changeAt} x2={changeAt} y1={top - 6} y2={h - bottom} stroke="#c9bfe0" strokeDasharray="4 4" />
+        <line
+          x1={changeAt}
+          x2={changeAt}
+          y1={top - 6}
+          y2={h - bottom}
+          stroke="var(--border-strong)"
+          strokeDasharray="4 4"
+        />
         <text x={changeAt} y={top - 10} textAnchor="middle" className="chart-label">
           change window
         </text>
@@ -82,14 +89,14 @@ export function LatencyChart({ incident }: { incident: Incident }) {
           cx={x(values.length - 1)}
           cy={y(values[values.length - 1])}
           r="4.5"
-          fill="#b4432b"
+          fill="var(--red)"
           stroke="#fff"
           strokeWidth="2"
         />
         {hover !== null && (
           <g>
             <line className="chart-crosshair" x1={x(hover)} x2={x(hover)} y1={top} y2={h - bottom} />
-            <circle cx={x(hover)} cy={y(values[hover])} r="4" fill="#fff" stroke="#6d4fd2" strokeWidth="2" />
+            <circle cx={x(hover)} cy={y(values[hover])} r="4" fill="#fff" stroke="var(--violet)" strokeWidth="2" />
           </g>
         )}
         {["−30 min", "−20 min", "−10 min", "now"].map((label, i) => (

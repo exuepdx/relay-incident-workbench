@@ -45,6 +45,34 @@ export function Icon({ name, size = 18, className }: { name: string; size?: numb
     tool: <path d="M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2 2 0 0 1-2.8-2.8l9.4-9.4a4 4 0 0 0-2.2-2.2Z" />,
     bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
     shield: <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z" />,
+    network: (
+      <>
+        <rect x="9" y="2" width="6" height="6" rx="1.5" />
+        <rect x="2" y="16" width="6" height="6" rx="1.5" />
+        <rect x="16" y="16" width="6" height="6" rx="1.5" />
+        <path d="M12 8v4M5 16v-4h14v4" />
+      </>
+    ),
+    database: (
+      <>
+        <ellipse cx="12" cy="5" rx="8" ry="3" />
+        <path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0" />
+      </>
+    ),
+    server: (
+      <>
+        <rect x="3" y="3" width="18" height="7" rx="2" />
+        <rect x="3" y="14" width="18" height="7" rx="2" />
+        <path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5" />
+      </>
+    ),
+    globe: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <ellipse cx="12" cy="12" rx="4" ry="9" />
+        <path d="M3 12h18M5 6h14M5 18h14" />
+      </>
+    ),
   };
   return (
     <svg

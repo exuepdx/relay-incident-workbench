@@ -236,13 +236,14 @@ export function Investigator({
   const rows = foldTimeline(events, terminal);
 
   return (
-    <section className="panel">
+    <section className="panel investigation-panel">
       <div className="panel-head">
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <span className="spark">
             <Icon name="spark" size={16} />
           </span>
           <div>
+            <span className="eyebrow panel-kicker">03 / REASONING WORKSPACE</span>
             <h2>Investigate</h2>
             <p>Agent on Vercel · tools read {incidentId} from your telemetry</p>
           </div>

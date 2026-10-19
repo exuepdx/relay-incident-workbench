@@ -10,13 +10,13 @@ import * as THREE from "three";
  *
  * Above: a glass slab (Vercel) carrying three lit nodes: Workflows, the agent,
  * and AI Gateway. Below: the customer's estate as a field of blocks. Between
- * them, streams of particles: violet requests going down through the
+ * them, streams of particles: ice-blue requests going down through the
  * boundary, teal evidence coming back up. The camera drifts and follows the
  * pointer. No post-processing; glow comes from additive sprites.
  */
 
-const VIOLET = "#a78bfa";
-const TEAL = "#5eead4";
+const SIGNAL_COLOR = "#91d9ff";
+const TEAL = "#b7f7d9";
 const NODES: Array<[number, number, number]> = [
   [-1.9, 1.75, 0.2],
   [0, 1.75, -0.35],
@@ -42,7 +42,8 @@ function glowTexture(color: string) {
 
 function Rig() {
   const { camera, pointer } = useThree();
-  const target = useMemo(() => new THREE.Vector3(2.3, 0.1, 0), []);
+  // Reserve the left side for the customer story; stage the sculpture to the right.
+  const target = useMemo(() => new THREE.Vector3(-1.8, 0.1, 0), []);
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     const x = 2.6 + Math.sin(t * 0.12) * 0.7 + pointer.x * 0.7;
@@ -54,7 +55,7 @@ function Rig() {
 }
 
 function VercelLayer() {
-  const violet = useMemo(() => glowTexture(VIOLET), []);
+  const violet = useMemo(() => glowTexture(SIGNAL_COLOR), []);
   const white = useMemo(() => glowTexture("#ffffff"), []);
   return (
     <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.5}>
@@ -69,19 +70,19 @@ function VercelLayer() {
             clearcoat={1}
             transparent
             opacity={0.9}
-            attenuationColor="#c4b5fd"
+            attenuationColor="#b8e7ff"
             attenuationDistance={2.5}
           />
         </RoundedBox>
         <mesh position={[0, 1.42, 0]} rotation-x={-Math.PI / 2}>
           <planeGeometry args={[5.8, 2.8]} />
-          <meshBasicMaterial color={VIOLET} transparent opacity={0.07} />
+          <meshBasicMaterial color={SIGNAL_COLOR} transparent opacity={0.07} />
         </mesh>
         {NODES.map((p, i) => (
           <group key={i} position={p}>
             <mesh>
               <sphereGeometry args={[0.16, 32, 32]} />
-              <meshStandardMaterial color="#ffffff" emissive={VIOLET} emissiveIntensity={2.2} roughness={0.25} />
+              <meshStandardMaterial color="#ffffff" emissive={SIGNAL_COLOR} emissiveIntensity={2.2} roughness={0.25} />
             </mesh>
             <sprite scale={[1.6, 1.6, 1]}>
               <spriteMaterial
@@ -106,7 +107,7 @@ function VercelLayer() {
         {/* The agent's orbit ring around the middle node */}
         <mesh position={NODES[1]} rotation-x={Math.PI / 2.3}>
           <torusGeometry args={[0.42, 0.012, 12, 80]} />
-          <meshBasicMaterial color={VIOLET} transparent opacity={0.7} blending={THREE.AdditiveBlending} />
+          <meshBasicMaterial color={SIGNAL_COLOR} transparent opacity={0.7} blending={THREE.AdditiveBlending} />
         </mesh>
       </group>
     </Float>
@@ -116,10 +117,10 @@ function VercelLayer() {
 function Boundary() {
   return (
     <group position={[0, 0.3, 0]}>
-      <gridHelper args={[9, 18, "#4c3a86", "#241d3f"]} />
+      <gridHelper args={[9, 18, "#3d657d", "#152a38"]} />
       <mesh rotation-x={-Math.PI / 2} position-y={-0.001}>
         <planeGeometry args={[9, 9]} />
-        <meshBasicMaterial color="#12101c" transparent opacity={0.55} />
+        <meshBasicMaterial color="#0b1620" transparent opacity={0.55} />
       </mesh>
     </group>
   );
@@ -135,8 +136,8 @@ function Estate() {
     const matrices: THREE.Matrix4[] = [];
     const colors: THREE.Color[] = [];
     const hot: number[] = [];
-    const base = new THREE.Color("#2b2740");
-    const lit = new THREE.Color("#3a3356");
+    const base = new THREE.Color("#182b39");
+    const lit = new THREE.Color("#29465c");
     const teal = new THREE.Color(TEAL);
     for (let i = 0; i < count; i++) {
       const cx = (i % cols) - (cols - 1) / 2;
@@ -231,7 +232,7 @@ function Streams() {
         </bufferGeometry>
         <pointsMaterial
           size={0.055}
-          color={VIOLET}
+          color={SIGNAL_COLOR}
           transparent
           opacity={0.95}
           sizeAttenuation
@@ -265,18 +266,18 @@ export default function HeroScene() {
         camera={{ position: [2.6, 2.1, 8.2], fov: 38, near: 0.1, far: 40 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       >
-        <color attach="background" args={["#07060c"]} />
-        <fog attach="fog" args={["#07060c", 9, 17]} />
+        <color attach="background" args={["#060d14"]} />
+        <fog attach="fog" args={["#060d14", 9, 17]} />
         <ambientLight intensity={0.35} />
-        <pointLight position={[3, 4.5, 2.5]} intensity={60} color={VIOLET} distance={16} decay={2} />
+        <pointLight position={[3, 4.5, 2.5]} intensity={60} color={SIGNAL_COLOR} distance={16} decay={2} />
         <pointLight position={[-4, 2.5, -2]} intensity={28} color={TEAL} distance={14} decay={2} />
-        <directionalLight position={[-2, 6, 4]} intensity={0.8} color="#cbbdf5" />
+        <directionalLight position={[-2, 6, 4]} intensity={0.8} color="#c9edff" />
         <Rig />
         <VercelLayer />
         <Boundary />
         <Estate />
         <Streams />
-        <Sparkles count={140} scale={[11, 7, 9]} size={2.4} speed={0.25} opacity={0.55} color="#d6ccf7" />
+        <Sparkles count={140} scale={[11, 7, 9]} size={2.4} speed={0.25} opacity={0.55} color="#d0ecff" />
       </Canvas>
     </div>
   );

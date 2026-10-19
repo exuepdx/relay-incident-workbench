@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import "./interface.css";
 
 export const metadata: Metadata = {
   title: "Relay — from signals to a next step",
@@ -12,13 +13,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="dark"
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
-          // Apply the saved or preferred theme before first paint to avoid a flash.
+          // Default to the control-room palette; preserve an explicit user choice.
           dangerouslySetInnerHTML={{
             __html:
-              "try{var t=localStorage.getItem('relay-theme');if(!t&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';if(t)document.documentElement.dataset.theme=t;}catch(e){}",
+              "try{var t=localStorage.getItem('relay-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}",
           }}
         />
       </head>

@@ -1,19 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { Evidence, Incident, Topology } from "@/lib/contracts";
 import { Icon } from "./icons";
 import { CitationButton } from "./citation-button";
 
 const statusLabel = { affected: "Affected", baseline: "Within baseline", unknown: "Unknown" } as const;
-// Fixed positions for the curated six-node scene.
+// Curated catalog geometry. Connections show dependencies, never inferred causality.
 const positions: Record<string, [number, number]> = {
-  checkout: [25, 12],
-  payments: [75, 12],
-  inventory: [25, 38],
-  network: [25, 65],
-  database: [75, 65],
-  underlay: [25, 91],
+  checkout: [18, 20],
+  payments: [82, 20],
+  inventory: [18, 52],
+  network: [50, 52],
+  database: [82, 52],
+  underlay: [50, 84],
+};
+const nodeIcons: Record<string, string> = {
+  checkout: "layers",
+  payments: "globe",
+  inventory: "server",
+  network: "network",
+  database: "database",
+  underlay: "layers",
 };
 
 export function handoffText(incident: Incident, topology: Topology, index: number) {
@@ -36,6 +44,7 @@ export function handoffText(incident: Incident, topology: Topology, index: numbe
 /** Curated dependency scene with owners, status, and copyable handoffs. */
 export function DependencyMap({ incident, evidence }: { incident: Incident; evidence: Evidence[] }) {
   const topology = incident.topology!;
+  const arrowId = useId();
   const [selected, setSelected] = useState(topology.handoffs[0]?.nodeId ?? topology.nodes[0].id);
   const [copied, setCopied] = useState("");
   const node = topology.nodes.find((n) => n.id === selected) ?? topology.nodes[0];
@@ -52,9 +61,10 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
   );
   return (
     <div className="stack">
-      <div className="panel">
+      <div className="panel topology-panel">
         <div className="panel-head">
           <div>
+            <span className="eyebrow panel-kicker">02 / DEPENDENCY FIELD</span>
             <h2>Where the symptoms meet</h2>
             <p>{topology.scope}</p>
           </div>
@@ -68,19 +78,23 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
             ))}
           </div>
           <div className="map-stage">
+            <div className="map-coordinates" aria-hidden="true">
+              <span>SCOPED TOPOLOGY</span>
+              <span>{topology.nodes.length.toString().padStart(2, "0")} COMPONENTS</span>
+            </div>
             <div className="map" role="group" aria-label="Dependency map; arrows show dependency direction">
-              <svg viewBox="0 0 600 440" preserveAspectRatio="none" aria-hidden="true" className="map-lines">
+              <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" className="map-lines">
                 <defs>
                   <marker
-                    id="arrow"
+                    id={arrowId}
                     viewBox="0 0 10 10"
                     refX="8"
                     refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
+                    markerWidth="5"
+                    markerHeight="5"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#a89fb8" />
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--map-arrow)" />
                   </marker>
                 </defs>
                 {topology.edges.map((edge) => {
@@ -88,20 +102,20 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
                   const to = positions[edge.to];
                   if (!from || !to) return null;
                   const horizontal = from[1] === to[1];
-                  const status = (id: string) => topology.nodes.find((n) => n.id === id)?.status;
-                  const hot = status(edge.from) === "affected" && status(edge.to) === "affected";
-                  const toUnknown = status(edge.to) === "unknown";
+                  const active = edge.from === selected || edge.to === selected;
+                  const toUnknown = topology.nodes.find((n) => n.id === edge.to)?.status === "unknown";
                   return (
-                    <line
-                      key={`${edge.from}-${edge.to}`}
-                      className={hot ? "hot" : undefined}
-                      x1={from[0] * 6 + (horizontal ? 119 : 0)}
-                      y1={from[1] * 4.4 + (horizontal ? 0 : 38)}
-                      x2={to[0] * 6 - (horizontal ? 121 : 0)}
-                      y2={to[1] * 4.4 - (horizontal ? 0 : 40)}
-                      markerEnd="url(#arrow)"
-                      strokeDasharray={toUnknown ? "4 4" : undefined}
-                    />
+                    <g key={`${edge.from}-${edge.to}`} className={`map-connection ${active ? "active" : ""}`}>
+                      <line
+                        x1={from[0] * 10 + (horizontal ? 136 : 0)}
+                        y1={from[1] * 10 + (horizontal ? 0 : 125)}
+                        x2={to[0] * 10 - (horizontal ? 144 : 0)}
+                        y2={to[1] * 10 - (horizontal ? 0 : 135)}
+                        markerEnd={`url(#${arrowId})`}
+                        vectorEffect="non-scaling-stroke"
+                        strokeDasharray={toUnknown ? "4 5" : undefined}
+                      />
+                    </g>
                   );
                 })}
               </svg>
@@ -118,10 +132,14 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
                   aria-pressed={node.id === n.id}
                   onClick={() => setSelected(n.id)}
                 >
+                  <span className="node-chrome" aria-hidden="true">
+                    <Icon name={nodeIcons[n.id] ?? "server"} size={19} />
+                    <span>{String(i + 1).padStart(2, "0")}</span>
+                  </span>
+                  <strong>{n.label}</strong>
                   <span className={`status ${n.status}`}>
                     <i /> {statusLabel[n.status]}
                   </span>
-                  <strong>{n.label}</strong>
                   <small>{n.owner}</small>
                 </button>
               ))}
@@ -132,8 +150,18 @@ export function DependencyMap({ incident, evidence }: { incident: Incident; evid
             measurements only.
           </p>
           <div className="node-detail" aria-live="polite">
-            <span className="eyebrow">Accountable team</span>
-            <h4>{node.owner}</h4>
+            <div className="node-detail-head">
+              <span className="owner-icon">
+                <Icon name={nodeIcons[node.id] ?? "server"} size={22} />
+              </span>
+              <div>
+                <span className="eyebrow">Accountable team</span>
+                <h4>{node.owner}</h4>
+              </div>
+              <span className="detail-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </div>
             <p>{node.signal}</p>
             <Cites ids={node.citations} />
             <div className="links">

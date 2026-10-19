@@ -9,8 +9,9 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
         Skip to investigation
       </a>
       <aside className="sidebar">
-        <Link href="/" aria-label="Relay home">
+        <Link href="/" aria-label="Relay home" className="brand-link">
           <Logo />
+          <span className="brand-edition">RESPONSE SYSTEM</span>
         </Link>
         <div className="workspace">
           <span className="workspace-icon">N</span>
@@ -29,8 +30,9 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
               aria-current={i.id === current ? "page" : undefined}
             >
               <Icon name="pulse" size={16} />
-              <span>
-                <span className="mono">{i.id}</span> · {i.short}
+              <span className="nav-incident">
+                <span className="mono">{i.id}</span>
+                <span>{i.short}</span>
               </span>
               <span className="sev" aria-hidden="true" />
             </Link>
@@ -45,8 +47,13 @@ export function Shell({ children, current }: { children: React.ReactNode; curren
           </Link>
         </nav>
         <div className="sidebar-foot">
-          <strong>Relay</strong>
-          Evidence first. Decisions stay with your team.
+          <div className="authority-mark">
+            <Icon name="shield" size={18} />
+            <strong>Human authority.</strong>
+          </div>
+          Evidence first.
+          <br />
+          Every decision stays with your team.
         </div>
       </aside>
       <div className="main">{children}</div>
