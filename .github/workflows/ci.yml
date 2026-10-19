@@ -1,0 +1,44 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run typecheck:customer-api
+      - run: npm run build
+        env:
+          TELEMETRY_API_URL: https://telemetry.northstar.example
+          TELEMETRY_API_TOKEN: ci-placeholder
+  eval:
+    # Runs the seven-case agent evaluation through AI Gateway (about $0.10).
+    # Trigger manually, or label a pull request "eval".
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'eval')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/evaluate.ts
+        env:
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+          AI_MODEL: ${{ vars.AI_MODEL || 'openai/gpt-5.2' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation
+          path: artifacts/evaluation.json
