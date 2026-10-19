@@ -1040,7 +1040,8 @@ body::after,
     position: static;
     width: 100%;
     transform: none;
-    height: 116px;
+    height: auto;
+    min-height: 146px;
   }
   .shell .node strong {
     font-size: 13px;
@@ -1063,6 +1064,35 @@ body::after,
   }
   .shell .panel-head p {
     font-size: 12px;
+  }
+}
+@media (max-width: 359px) {
+  .shell .map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shell .node,
+  .shell .node:hover,
+  .shell .node.selected {
+    min-height: 96px;
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 5px 9px;
+    align-content: center;
+  }
+  .shell .node .node-chrome {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    align-self: start;
+    padding-top: 2px;
+  }
+  .node-chrome > span {
+    display: none;
+  }
+  .shell .node strong,
+  .shell .node .status,
+  .shell .node small {
+    grid-column: 2;
+    overflow-wrap: anywhere;
   }
 }
 @media (prefers-reduced-motion: reduce) {
