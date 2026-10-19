@@ -54,3 +54,9 @@ The local smoke and browser runs used a fake Gateway. Their costs, served-model 
 The hosted investigation, abstention, approval, decline, retry, pause and outage checks passed. Production promotion and rollback were rehearsed. Public saved-report access was checked in a new browser tab without a Vercel bypass credential. The final copy pass labels saved timestamps as UTC and describes an unavailable timeline without guessing why it is unavailable.
 
 This is a technical demo with synthetic evidence and demo reviewer authentication. Automatic cross-model fallback remains disabled, customer outcomes remain proposed targets, and human approval remains required before sharing draft customer updates. GitHub's preview-event integration and an enforced promotion gate are not configured; this release used a manually verified CLI preview.
+
+## Visual refresh — 2026-10-19
+
+The workbench now uses graphite surfaces, ice-blue selection accents, an architectural SVG sculpture and a wider dependency map. The presentation's 3D composition reserves space for its text. Metrics render their actual values immediately; the compact p95 line uses the existing incident series. Selected connections express catalog relationships, not a confirmed cause. The dark palette is the default, with an explicit saved light preference preserved.
+
+The 36 regression tests, TypeScript check, production build and GitHub CI passed. Browser checks covered both themes, component/owner selection, catalog citations, Escape focus restoration, evidence-tab arrow navigation and the presentation. A narrow-screen review found crowded owner labels; mobile cards now grow with their content, and very narrow screens use a single-column component list. Reduced-motion rules remain in place. The agent, workflow, API and evaluation contracts did not change, so live inference evaluations were not rerun for this visual revision. The saved production report remained unchanged after deployment.
