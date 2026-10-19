@@ -969,6 +969,9 @@ body::after,
   .signal-sculpture {
     display: none;
   }
+  .shell .hero-band::after {
+    display: none;
+  }
   .incident-head > div:first-child {
     max-width: 100%;
   }
