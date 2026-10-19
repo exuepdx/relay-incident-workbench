@@ -258,10 +258,11 @@ function Streams() {
   );
 }
 
-export default function HeroScene() {
+export default function HeroScene({ animate = true }: { animate?: boolean }) {
   return (
-    <div className="hero3d-canvas">
+    <div className="hero3d-canvas" aria-hidden="true">
       <Canvas
+        frameloop={animate ? "always" : "demand"}
         dpr={[1, 1.6]}
         camera={{ position: [2.6, 2.1, 8.2], fov: 38, near: 0.1, far: 40 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}

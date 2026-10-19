@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePresentationMotion } from "./presentation-motion";
 
 const HeroScene = dynamic(() => import("./hero-scene"), {
   ssr: false,
@@ -11,21 +12,44 @@ const HeroScene = dynamic(() => import("./hero-scene"), {
 /** WebGL hero with a static fallback for reduced motion or no WebGL. */
 export function Hero({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<"pending" | "scene" | "static">("pending");
+  const section = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  const { motion } = usePresentationMotion();
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const phone = window.matchMedia("(max-width: 760px)").matches;
+    const element = section.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const phone = window.matchMedia("(max-width: 760px)");
     let webgl = false;
     try {
       const canvas = document.createElement("canvas");
-      webgl = Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+      const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
+      webgl = Boolean(context);
+      context?.getExtension("WEBGL_lose_context")?.loseContext();
     } catch {
       webgl = false;
     }
-    setMode(reduced || phone || !webgl ? "static" : "scene");
+    const sync = () => setMode(reduced.matches || phone.matches || !webgl ? "static" : "scene");
+    sync();
+    reduced.addEventListener("change", sync);
+    phone.addEventListener("change", sync);
+    return () => {
+      reduced.removeEventListener("change", sync);
+      phone.removeEventListener("change", sync);
+    };
   }, []);
   return (
-    <section className="hero3d">
-      {mode === "scene" ? <HeroScene /> : <div className="hero-fallback" />}
+    <section className="hero3d" ref={section} data-title="Overview" id="overview">
+      {mode === "scene" ? (
+        <HeroScene animate={motion && visible} />
+      ) : (
+        <div className="hero-fallback" aria-hidden="true" />
+      )}
       <div className="hero-grid" aria-hidden="true" />
       <div className="hero-vignette" aria-hidden="true" />
       {children}
