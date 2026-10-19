@@ -3,7 +3,6 @@ import { resumeHook } from "workflow/api";
 import { approvalDecisionSchema } from "@/lib/contracts";
 import { allowedOrigin, sessionCookie, validSession } from "@/lib/access";
 import { getStore } from "@/lib/store";
-import "@/lib/store-postgres";
 
 /**
  * A service owner's decision on a proposed mitigation. Resumes the paused

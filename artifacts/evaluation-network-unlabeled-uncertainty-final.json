@@ -1,0 +1,146 @@
+{
+  "mode": "live",
+  "evaluatedAt": "2026-10-19T17:11:31.226Z",
+  "model": "openai/gpt-5.2",
+  "fallbackModels": [],
+  "promptSha256": "bbde6a64eba97f11825f13e32eba1fc50241e578b6df714c3f2324302a065e8d",
+  "contractSha256": "04ad941cc0bcfe92378f34cd78d7dd0587065942239605e8cc440c51d8f1ff60",
+  "cases": 1,
+  "failures": 0,
+  "results": [
+    {
+      "name": "network-unlabeled-uncertainty",
+      "structuralValidation": "passed",
+      "assessmentPassed": true,
+      "allToolsCalled": true,
+      "regressionFailures": [],
+      "evidenceSha256": "184df3ee5f378465c5897fc97662722425823ceea8cb6788c8ab7f36336422cf",
+      "humanReviewRubric": "Without an explicit withhold label, recognizes missing localization; gathers evidence and proposes no mitigation.",
+      "humanReview": "pending",
+      "report": {
+        "title": "Checkout latency and errors; dependency unlocalized",
+        "assessment": "insufficient-evidence",
+        "summary": "Checkout-api p95 latency and error rate increased during the window while request volume stayed steady. Database and payment timings for successful operations were near baseline, and both checkout release cohorts degraded similarly. With missing traces and network/path telemetry, the evidence cannot localize a failing dependency.",
+        "findings": [
+          {
+            "text": "Checkout-api p95 increased (480ms→3180ms) and error rate rose (0.4%→7.4%) while request rate stayed ~115 rps; both old/new release cohorts degraded similarly.",
+            "citations": [
+              "E1"
+            ]
+          },
+          {
+            "text": "Inventory-db and payment-provider metrics for successful operations were near baseline (DB CPU ~35%, SELECT p95 ~160ms; payment auth p95 ~139ms), which does not rule out failed attempts or other paths.",
+            "citations": [
+              "E4"
+            ]
+          },
+          {
+            "text": "Two changes occurred shortly before symptoms: a receipt-label-only checkout release (17:10) and a firewall policy update on the inventory-to-db path (17:11); timing alone is not causal evidence.",
+            "citations": [
+              "E5"
+            ]
+          },
+          {
+            "text": "Coverage gaps prevent dependency localization: no child spans, path-specific flow records, or device measurements were collected for this interval.",
+            "citations": [
+              "E6"
+            ]
+          }
+        ],
+        "nextSteps": [
+          "Collect representative end-to-end traces for slow and erroring checkout requests, ensuring child spans include checkout→inventory, inventory→db, and checkout→payments with timing breakdowns.",
+          "Collect network/path measurements for the inventory-to-db path during the window (flow logs, firewall decision logs, and any available device interface counters) and compare against a pre-incident baseline.",
+          "Segment checkout errors/latency by dependency outcome (inventory failures vs payment failures vs internal) and compare across both release cohorts to identify the dominant contributor without assuming causality from change timing."
+        ],
+        "uncertainty": "No slow traces were available and key telemetry (child spans, path-specific flow/device data) is missing, so the failing component cannot be localized. Baseline metrics cover only successful DB queries and payment calls, which may not reflect failed attempts.",
+        "customerUpdate": "We’re seeing elevated checkout response times and an increased rate of failed API responses in the incident window. Current data does not yet confirm whether the issue is in checkout, inventory, the inventory-to-database network path, or another dependency. We’re collecting detailed traces and network logs to isolate the contributor."
+      },
+      "proposal": null,
+      "retrievedEvidence": [
+        {
+          "id": "E1",
+          "kind": "metric",
+          "title": "Checkout degradation spans both releases",
+          "detail": "At 17:14 UTC checkout p95 rose from 480ms to 3180ms and API error rate from 0.4% to 7.4%. Request rate stayed near 115 requests/second. Old and new checkout release cohorts show similar degradation. No lost-order or revenue measurement is available.",
+          "source": "Metrics · checkout cohorts"
+        },
+        {
+          "id": "E4",
+          "kind": "metric",
+          "title": "Successful queries and payment calls remain near baseline",
+          "detail": "Database CPU is 35%, baseline 34%; SELECT inventory p95 is 160ms, baseline 155ms, for successful queries. Pool acquisition p95 is 22ms, baseline 20ms. Payment authorization p95 is 139ms, baseline 135ms. Successful requests can hide failed connection attempts; these measurements do not clear entire teams or all database behavior.",
+          "source": "Metrics · database and payment owners"
+        },
+        {
+          "id": "E5",
+          "kind": "change",
+          "title": "Two nearby changes require different evidence",
+          "detail": "A receipt-label-only checkout release occurred at 17:10 UTC. A firewall policy update for the inventory-to-database path occurred at 17:11. Both checkout release cohorts degraded at 17:14. Proximity alone proves neither change caused the incident.",
+          "source": "Change audit · application and network"
+        },
+        {
+          "id": "E6",
+          "kind": "coverage",
+          "title": "Physical infrastructure and causal linkage are unverified",
+          "detail": "Child spans, path-specific flow records, and device measurements were not collected for this interval. Only aggregate checkout symptoms and change timestamps are available.",
+          "source": "Incident record · coverage gaps"
+        },
+        {
+          "id": "E7",
+          "kind": "coverage",
+          "title": "Catalog defines dependencies and accountable teams",
+          "detail": "Synthetic service catalog: Checkout Experience owns checkout-api; Inventory Services owns inventory-api; Network Platform owns the inventory-to-database network path; Data Platform owns inventory-db; Payments owns payment authorization; Infrastructure Operations owns the physical network underlay. Checkout calls inventory then payments. Inventory reaches its database through the network path, which depends on the underlay. This catalog records dependencies, not causal propagation.",
+          "source": "Service catalog · reviewed synthetic snapshot"
+        }
+      ],
+      "briefingSha256": "c21e160d75aece0de3eac439925333aa5493c4596ed82c4bef943a62165cea1e",
+      "toolsCalled": [
+        "getServiceMetrics",
+        "getSlowTraces",
+        "getRecentChanges"
+      ],
+      "elapsedMs": 11113,
+      "totalInputTokens": 3581,
+      "totalOutputTokens": 563,
+      "totalCostUsd": "0.011931",
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "modelSteps": [
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1579,
+          "outputTokens": 58,
+          "costUsd": "0.00357525",
+          "generationId": "gen_01M5AJAX3F8PY3YPZ07CGGZ7YP",
+          "toolCalls": [
+            "getServiceMetrics",
+            "getSlowTraces",
+            "getRecentChanges"
+          ],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "openai"
+            }
+          ]
+        },
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 2002,
+          "outputTokens": 505,
+          "costUsd": "0.0083559",
+          "generationId": "gen_01M5AJAYWZAD83YS25060F5VAH",
+          "toolCalls": [],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "openai"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

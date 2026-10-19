@@ -1,14 +1,15 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { investigationRecordSchema, type InvestigationRecord } from "./contracts";
+import { PostgresStore } from "./store-postgres";
 
 /**
  * The investigation index: who ran what, when, with which model, at what
  * cost, and the final report. This is the "sessions store" of the demo.
  *
- * Postgres (DATABASE_URL) in deployed environments; a JSON file in local
- * development; memory as a last resort so the app still works without a
- * database (reads then fall back to the workflow's own retained state).
+ * Postgres (DATABASE_URL) is required in deployed environments. A JSON file
+ * supports one local development process; an in-memory adapter is available
+ * to tests. Production must never silently fall back to ephemeral storage.
  */
 export interface Store {
   readonly kind: "postgres" | "file" | "memory";
@@ -120,20 +121,15 @@ class FileStore extends MemoryStore {
 }
 
 let instance: Store | null = null;
-let postgresFactory: ((url: string) => Store) | null = null;
-
-/** Registered by lib/store-postgres.ts so this module stays import-light. */
-export function registerPostgres(factory: (url: string) => Store) {
-  postgresFactory = factory;
-}
-
 export function getStore(): Store {
   if (instance) return instance;
   const url = process.env.DATABASE_URL;
-  if (url && postgresFactory) instance = postgresFactory(url);
+  // Keep the adapter reachable through a value import: workflow step bundling
+  // may omit an unrelated side-effect registration module.
+  if (url) instance = new PostgresStore(url);
   else if (process.env.NODE_ENV !== "production")
     instance = new FileStore(join(process.cwd(), ".data", "investigations.json"));
-  else throw new Error("DATABASE_URL and the Postgres adapter are required in production");
+  else throw new Error("DATABASE_URL is required in production");
   return instance;
 }
 

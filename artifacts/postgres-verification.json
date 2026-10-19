@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-10-19T17:09:00.383Z",
+  "adapter": "postgres",
+  "passed": true,
+  "checks": [
+    "concurrent partial updates preserve fields",
+    "replayed create preserves completion",
+    "fresh connection reads saved state",
+    "only one concurrent start claim wins",
+    "lost response reconnects to bound run",
+    "changed inputs rejected",
+    "missing update fails visibly"
+  ]
+}

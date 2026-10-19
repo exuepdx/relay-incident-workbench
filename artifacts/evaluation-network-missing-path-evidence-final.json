@@ -1,0 +1,146 @@
+{
+  "mode": "live",
+  "evaluatedAt": "2026-10-19T17:10:14.896Z",
+  "model": "openai/gpt-5.2",
+  "fallbackModels": [],
+  "promptSha256": "bbde6a64eba97f11825f13e32eba1fc50241e578b6df714c3f2324302a065e8d",
+  "contractSha256": "04ad941cc0bcfe92378f34cd78d7dd0587065942239605e8cc440c51d8f1ff60",
+  "cases": 1,
+  "failures": 0,
+  "results": [
+    {
+      "name": "network-missing-path-evidence",
+      "structuralValidation": "passed",
+      "assessmentPassed": true,
+      "allToolsCalled": true,
+      "regressionFailures": [],
+      "evidenceSha256": "c999be552bfe9e4e95a4d48065e1eda29bad2cbcd4045fc5465a3fdc021ad606",
+      "humanReviewRubric": "Without spans or flow records, neither the policy nor a device can be blamed. Asks for path evidence; no rollback or bypass.",
+      "humanReview": "pending",
+      "report": {
+        "title": "INC-0244: Next dependency to investigate",
+        "assessment": "insufficient-evidence",
+        "summary": "Checkout latency and error rate increased during the window, but available telemetry cannot localize the problem to inventory, payments, database, or the network path. With child spans and flow/path data missing, the next investigation should focus on collecting evidence on the inventory-to-database network path.",
+        "findings": [
+          {
+            "text": "During the window, checkout p95 latency increased (480ms→3180ms) and error rate rose (0.4%→7.4%) while request rate stayed roughly steady; both old and new checkout cohorts degraded similarly.",
+            "citations": [
+              "E1"
+            ]
+          },
+          {
+            "text": "Database and payments “successful” p95 metrics remained near baseline; these do not capture failed connection attempts and therefore do not clear the database, network path, or payment dependency for error paths.",
+            "citations": [
+              "E4"
+            ]
+          },
+          {
+            "text": "There are no child spans or network flow/per-path/device measurements available, so current data cannot distinguish application, connection, policy, or device contributors.",
+            "citations": [
+              "E6"
+            ]
+          },
+          {
+            "text": "A checkout release and an inventory-to-database firewall policy update occurred shortly before the degradation; timing alone does not localize the issue to either change.",
+            "citations": [
+              "E5"
+            ]
+          }
+        ],
+        "nextSteps": [
+          "Have Network Platform pull firewall allow/deny counters and connection tracking for the inventory-to-database network path during 17:00–17:30 to see whether checkout/inventory DB connections were rejected or timing out.",
+          "Have Inventory Services enable/verify child spans in inventory-api for DB connection attempts (including failures) and propagate trace context from checkout-api so slow/failed dependency segments can be localized.",
+          "Have Data Platform provide database-side connection/error metrics (failed logins, connection resets, max connections, TLS/handshake errors) for the same window to correlate with any path-level denies or retries."
+        ],
+        "uncertainty": "Without child spans and network flow/path telemetry, the incident cannot be attributed to a specific dependency. Current “successful request” latency metrics may mask failed attempts, so inventory-db and the network path remain plausible but unconfirmed suspects.",
+        "customerUpdate": "We’re seeing elevated checkout latency and some request failures in the incident window. We have not confirmed whether the issue is in inventory, the database network path, or another dependency because key tracing/network-path data is missing. Next we’re collecting network-path and database connection-failure evidence."
+      },
+      "proposal": null,
+      "retrievedEvidence": [
+        {
+          "id": "E1",
+          "kind": "metric",
+          "title": "Checkout degradation spans both releases",
+          "detail": "At 17:14 UTC checkout p95 rose from 480ms to 3180ms and API error rate from 0.4% to 7.4%. Request rate stayed near 115 requests/second. Old and new checkout release cohorts show similar degradation. No lost-order or revenue measurement is available.",
+          "source": "Metrics · checkout cohorts"
+        },
+        {
+          "id": "E4",
+          "kind": "metric",
+          "title": "Successful queries and payment calls remain near baseline",
+          "detail": "Database CPU is 35%, baseline 34%; SELECT inventory p95 is 160ms, baseline 155ms, for successful queries. Pool acquisition p95 is 22ms, baseline 20ms. Payment authorization p95 is 139ms, baseline 135ms. Successful requests can hide failed connection attempts; these measurements do not clear entire teams or all database behavior.",
+          "source": "Metrics · database and payment owners"
+        },
+        {
+          "id": "E5",
+          "kind": "change",
+          "title": "Two nearby changes require different evidence",
+          "detail": "A receipt-label-only checkout release occurred at 17:10 UTC. A firewall policy update for the inventory-to-database path occurred at 17:11. Both checkout release cohorts degraded at 17:14. Proximity alone proves neither change caused the incident.",
+          "source": "Change audit · application and network"
+        },
+        {
+          "id": "E6",
+          "kind": "coverage",
+          "title": "Physical infrastructure and causal linkage are unverified",
+          "detail": "Child spans and network flow records are unavailable, and there are no per-path or device measurements. Checkout aggregate symptoms and two nearby changes cannot distinguish application, connection, policy, or device causes. Request evidence; do not select a mitigation target.",
+          "source": "Incident record · coverage gaps"
+        },
+        {
+          "id": "E7",
+          "kind": "coverage",
+          "title": "Catalog defines dependencies and accountable teams",
+          "detail": "Synthetic service catalog: Checkout Experience owns checkout-api; Inventory Services owns inventory-api; Network Platform owns the inventory-to-database network path; Data Platform owns inventory-db; Payments owns payment authorization; Infrastructure Operations owns the physical network underlay. Checkout calls inventory then payments. Inventory reaches its database through the network path, which depends on the underlay. This catalog records dependencies, not causal propagation.",
+          "source": "Service catalog · reviewed synthetic snapshot"
+        }
+      ],
+      "briefingSha256": "e6c4ac1d97667e05c0bf96ba387bd74144fbb939560cd3c4eca681aa2c618da4",
+      "toolsCalled": [
+        "getServiceMetrics",
+        "getSlowTraces",
+        "getRecentChanges"
+      ],
+      "elapsedMs": 12571,
+      "totalInputTokens": 3633,
+      "totalOutputTokens": 560,
+      "totalCostUsd": "0.011980",
+      "servedBy": "openai/gpt-5.2",
+      "fallbackUsed": false,
+      "modelSteps": [
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 1605,
+          "outputTokens": 58,
+          "costUsd": "0.00362075",
+          "generationId": "gen_01M5AJ8H7YB9HA2J4G4D22F5C4",
+          "toolCalls": [
+            "getServiceMetrics",
+            "getSlowTraces",
+            "getRecentChanges"
+          ],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "openai"
+            }
+          ]
+        },
+        {
+          "model": "openai/gpt-5.2",
+          "inputTokens": 2028,
+          "outputTokens": 502,
+          "costUsd": "0.0083594",
+          "generationId": "gen_01M5AJ8KNVERXSJ63MNW8J7RS1",
+          "toolCalls": [],
+          "modelAttempts": [
+            {
+              "model": "openai/gpt-5.2",
+              "success": true,
+              "provider": "openai"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

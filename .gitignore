@@ -16,3 +16,7 @@ artifacts/local-*
 
 output/
 tmp/
+
+# Machine-installed integration guidance, not application source.
+.agents/
+skills-lock.json

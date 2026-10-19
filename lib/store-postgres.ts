@@ -1,6 +1,6 @@
 import postgres from "postgres";
 import { investigationRecordSchema, type InvestigationRecord } from "./contracts";
-import { registerPostgres, type Store } from "./store";
+import type { Store } from "./store";
 
 /**
  * Postgres-backed investigation index. The table is created on first use so
@@ -125,5 +125,3 @@ export class PostgresStore implements Store {
     );
   }
 }
-
-registerPostgres((url) => new PostgresStore(url));

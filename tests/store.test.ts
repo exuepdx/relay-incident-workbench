@@ -3,7 +3,26 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileStore } from "../lib/store";
+import { createFileStore, getStore, resetStore } from "../lib/store";
+
+test("production selects Postgres without a separate registration import and fails closed without a URL", () => {
+  const before = { NODE_ENV: process.env.NODE_ENV, DATABASE_URL: process.env.DATABASE_URL };
+  try {
+    Object.assign(process.env, { NODE_ENV: "production" });
+    process.env.DATABASE_URL = "postgres://probe:probe@localhost:5432/probe";
+    resetStore();
+    assert.equal(getStore().kind, "postgres");
+    delete process.env.DATABASE_URL;
+    resetStore();
+    assert.throws(() => getStore(), /DATABASE_URL is required/);
+  } finally {
+    for (const [key, value] of Object.entries(before)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    resetStore();
+  }
+});
 
 test("the file store round-trips records and lists newest first without results", async () => {
   const store = createFileStore(join(mkdtempSync(join(tmpdir(), "relay-")), "investigations.json"));

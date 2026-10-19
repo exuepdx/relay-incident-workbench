@@ -250,8 +250,9 @@ export default function Proposal() {
           </div>
           <p className="note">
             Demo boundary: the synthetic telemetry service is deployed in a separate Vercel project. AWS Lambda is an
-            included adapter, not the hosted backend. Local development uses a file index. Hosted Postgres persistence
-            must be provisioned and verified before promotion.
+            included adapter, not the hosted backend. Local development uses a file index. Hosted investigations use
+            Neon Postgres; concurrent updates, duplicate starts and reads from a fresh connection passed integration
+            checks.
           </p>
           <div className="cols-3" style={{ marginTop: 24 }}>
             {choices.map(([name, value, tradeoff]) => (

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { InvestigationRecord } from "@/lib/contracts";
 import { getStore } from "@/lib/store";
-import "@/lib/store-postgres";
 import { Icon } from "./icons";
 
 /**

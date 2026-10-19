@@ -1,0 +1,9 @@
+{
+  "testedAt": "2026-10-19T17:14:43Z",
+  "deploymentId": "dpl_CG65YCm2WnPCWZPWEEFqJDts7WUx",
+  "runId": "wrun_41M5AJH3DC0GPRTE5C57VR47NR",
+  "passed": false,
+  "failure": "Workflow markRunStarted could not resolve the Postgres adapter; API routes could use it. The step failed before model inference.",
+  "repair": "Replace side-effect adapter registration with an explicit PostgresStore value import in the store factory. Remove now-unnecessary registration imports.",
+  "regression": "Production selects Postgres from DATABASE_URL without an additional registration import, and fails closed without DATABASE_URL."
+}

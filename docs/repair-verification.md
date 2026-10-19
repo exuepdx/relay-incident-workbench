@@ -1,4 +1,4 @@
-# Repair verification — 2026-10-18
+# Repair verification — updated 2026-10-19
 
 This records the repair pass after the imported Fable revision. See `review-2026-10-18.md` for the original findings and `demo-script.md` for the presentation.
 
@@ -20,20 +20,21 @@ This records the repair pass after the imported Fable revision. See `review-2026
 
 ## Completed checks
 
-- Node 22 unit/regression suite: **35/35 passed**.
+- Node 22 unit/regression suite: **36/36 passed**, including production adapter selection without a registration import.
 - Application and customer API typechecks: passed.
 - Final Next.js production build: passed after the citation-scope and budget-status fixes.
 - Final offline workflow suite: **7/7 expected outcomes**, including a deliberate outage that must fail before inference.
 - Desktop browser: report/compare/pending-approval source dialogs, focus return, evidence-tab arrows, approval completion, reopening a saved run, retained evidence after changing tabs, and six-screen presenter navigation.
 - Live Gateway outage routing: primary unavailable, candidate served, nested routing metadata recorded. Automatic fallback remains off for normal runs.
-- Final primary live attempt: **4 core cases passed; 4 adversarial cases were blocked by the $1 project budget**, not judged as model failures. The artifact preserves those errors. Further live calls await authorization to increase the cap.
+- Final primary live evaluation: **8/8 cases passed** under one prompt/contract version. The four budget-blocked cases were resumed after the owner approved a $2 total cap; the combined artifact records batch provenance and the blocked attempt remains intact.
+- Hosted Neon Postgres integration: passed concurrency, replay, fresh-connection persistence and duplicate-start checks. The free database is connected to Preview and Production.
 - Catalog-map source dialogs are explicitly separate from saved-run source dialogs; both were checked in the browser after reopening a completed report.
 
 ## Deployment evidence
 
 The separate telemetry service is deployed and verified using authenticated GET requests for all required route shapes, including nested incident/evidence paths and the legacy network scenario. Unauthenticated reads are rejected. `artifacts/telemetry-deployment-verification.json` records the HTTP checks. The standalone service uses TypeScript 5.9.3 because the Vercel Node adapter's TypeScript 7 compilation produced type-resolution diagnostics; the main Next.js project retains its locked compiler.
 
-The rebuilt main app has **not** been promoted. Neon marketplace terms require the account owner's acceptance. Hosted Postgres integration, hosted approval persistence, final live smoke, preview promotion and rollback/redeployment rehearsal remain unverified for this revision. The prior production deployment is historical evidence only.
+The rebuilt preview compiled successfully on Vercel. Its reviewer sign-in succeeds, its session endpoint reports the intended model with automatic fallback disabled, and its run index reports Postgres. Hosted workflow smoke and production promotion are in progress. The prior production deployment is historical evidence only.
 
 ## Model judgment
 
@@ -41,15 +42,11 @@ Automated passes are necessary, not sufficient. Reading the reports caught unsup
 
 The comparison candidate failed the single-observation wording guard. Automatic cross-model fallback is disabled for normal runs. The explicit demo outage drill verifies Gateway routing through actual metadata; it does not qualify the candidate's report quality. A human presenter still needs to review the final reports against their sources before a customer pilot.
 
-Assistant source review of the latest four generated reports found the previously observed HTTP-code invention, pluralized single observation and next-step metadata defects absent. This is not human sign-off: the draft customer update can describe a proposed investigation as underway, so the presenter must confirm action status before sharing. The remaining adversarial cases need live completion under the final contract.
+Assistant source review of the eight generated reports found the previously observed HTTP-code invention, pluralized single observation and next-step metadata defects absent; the wrong-subnet case retained its counter-evidence and the injected instruction did not determine the report. This is not human sign-off: the draft customer update can describe a proposed investigation as underway, so the presenter must confirm action status before sharing.
 
 The local smoke and browser runs used a fake Gateway. Their costs, served-model values and generated reports are simulated. They establish workflow/UI behavior, not inference quality, latency or spend. Live model artifacts are labeled `mode: live` and contain prompt hashes, source hashes, outputs and accounting.
 
 ## Remaining release gate
 
-1. Accept the marketplace terms and provision/connect the free database.
-2. Authorize additional Gateway budget, complete the final adversarial evaluations, and retain the blocked attempt as history.
-3. Run `scripts/check-postgres.ts` with the hosted connection; test concurrent updates and lost-response idempotency.
-4. Deploy a preview with real telemetry, OIDC Gateway access, preserved reviewer credentials and the public links.
-5. Verify live investigation, abstention, approval, retries and a completed report from a new browser context.
-6. Promote, rehearse rollback/deploy continuity, update this record and the customer artifact with observed results.
+1. Verify live investigation, abstention, approval, retries and a completed report from a new browser context.
+2. Promote, rehearse rollback/deploy continuity, update this record and the customer artifact with observed results.

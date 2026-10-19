@@ -5,7 +5,6 @@ import { Icon } from "@/components/icons";
 import { CompareView } from "@/components/compare";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getStore } from "@/lib/store";
-import "@/lib/store-postgres";
 import { customer } from "@/lib/customer";
 import type { InvestigationResult } from "@/lib/contracts";
 

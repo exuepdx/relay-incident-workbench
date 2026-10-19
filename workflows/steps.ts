@@ -19,7 +19,6 @@ import {
 import { validateAgentRun } from "@/lib/run-validation";
 import { totals } from "@/lib/gateway";
 import { getStore } from "@/lib/store";
-import "@/lib/store-postgres";
 import { installFakeGatewayRedirect } from "@/lib/fake-gateway";
 
 /**

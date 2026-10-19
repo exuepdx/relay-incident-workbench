@@ -8,13 +8,13 @@ Lead with INC-0244: an enterprise retail bridge needs to agree on the affected d
 
 The customer is fictional. Its EKS/RDS/observability/Jenkins stack is a scenario assumption. The actual synthetic telemetry API runs in a separate Vercel project; no AWS deployment is claimed. Business outcomes are proposed pilot targets, not measured customer results.
 
-## Current deployment constraint
+## Deployment status
 
-The telemetry service is deployed at `https://relay-telemetry-mock.vercel.app`. The rebuilt main app must not replace production until its Postgres connection is configured and tested. Vercel currently requires the account owner to accept Neon's marketplace terms before the free database can be provisioned. The existing main public URL still serves the preceding revision.
+The telemetry service is deployed at `https://relay-telemetry-mock.vercel.app`. Free Neon Postgres is connected to Production and Preview and passed the hosted integration checks. A rebuilt preview is running; production promotion follows the hosted workflow checks.
 
-The $1 AI Gateway project cap is also exhausted. The final primary attempt passed the four core cases; four adversarial cases were budget-blocked. Do not increase the cap without the owner's approval. The requested increase to $2 total is pending; no credits were purchased.
+The owner approved a $2 total, non-renewing AI Gateway project cap. All eight primary evaluation cases passed under the final prompt/contract version. Four were resumed after the original budget blocked them; batch provenance and the blocked attempt are retained. No credits were purchased.
 
-After acceptance, create/connect the free Neon resource to Production and Preview, pull its environment into an ignored file, and run `scripts/check-postgres.ts`. Preserve the existing reviewer access code, session secret and telemetry token in the ignored `.env.deploy` file. Set `TELEMETRY_API_URL` to the telemetry service's **base URL**, without `/api/telemetry`. Configure `DEMO_CONTROLS=true`, primary `openai/gpt-5.2`, empty `AI_FALLBACK_MODELS`, and comparison candidate `google/gemini-2.5-flash`. Add the verified public demo/repository URLs.
+Preserve the existing reviewer access code, session secret and telemetry token in the ignored `.env.deploy` file. `TELEMETRY_API_URL` uses the telemetry service's **base URL**, without `/api/telemetry`. Settings: `DEMO_CONTROLS=true`, primary `openai/gpt-5.2`, empty `AI_FALLBACK_MODELS`, and comparison candidate `google/gemini-2.5-flash`. The authorized preview test credential lives only in ignored local configuration; do not publish it.
 
 Deploy a preview, verify real runs and saved approvals, then promote. Reopen a completed report from a fresh browser context and rehearse rollback/redeployment continuity. Do not mark those checks complete based on local simulation.
 
@@ -24,6 +24,7 @@ Deploy a preview, verify real runs and saved approvals, then promote. Reopen a c
 - HTTP observations may not be invented or generalized from one response into a frequency. Deterministic checks cover known regressions; they do not prove all prose true.
 - Automatic cross-model fallback is off. The candidate failed a live report-quality check. Explicit comparison/outage drills remain available to demonstrate routing separately from quality qualification.
 - Hosted runs require Postgres. File storage is for one local developer process. Idempotency keys prevent lost-response retries from creating a second paid run; an unconfirmed reservation is deliberately not automatically redispatched.
+- The store factory imports Postgres directly. Side-effect adapter registration worked locally but failed in the hosted workflow bundle; the explicit dependency is deliberate.
 - The approval is a demo reviewer decision, not verified owner identity. Nothing executes against operational systems.
 - Existing workflows remain pinned to the deployment that started them. Do not claim a held run migrates onto new code.
 

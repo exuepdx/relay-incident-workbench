@@ -1,6 +1,7 @@
 # Product feedback from the build
 
 - **Workflows:** Durable tool steps and approval hooks made the retry and waiting behavior easy to demonstrate. A reference application combining request-key idempotency, a persistent report index, reconnecting clients, and deployment versioning would be valuable; those boundaries took more work than the happy-path agent loop.
+- **Production bundling:** A side-effect database-adapter registration worked in local development and API routes but was missing in the hosted step bundle. An explicit value import fixed the dependency. A warning or a documented example for step dependencies that register themselves would help catch this before deployment.
 - **AI Gateway:** One model interface and per-call cost/routing metadata are useful. During the live outage probe, the response model ID still named the requested model, while the actual served model was in nested Gateway routing metadata. A more prominent typed helper for requested versus served model and fallback attempts would make correct accounting easier.
 - **Local development and onboarding:** The offline workflow harness was useful for testing without model charges. Live evaluation hit the account's model request-rate limit, so the suite now paces cases and preserves failures. Clearer onboarding guidance that ties rate limits, credit activation, and model-quality qualification together would help. Database marketplace terms also require a separate account-owner step before provisioning can finish.
 

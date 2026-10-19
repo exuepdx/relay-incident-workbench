@@ -14,3 +14,5 @@ output/
 tmp/
 customer-api/.vercel/
 customer-api/.env*
+.agents/
+skills-lock.json
