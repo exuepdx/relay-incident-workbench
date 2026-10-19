@@ -12,6 +12,8 @@ The customer is fictional. Its EKS/RDS/observability/Jenkins stack is a scenario
 
 The telemetry service is deployed at `https://relay-telemetry-mock.vercel.app`. The rebuilt main app must not replace production until its Postgres connection is configured and tested. Vercel currently requires the account owner to accept Neon's marketplace terms before the free database can be provisioned. The existing main public URL still serves the preceding revision.
 
+The $1 AI Gateway project cap is also exhausted. The final primary attempt passed the four core cases; four adversarial cases were budget-blocked. Do not increase the cap without the owner's approval. The requested increase to $2 total is pending; no credits were purchased.
+
 After acceptance, create/connect the free Neon resource to Production and Preview, pull its environment into an ignored file, and run `scripts/check-postgres.ts`. Preserve the existing reviewer access code, session secret and telemetry token in the ignored `.env.deploy` file. Set `TELEMETRY_API_URL` to the telemetry service's **base URL**, without `/api/telemetry`. Configure `DEMO_CONTROLS=true`, primary `openai/gpt-5.2`, empty `AI_FALLBACK_MODELS`, and comparison candidate `google/gemini-2.5-flash`. Add the verified public demo/repository URLs.
 
 Deploy a preview, verify real runs and saved approvals, then promote. Reopen a completed report from a fresh browser context and rehearse rollback/redeployment continuity. Do not mark those checks complete based on local simulation.

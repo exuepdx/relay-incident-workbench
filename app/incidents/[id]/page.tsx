@@ -101,7 +101,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
           <section aria-label="Incident evidence" className="enter-late">
             <EvidenceTabs
               hasTopology={Boolean(incident.topology)}
-              topology={incident.topology ? <DependencyMap incident={incident} /> : null}
+              topology={incident.topology ? <DependencyMap incident={incident} evidence={evidence} /> : null}
               overview={
                 <div className="stack">
                   <div className="panel">

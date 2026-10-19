@@ -91,7 +91,7 @@ async function main() {
         elapsedMs: Date.now() - started,
       });
       console.log(`${item.name}: FAILED · ${message}`);
-      if (/auth|credit|payment|verification|api key/i.test(message)) break;
+      if (/auth|credit|payment|verification|api key|budget exceeded/i.test(message)) break;
     }
   }
   await mkdir("artifacts", { recursive: true });
@@ -111,7 +111,9 @@ async function main() {
         model: config.model,
         fallbackModels: config.fallbackModels,
         promptSha256: createHash("sha256").update(instructions).digest("hex"),
-        contractSha256: createHash("sha256").update(await readFile("lib/contracts.ts", "utf8")).digest("hex"),
+        contractSha256: createHash("sha256")
+          .update(await readFile("lib/contracts.ts", "utf8"))
+          .digest("hex"),
         cases: results.length,
         failures,
         results,

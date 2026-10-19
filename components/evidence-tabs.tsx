@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Tab = "topology" | "overview" | "register";
 
 /**
- * Left-column tabs. Listens for citation clicks from the investigator so a
- * cited id switches to the register and scrolls the item into view.
+ * Keyboard-accessible evidence tabs. Keep the register mounted so it can
+ * retain a run snapshot before the responder chooses to inspect it.
  */
 export function EvidenceTabs({
   hasTopology,
@@ -26,22 +26,6 @@ export function EvidenceTabs({
     overview: "Overview",
     register: "Evidence register",
   };
-
-  useEffect(() => {
-    function onCite(event: Event) {
-      const id = (event as CustomEvent<string>).detail;
-      setTab("register");
-      requestAnimationFrame(() => {
-        const el = document.getElementById(`evidence-${id}`);
-        if (!el) return;
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("flash");
-        setTimeout(() => el.classList.remove("flash"), 1600);
-      });
-    }
-    window.addEventListener("relay:cite", onCite);
-    return () => window.removeEventListener("relay:cite", onCite);
-  }, []);
 
   return (
     <div>
@@ -87,9 +71,4 @@ export function EvidenceTabs({
       </div>
     </div>
   );
-}
-
-/** Fire a citation click from anywhere. */
-export function cite(id: string) {
-  window.dispatchEvent(new CustomEvent("relay:cite", { detail: id }));
 }

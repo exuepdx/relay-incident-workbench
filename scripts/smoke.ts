@@ -86,7 +86,7 @@ async function run(
   // Live calls on this account share a small per-model request-rate window.
   // Pacing belongs in the harness, not in the production investigation path.
   const delay = Number(process.env.SMOKE_DELAY_MS ?? (base.includes("127.0.0.1") ? "0" : "65000"));
-  if (log.length && delay > 0) await new Promise(r => setTimeout(r, delay));
+  if (log.length && delay > 0) await new Promise((r) => setTimeout(r, delay));
   const started = Date.now();
   const requestKey = randomUUID();
   const response = await http("/api/investigations", {

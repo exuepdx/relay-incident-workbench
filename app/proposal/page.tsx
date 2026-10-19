@@ -94,6 +94,7 @@ function Intro({ n, title, children }: { n: string; title: string; children?: Re
 export default function Proposal() {
   const evaluation = loadEval();
   const candidate = loadEval("evaluation-gemini-repair.json");
+  const budgetBlocked = evaluation?.results.filter((r) => /budget exceeded/i.test(r.error || "")).length ?? 0;
   return (
     <main className="proposal">
       <Suspense fallback={null}>
@@ -248,9 +249,9 @@ export default function Proposal() {
             </div>
           </div>
           <p className="note">
-            Demo boundary: a separate synthetic telemetry service. Lambda and Vercel adapters are included; AWS and Neon
-            are deployment options, not claims of completed provisioning. Local development uses a file index. Hosted
-            persistence must be configured and verified.
+            Demo boundary: the synthetic telemetry service is deployed in a separate Vercel project. AWS Lambda is an
+            included adapter, not the hosted backend. Local development uses a file index. Hosted Postgres persistence
+            must be provisioned and verified before promotion.
           </p>
           <div className="cols-3" style={{ marginTop: 24 }}>
             {choices.map(([name, value, tradeoff]) => (
@@ -471,7 +472,8 @@ export default function Proposal() {
               {evaluation ? (
                 <>
                   <p>
-                    {evaluation.model} · {evaluation.cases} cases · {evaluation.failures} automated failures ·{" "}
+                    {evaluation.model} · {evaluation.cases} cases · {evaluation.failures - budgetBlocked} failed checks
+                    {budgetBlocked > 0 && ` · ${budgetBlocked} blocked by budget`} ·{" "}
                     {new Date(evaluation.evaluatedAt).toISOString().slice(0, 10)}
                   </p>
                   <table className="table">
@@ -488,7 +490,9 @@ export default function Proposal() {
                           <td>{r.name}</td>
                           <td>
                             {r.error
-                              ? "Failed"
+                              ? /budget exceeded/i.test(r.error)
+                                ? "Budget blocked"
+                                : "Failed"
                               : r.assessmentPassed && !r.regressionFailures?.length
                                 ? "Checks passed"
                                 : "Review needed"}
@@ -529,7 +533,8 @@ export default function Proposal() {
               Durable steps and hooks made retry and approval behavior concrete. Gateway's routing and cost metadata
               were useful, but the actual fallback model appeared in nested routing metadata while the response still
               named the requested model. A typed accounting helper would help. A reference application combining
-              idempotent starts, retained evidence, a report index and deployment versioning would also reduce integration work.
+              idempotent starts, retained evidence, a report index and deployment versioning would also reduce
+              integration work.
             </p>
           </div>
         </Reveal>

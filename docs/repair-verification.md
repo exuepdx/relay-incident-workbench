@@ -15,16 +15,19 @@ This records the repair pass after the imported Fable revision. See `review-2026
 | Dependency advisories                                         | Override the affected transitive Nano ID dependency.                                                                                | Production dependency audit: zero vulnerabilities.                                                                                                                  |
 | Presentation claims and density                               | Six main presenter screens; deployment facts separated from plans; pilot targets labeled; data crossings and alternatives explicit. | Desktop browser inspection; arrow keys work after activating the Present link.                                                                                      |
 | Incorrect served-model accounting                             | Read nested Gateway routing metadata rather than the requested response model.                                                      | Unit regression and live fallback routing probe.                                                                                                                    |
-| Report metadata leaked into action text | Sentence-shape constraints reject schema paths and citation metadata in next actions. | Dedicated regression and the live evaluation contract hash. |
+| Report metadata leaked into action text                       | Sentence-shape constraints reject schema paths and citation metadata in next actions.                                               | Dedicated regression and the live evaluation contract hash.                                                                                                         |
 | Status-code invention introduced by a prompt example          | Remove the overly specific example and reject HTTP codes absent from the evidence.                                                  | Dedicated regression test; final primary live suite rerun after this change.                                                                                        |
 
 ## Completed checks
 
 - Node 22 unit/regression suite: **35/35 passed**.
 - Application and customer API typechecks: passed.
+- Final Next.js production build: passed after the citation-scope and budget-status fixes.
 - Final offline workflow suite: **7/7 expected outcomes**, including a deliberate outage that must fail before inference.
 - Desktop browser: report/compare/pending-approval source dialogs, focus return, evidence-tab arrows, approval completion, reopening a saved run, retained evidence after changing tabs, and six-screen presenter navigation.
 - Live Gateway outage routing: primary unavailable, candidate served, nested routing metadata recorded. Automatic fallback remains off for normal runs.
+- Final primary live attempt: **4 core cases passed; 4 adversarial cases were blocked by the $1 project budget**, not judged as model failures. The artifact preserves those errors. Further live calls await authorization to increase the cap.
+- Catalog-map source dialogs are explicitly separate from saved-run source dialogs; both were checked in the browser after reopening a completed report.
 
 ## Deployment evidence
 
@@ -38,12 +41,15 @@ Automated passes are necessary, not sufficient. Reading the reports caught unsup
 
 The comparison candidate failed the single-observation wording guard. Automatic cross-model fallback is disabled for normal runs. The explicit demo outage drill verifies Gateway routing through actual metadata; it does not qualify the candidate's report quality. A human presenter still needs to review the final reports against their sources before a customer pilot.
 
+Assistant source review of the latest four generated reports found the previously observed HTTP-code invention, pluralized single observation and next-step metadata defects absent. This is not human sign-off: the draft customer update can describe a proposed investigation as underway, so the presenter must confirm action status before sharing. The remaining adversarial cases need live completion under the final contract.
+
 The local smoke and browser runs used a fake Gateway. Their costs, served-model values and generated reports are simulated. They establish workflow/UI behavior, not inference quality, latency or spend. Live model artifacts are labeled `mode: live` and contain prompt hashes, source hashes, outputs and accounting.
 
 ## Remaining release gate
 
 1. Accept the marketplace terms and provision/connect the free database.
-2. Run `scripts/check-postgres.ts` with the hosted connection; test concurrent updates and lost-response idempotency.
-3. Deploy a preview with real telemetry, OIDC Gateway access, preserved reviewer credentials and the public links.
-4. Verify live investigation, abstention, approval, retries and a completed report from a new browser context.
-5. Promote, rehearse rollback/deploy continuity, update this record and the customer artifact with observed results.
+2. Authorize additional Gateway budget, complete the final adversarial evaluations, and retain the blocked attempt as history.
+3. Run `scripts/check-postgres.ts` with the hosted connection; test concurrent updates and lost-response idempotency.
+4. Deploy a preview with real telemetry, OIDC Gateway access, preserved reviewer credentials and the public links.
+5. Verify live investigation, abstention, approval, retries and a completed report from a new browser context.
+6. Promote, rehearse rollback/deploy continuity, update this record and the customer artifact with observed results.

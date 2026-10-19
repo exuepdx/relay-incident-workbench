@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import type { Incident, Topology } from "@/lib/contracts";
+import type { Evidence, Incident, Topology } from "@/lib/contracts";
 import { Icon } from "./icons";
-import { cite } from "./evidence-tabs";
+import { CitationButton } from "./citation-button";
 
 const statusLabel = { affected: "Affected", baseline: "Within baseline", unknown: "Unknown" } as const;
 // Fixed positions for the curated six-node scene.
@@ -34,7 +34,7 @@ export function handoffText(incident: Incident, topology: Topology, index: numbe
 }
 
 /** Curated dependency scene with owners, status, and copyable handoffs. */
-export function DependencyMap({ incident }: { incident: Incident }) {
+export function DependencyMap({ incident, evidence }: { incident: Incident; evidence: Evidence[] }) {
   const topology = incident.topology!;
   const [selected, setSelected] = useState(topology.handoffs[0]?.nodeId ?? topology.nodes[0].id);
   const [copied, setCopied] = useState("");
@@ -46,9 +46,7 @@ export function DependencyMap({ incident }: { incident: Incident }) {
   const Cites = ({ ids }: { ids: string[] }) => (
     <div className="cites">
       {ids.map((id) => (
-        <button key={id} className="cite" onClick={() => cite(id)} aria-label={`View evidence ${id}`}>
-          {id} ↗
-        </button>
+        <CitationButton key={id} id={id} evidence={evidence} scope="catalog" />
       ))}
     </div>
   );

@@ -1,7 +1,8 @@
 # Evaluation and deployment artifacts
 
-- `evaluation.json`: latest eight-case live primary-model suite. Read the recorded prompt hash, failures and each output; an automated pass is not human approval.
+- `evaluation.json`: latest eight-case live primary-model attempt: four core passes, four cases blocked by the project budget. Read the prompt/contract hashes, errors and each output; an automated pass is not human approval.
 - `evaluation-primary-semantic-review.json`: an intermediate automated pass where source review found an invented HTTP observation. Retained to explain the additional runtime guard.
+- `evaluation-primary-format-review.json`: an intermediate automated pass where source review found schema metadata in next-action prose. Retained to explain the sentence constraints.
 - `evaluation-*-second-pass.json`, `evaluation-repair-*.json`, `evaluation-incomplete-repair.json`: earlier attempts, including model errors and request-rate limits. These are historical, not current qualification.
 - `evaluation-gemini-repair.json`: candidate-model evaluation. Its quality failure is why normal runs do not automatically fall back to it.
 - `fallback-verification.json`: live Gateway routing metadata from an explicit provider-outage probe. Routing success is distinct from report quality.

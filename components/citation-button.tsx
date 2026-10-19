@@ -4,7 +4,15 @@ import { useRef, useId } from "react";
 import type { Evidence } from "@/lib/contracts";
 
 /** Each report owns its source snapshot, including when two runs are compared. */
-export function CitationButton({ id, evidence }: { id: string; evidence: Evidence[] }) {
+export function CitationButton({
+  id,
+  evidence,
+  scope = "run",
+}: {
+  id: string;
+  evidence: Evidence[];
+  scope?: "run" | "catalog";
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const item = evidence.find((e) => e.id === id);
@@ -15,16 +23,18 @@ export function CitationButton({ id, evidence }: { id: string; evidence: Evidenc
       </button>
       <dialog ref={dialog} className="evidence-dialog" aria-labelledby={titleId}>
         <div className="panel-head">
-          <span className="eyebrow">Run evidence · {id}</span>
+          <span className="eyebrow">
+            {scope === "run" ? "Run evidence" : "Catalog evidence"} · {id}
+          </span>
           <button className="btn" onClick={() => dialog.current?.close()} autoFocus>
             Close
           </button>
         </div>
         <div className="panel-body">
-          <h3 id={titleId}>{item?.title ?? "Source unavailable in this historical run"}</h3>
+          <h3 id={titleId}>{item?.title ?? "Source unavailable in this snapshot"}</h3>
           <p>
             {item?.detail ??
-              "This run did not retain this evidence. Do not rely on the citation; run a fresh investigation."}
+              "This snapshot did not retain the evidence. Do not rely on the citation; refresh its source."}
           </p>
           {item && (
             <p className="note">
@@ -32,8 +42,10 @@ export function CitationButton({ id, evidence }: { id: string; evidence: Evidenc
             </p>
           )}
           <p className="note">
-            Snapshot retained with this run. A citation identifies a source; it does not prove the interpretation is
-            correct.
+            {scope === "run"
+              ? "Snapshot retained with this run."
+              : "Current catalog source for the curated dependency map; separate from a saved run's evidence."}{" "}
+            A citation identifies a source; it does not prove the interpretation is correct.
           </p>
         </div>
       </dialog>
