@@ -66,3 +66,27 @@ The 36 regression tests, TypeScript check, production build and GitHub CI passed
 Removed the sidebar slogan and decorative section labels. Incident headings now describe the observed problem; presentation headings identify the customer problem, architecture, demo, pilot targets and rollout. Investigation help is an expandable disclosure. Approval copy still explains that recording a decision executes no change. The pause timeline no longer implies that a workflow moves to the newest deployment.
 
 Display titles live in the existing customer UI configuration. Telemetry fixtures, model instructions, validation, workflows and API behavior are unchanged; existing live evaluation results still apply to those inputs. The 36 tests and application typecheck passed. Browser review covered the workbench, presentation and investigation-help disclosure. The local Turbopack worker could not bind its port; the Webpack production build is the local fallback, with the standard build also checked by Vercel before promotion.
+
+## Visual presentation — 2026-10-19
+
+The proposal now has six visual screens: overview, the incident dependency path,
+architecture, an illustrated investigation, pilot targets and deployment rollout.
+The architecture toggles between the actual hosted demo and a proposed customer
+pilot. Product layers reveal their purpose and trade-off on selection. The
+investigation illustrates normal review, a retry and missing evidence without
+calling a model. Rollout controls distinguish new-request routing from existing
+workflow execution and retained reports.
+
+Technical detail remains in collapsed discussion notes and a reference section,
+including data boundaries, limitations, evaluation failures, AI assistance and
+product feedback. Pilot targets remain explicitly proposed; trace durations come
+from the existing synthetic fixture. No report, workflow or model contract changed.
+
+Local verification: all 36 regression tests, application typecheck and the Webpack
+production build passed. Browser review checked six screens at 1280 × 720, stacked
+diagrams and the static hero at 390 × 844, and page overflow at a 304px panel width.
+Checks covered architecture selection, missing evidence, retry playback, motion
+pause, keyboard slide navigation, cutover/rollback controls and notes navigation.
+A hydration race between the motion provider and presenter boundary was fixed;
+a fresh browser load showed no errors. Animation stops offscreen and respects
+reduced-motion preferences. The demo script now follows the visual controls.

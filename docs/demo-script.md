@@ -1,6 +1,9 @@
 # Relay: twelve-minute customer demonstration
 
-Use `/proposal?present=1`: six screens, arrows to move, Escape for the appendix.
+Use `/proposal?present=1`: six visual screens, arrows or visible controls to move,
+Notes to open the reference section, and Escape to leave presentation mode.
+Motion can be paused from the navigation bar. Diagrams illustrate the design;
+they do not run the agent or consume model credits.
 The fictional stack illustrates an authentic enterprise incident pattern. Do not
 present invented timings or ROI as facts about the original customer.
 
@@ -13,6 +16,25 @@ present invented timings or ROI as facts about the original customer.
 | 8:00–9:00   | INC-0243                | Missing evidence means gathering measurements, not proposing an operational experiment. Explain code validation and its semantic limits.                                                                           |
 | 9:00–10:30  | Accounting and measures | Use a real run's cost and duration. Exclude human waiting when discussing inference latency. Coordination improvement is a proposed pilot target.                                                                  |
 | 10:30–12:00 | Rollout and discovery   | One rotation, evidence review, spend gate, cutover, rollback. Ask which business measure would justify expansion.                                                                                                  |
+
+## Visual walkthrough
+
+1. **Overview:** introduce the retail outage and the coordination problem.
+2. **The incident:** select Trace evidence to highlight the 2,450 ms connection
+   wait, then Next owner. The dependency diagram does not prove a device-level cause.
+3. **Architecture:** switch from Hosted demo to Proposed customer pilot. Click
+   Workflows or AI Gateway to reveal one product decision at a time. Explain
+   selected evidence crossing the boundary and Workflow state remaining on Vercel.
+4. **Investigation:** step through Read → Draft → Validate → Review → Save.
+   Use Missing evidence to demonstrate abstention, then open the real workbench.
+   Play sequence is optional; manual steps work with motion disabled.
+5. **Pilot targets:** distinguish proposed improvements from recorded test results.
+6. **Rollout:** select Cutover and Rollback. New-request routing changes while
+   existing workflows retain their starting deployment and saved reports remain.
+
+Each screen has collapsed Discussion notes for technical detail. The Notes view
+includes trade-offs, production gaps, model evaluations, development tools and
+product feedback. Use those for questions rather than reading them aloud.
 
 ## Before presenting
 

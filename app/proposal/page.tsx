@@ -4,19 +4,24 @@ import { join } from "node:path";
 import { Suspense } from "react";
 import { Icon, Logo } from "@/components/icons";
 import { Hero } from "@/components/hero";
-import { Reveal } from "@/components/motion";
-import { BoundaryConduit } from "@/components/boundary-conduit";
 import { Presenter } from "@/components/presenter";
-import { customer } from "@/lib/customer";
-import { config } from "@/lib/config";
+import { MotionToggle, PresentationMotion } from "@/components/presentation-motion";
+import {
+  ArchitectureVisual,
+  CascadeVisual,
+  InvestigationVisual,
+  PilotVisual,
+  RolloutVisual,
+} from "@/components/proposal-visuals";
+import "./presentation.css";
 
-// Static customer artifact. Main narrative is six screens; detail stays available below.
-const demoUrl = process.env.NEXT_PUBLIC_DEMO_URL || "";
-const repoUrl = process.env.NEXT_PUBLIC_REPO_URL || "";
-type EvalArtifact = {
-  mode?: string;
-  evaluatedAt: string;
+const repoUrl = process.env.NEXT_PUBLIC_REPO_URL || "https://github.com/exuepdx/relay-incident-workbench";
+const demoUrl = process.env.NEXT_PUBLIC_DEMO_URL || "https://relay-incident-workbench.vercel.app";
+
+type Evaluation = {
+  mode: string;
   model: string;
+  evaluatedAt: string;
   cases: number;
   failures: number;
   results: Array<{
@@ -25,528 +30,376 @@ type EvalArtifact = {
     assessmentPassed?: boolean;
     regressionFailures?: string[];
     totalCostUsd?: string | null;
-    report?: { assessment: string };
   }>;
 };
-function loadEval(file = "evaluation.json"): EvalArtifact | null {
+function loadEvaluation(file: string): Evaluation | null {
   try {
-    const result = JSON.parse(readFileSync(join(process.cwd(), "artifacts", file), "utf8"));
-    return result.mode === "live" ? result : null;
+    const artifact = JSON.parse(readFileSync(join(process.cwd(), "artifacts", file), "utf8"));
+    return artifact.mode === "live" ? artifact : null;
   } catch {
     return null;
   }
 }
-const choices = [
-  [
-    "AI SDK + AI Gateway",
-    "Bounded tools and structured reports; one model interface, explicit routing drills and per-run accounting.",
-    "A valid citation does not prove a true claim. Evaluate each offered model; enforce evidence and approval rules in code.",
-  ],
-  [
-    "Vercel Workflows",
-    "Persist tool steps and approval waits so a browser disconnect does not lose the investigation.",
-    "Run state has retention and deployment constraints. Keep the report in a durable index; retries can incur extra model charges.",
-  ],
-  [
-    "Next.js on Vercel",
-    "A static shell, cached incident context, and request-time run data. Preview deployments isolate changes before promotion.",
-    "Cached context can age. Explicit refresh invalidates an incident; each report retains its own evidence snapshot.",
-  ],
-];
-const rollout = [
-  [
-    "01",
-    "Preview",
-    "Use synthetic inputs, separate credentials and a preview URL. Run regression tests, live evaluations and the smoke suite.",
-  ],
-  [
-    "02",
-    "Validate",
-    "Review evidence with responders. Agree data boundaries, identity, retention and spend limits before customer telemetry enters the pilot.",
-  ],
-  [
-    "03",
-    "Canary",
-    "Invite one on-call rotation. Keep the existing incident process available. A percentage traffic rollout is optional where the plan supports it.",
-  ],
-  [
-    "04",
-    "Cutover",
-    "Expand after the quality and cost targets hold. Compare results against the same rotation's baseline.",
-  ],
-  [
-    "05",
-    "Rollback",
-    "Restore the previous deployment or remove pilot access. Existing workflows stay pinned to their original deployment; reconcile any pending approvals.",
-  ],
-];
-function Intro({ n, title, children }: { n: string; title: string; children?: React.ReactNode }) {
+
+function Heading({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="section-intro">
-      <span className="section-n">{n}</span>
+    <header className="slide-heading">
+      <span className="slide-number">{n}</span>
       <div>
         <h2>{title}</h2>
-        {children && <p>{children}</p>}
+        <p>{children}</p>
       </div>
-    </div>
+    </header>
   );
 }
-export default function Proposal() {
-  const evaluation = loadEval();
-  const candidate = loadEval("evaluation-gemini-repair.json");
-  const budgetBlocked = evaluation?.results.filter((r) => /budget exceeded/i.test(r.error || "")).length ?? 0;
+function Notes({ children }: { children: React.ReactNode }) {
   return (
-    <main className="proposal">
-      <Suspense fallback={null}>
-        <Presenter />
-      </Suspense>
-      <Hero>
-        <nav className="hero-nav" aria-label="Proposal">
-          <Link href="/" aria-label="Relay home">
-            <Logo />
-          </Link>
-          <nav>
-            <a href="#architecture">Architecture</a>
-            <a href="#demo">Demo</a>
-            <a href="#measures">Pilot targets</a>
-            <a href="#tooling">Validation</a>
-            <Link href="/proposal?present=1" className="btn btn-ghost present-link">
-              Present
+    <details className="slide-notes">
+      <summary>
+        <Icon name="info" size={14} /> Discussion notes
+      </summary>
+      <div>{children}</div>
+    </details>
+  );
+}
+
+export default function Proposal() {
+  const evaluation = loadEvaluation("evaluation.json");
+  const candidate = loadEvaluation("evaluation-gemini-repair.json");
+  const passed =
+    evaluation?.results.filter((r) => !r.error && r.assessmentPassed && !r.regressionFailures?.length).length ?? 0;
+  // Read only display measurements from the same synthetic fixture as the API.
+  // This diagram does not infer topology or call a model.
+  const catalog = JSON.parse(readFileSync(join(process.cwd(), "customer-api/data/incidents.json"), "utf8"));
+  const spans = catalog["INC-0244"].spans as Array<{ duration: number }>;
+  return (
+    <PresentationMotion>
+      <main className="proposal visual-proposal">
+        <Suspense fallback={null}>
+          <Presenter />
+        </Suspense>
+        <Hero>
+          <nav className="hero-nav" aria-label="Presentation">
+            <Link href="/" aria-label="Relay home">
+              <Logo />
             </Link>
-            <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary">
-              Open workbench <Icon name="arrow" size={14} />
-            </Link>
-          </nav>
-        </nav>
-        <div className="hero-body">
-          <div className="hero-copy">
-            <span className="eyebrow">Relay · incident investigation demo</span>
-            <h1>
-              Investigating a
-              <br />
-              <em>retail checkout outage.</em>
-            </h1>
-            <p>
-              Relay brings service dependencies, team ownership and telemetry into one workbench. An AI agent reads the
-              incident evidence and drafts a report with citations and suggested next checks.
-            </p>
-            <div className="hero-cta">
-              <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary btn-lg">
-                Open incident INC-0244 <Icon name="arrow" size={16} />
+            <div className="hero-nav-links">
+              <a href="#problem">The incident</a>
+              <a href="#architecture">Architecture</a>
+              <Link href="/proposal?present=1#overview" className="btn btn-ghost present-link">
+                Present
               </Link>
-              <a href="#architecture" className="btn btn-lg">
-                View architecture
-              </a>
+              <MotionToggle />
+            </div>
+          </nav>
+          <div className="hero-body">
+            <div className="hero-copy">
+              <span className="eyebrow">Relay / technical demo</span>
+              <h1>
+                Investigating a<br />
+                <em>retail checkout outage.</em>
+              </h1>
+              <p>A workbench for tracing checkout failures across application, database and network teams.</p>
+              <div className="hero-cta">
+                <a href="#problem" className="btn btn-primary btn-lg">
+                  Explore the scenario <Icon name="arrow" size={16} />
+                </a>
+                <Link href="/incidents/INC-0244" className="btn btn-lg">
+                  Open live demo
+                </Link>
+              </div>
+              <div className="hero-context">
+                <span>Northstar Commerce</span>
+                <span>Fictional retailer · synthetic telemetry</span>
+              </div>
             </div>
           </div>
-        </div>
-      </Hero>
-      <div className="hero-meta">
-        <div>
-          Scenario <strong>{customer.name} · enterprise retail</strong>
-        </div>
-        <div>
-          Vercel's role <strong>Connect telemetry; augment response</strong>
-        </div>
-        <div>
-          Output <strong>Investigation report and team handoffs</strong>
-        </div>
-      </div>
+          <div className="hero-flow-labels" aria-hidden="true">
+            <span>Telemetry API</span>
+            <i>→</i>
+            <span>Vercel investigation</span>
+            <i>→</i>
+            <span>Saved report</span>
+          </div>
+        </Hero>
 
-      <section className="section" id="problem" data-present="true">
-        <Reveal>
-          <Intro n="01 / CUSTOMER PROBLEM" title="Too many teams troubleshooting the same outage">
-            Based on my work with an enterprise retailer: teams had telemetry, but spent time correlating symptoms
-            across systems and working out who needed to act.
-          </Intro>
-          <div className="cols-2">
-            <div className="card">
-              <h3>Current state</h3>
+        <section className="section visual-slide" id="problem" data-present="true" data-title="The incident">
+          <Heading n="01 / THE INCIDENT" title="One checkout delay. Four teams involved.">
+            The investigation starts with a shared dependency path.
+          </Heading>
+          <CascadeVisual durations={spans.slice(0, 4).map((span) => span.duration)} />
+          <div className="slide-bottom">
+            <Notes>
               <p>
-                Checkout depends on application services, inventory, databases, external payments, and network paths.
-                Each team sees a different slice. A downstream failure can look like several upstream failures.
-              </p>
-              <p className="muted">
-                The fictional Northstar stack uses EKS, RDS Postgres, an observability platform and Jenkins to
-                illustrate this problem.
-              </p>
-            </div>
-            <div className="card">
-              <h3>Business consequence</h3>
-              <p>
-                More responders spend time establishing ownership while customer-facing transactions remain degraded.
-                Premature root-cause claims can send teams toward the wrong intervention.
+                Based on enterprise retail outage calls where teams had telemetry but spent time correlating symptoms
+                and establishing ownership. The business consequence is responder time and delayed recovery while
+                customer transactions remain degraded.
               </p>
               <p>
-                <strong>Discovery question:</strong> Where is the longest delay today: access to evidence, agreement on
-                the affected path, or getting the right owner to act?
+                The longest span in this example is the inventory-to-database connection wait. Rejected-flow evidence
+                supports investigating that path; it does not identify a physical device or prove the policy change
+                caused the outage.
               </p>
-            </div>
+              <p>
+                <strong>Discovery:</strong> Where does your team lose the most time: accessing evidence, agreeing on the
+                path, or finding the owner?
+              </p>
+            </Notes>
+            <span>INC-0244 · prepared scenario context</span>
           </div>
-        </Reveal>
-      </section>
+        </section>
 
-      <section className="section" id="architecture" data-present="true">
-        <Reveal>
-          <Intro n="02 / TARGET ARCHITECTURE" title="Connect the existing telemetry API to Relay">
-            An authenticated, read-only API supplies incident evidence to the Vercel application and configured model.
-            Services, alerting and operational changes stay with the customer's existing teams and systems.
-          </Intro>
-          <div className="arch">
-            <div className="zone">
-              <span className="eyebrow">Vercel · response application</span>
-              <h3>Relay</h3>
-              <div className="zone-node">
-                <b>Next.js</b>
-                <small>Static shell → cached incident catalog → live investigation status</small>
-              </div>
-              <div className="zone-node">
-                <b>Workflows</b>
-                <small>Read evidence → agent draft → validate → optional approval → persist</small>
-              </div>
-              <div className="zone-node">
-                <b>AI SDK + AI Gateway → model provider</b>
-                <small>
-                  {config.model} · bounded tools and outputs · configured fallback:{" "}
-                  {config.fallbackModels.join(", ") || "none"}
-                </small>
-              </div>
-              <div className="zone-node">
-                <b>Data on this side</b>
-                <small>
-                  Cached evidence, prompts, tool results, workflow state and operational metadata. Define retention and
-                  redaction for each.
-                </small>
-              </div>
-            </div>
-            <BoundaryConduit />
-            <div className="zone customer">
-              <span className="eyebrow">Customer systems</span>
-              <h3>Existing systems</h3>
-              <div className="zone-node">
-                <b>Services, databases and network</b>
-                <small>Keep tested business logic, transaction data and service ownership.</small>
-              </div>
-              <div className="zone-node">
-                <b>Observability platform + scoped API</b>
-                <small>
-                  Keep telemetry ingestion, alerting and source retention. Return only the incident's bounded evidence.
-                </small>
-              </div>
-              <div className="zone-node">
-                <b>Durable investigation index</b>
-                <small>
-                  Postgres adapter can use a customer-controlled database. Hosted approval runs require this connection.
-                </small>
-              </div>
-              <div className="zone-node">
-                <b>Identity and change authority</b>
-                <small>
-                  A production pilot requires SSO and verified owner authorization. The demo uses a shared reviewer code
-                  and executes no changes.
-                </small>
-              </div>
-            </div>
+        <section className="section visual-slide" id="architecture" data-present="true" data-title="Architecture">
+          <Heading n="02 / ARCHITECTURE" title="Connect the telemetry you already have.">
+            Vercel hosts the investigation; the customer's operational systems stay in place.
+          </Heading>
+          <ArchitectureVisual />
+          <div className="slide-bottom">
+            <Notes>
+              <p>
+                <strong>What stays:</strong> business services, transaction databases, release pipelines, ingestion,
+                alerting and source retention. The proposed example stack is EKS, RDS Postgres, Jenkins and an
+                observability platform.
+              </p>
+              <p>
+                <strong>Actual demo:</strong> the synthetic API is deployed in a separate Vercel project, with
+                bearer-token authentication. Neon stores reports. The included Lambda adapter has not been deployed to
+                AWS.
+              </p>
+              <p>
+                <strong>Data boundary:</strong> selected evidence, prompts, tool results and operational metadata enter
+                Vercel and the model provider. A customer-controlled report database does not relocate Workflow state. A
+                pilot needs agreed redaction, retention and private connectivity where required.
+              </p>
+            </Notes>
+            <span>Click a layer to see its purpose and trade-off</span>
           </div>
-          <p className="note">
-            Demo boundary: the synthetic telemetry service is deployed in a separate Vercel project. AWS Lambda is an
-            included adapter, not the hosted backend. Local development uses a file index. Hosted investigations use
-            Neon Postgres; concurrent updates, duplicate starts and reads from a fresh connection passed integration
-            checks.
-          </p>
-          <div className="cols-3" style={{ marginTop: 24 }}>
-            {choices.map(([name, value, tradeoff]) => (
-              <div className="card" key={name}>
-                <h3>{name}</h3>
-                <p>{value}</p>
-                <p className="muted">Trade-off: {tradeoff}</p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      </section>
+        </section>
 
-      <section className="section" id="demo" data-present="true">
-        <Reveal>
-          <Intro n="03 / WORKING DEMO" title="Trace the checkout delay to the inventory connection path">
-            INC-0244 includes a prepared dependency map and team handoffs. The AI report is generated from evidence
-            retrieved during the investigation.
-          </Intro>
-          <div className="cols-3">
-            <div className="card">
-              <span className="eyebrow">01 · Localize</span>
-              <h3>Inspect the connection delay</h3>
+        <section className="section visual-slide" id="demo" data-present="true" data-title="Investigation">
+          <Heading n="03 / INVESTIGATION" title="From telemetry to a reviewable report.">
+            Step through the workflow, then try the real incident.
+          </Heading>
+          <InvestigationVisual />
+          <div className="slide-bottom">
+            <Notes>
               <p>
-                Inspect E2's trace and E3's path measurements. Engage Network Platform with Inventory Services. A
-                connection-path hypothesis does not identify a failed physical device.
+                All three read tools must complete. Citation, owner and incident-policy checks run against their
+                returned evidence before any approval is offered. Reports retain that snapshot even if the catalog later
+                changes.
               </p>
-            </div>
-            <div className="card">
-              <span className="eyebrow">02 · Verify</span>
-              <h3>Open a report citation</h3>
               <p>
-                The source is the snapshot returned to that run. Show the owner handoff, the evidence that would confirm
-                or challenge it, and the uncertainty.
+                Starts reserve an idempotency key before dispatch. A lost response reconnects to the existing request;
+                an ambiguous reservation is not automatically dispatched twice. Workflow retries can add model cost.
               </p>
-            </div>
-            <div className="card">
-              <span className="eyebrow">03 · Challenge</span>
-              <h3>Test failures and missing data</h3>
               <p>
-                Use one transient telemetry failure and refresh while it runs. Then open INC-0243: missing evidence
-                should lead to collection, not an operational experiment.
+                Approval is optional and uses the shared demo reviewer identity. It records a decision and executes no
+                operational change. Production execution would need verified owner identity, scoped permissions and an
+                audited rollback path.
               </p>
-            </div>
-          </div>
-          <div className="hero-cta" style={{ marginTop: 24 }}>
-            <Link href={`/incidents/${customer.leadIncident}`} className="btn btn-primary btn-lg">
-              Open incident INC-0244 <Icon name="arrow" size={16} />
+              <p>
+                <strong>Access:</strong> enter the separately shared reviewer code, select Unlock, then Run
+                investigation. Saved synthetic reports are public.
+              </p>
+            </Notes>
+            <Link className="btn btn-primary" href="/incidents/INC-0244">
+              Run the live investigation <Icon name="arrow" size={15} />
             </Link>
           </div>
-          <div className="cols-2" style={{ marginTop: 24 }}>
-            <div className="card">
-              <h3>Demo access</h3>
-              {demoUrl ? (
-                <a href={demoUrl}>{demoUrl}</a>
-              ) : (
-                <p>
-                  This build is accessible from the workbench above. A verified public URL will be included with the
-                  deployment handoff.
-                </p>
-              )}
-              <p>
-                Starting a run requires the separately shared reviewer code. Synthetic reports are readable without it.
-              </p>
-            </div>
-            <div className="card">
-              <h3>Source and history</h3>
-              {repoUrl ? (
-                <a href={repoUrl}>{repoUrl}</a>
-              ) : (
-                <p>
-                  Public repository publication is pending. Both the original source history and the rebuild history are
-                  preserved locally.
-                </p>
-              )}
-              <p>Approval, model comparison, and detailed run accounting are available for technical discussion.</p>
-            </div>
-          </div>
-        </Reveal>
-      </section>
+        </section>
 
-      <section className="section" id="measures" data-present="true">
-        <Reveal>
-          <Intro n="04 / SUCCESS MEASURES" title="Pilot targets and measurement plan">
-            These are proposed targets, not demonstrated customer outcomes. Establish the baseline with responders using
-            the same sanitized historical incidents.
-          </Intro>
-          <div className="cols-3">
-            <div className="card">
-              <h3>Coordination</h3>
+        <section className="section visual-slide" id="measures" data-present="true" data-title="Pilot targets">
+          <Heading n="04 / PILOT TARGETS" title="Measure coordination, quality and cost.">
+            Agree the baseline with one on-call rotation before expanding.
+          </Heading>
+          <PilotVisual cases={evaluation?.cases ?? 0} passed={passed} />
+          <div className="slide-bottom">
+            <Notes>
               <p>
-                Target 20% fewer responder-minutes to an agreed next check. Measure cross-team participation and elapsed
-                time, alongside incident severity.
+                Use the same sanitized historical incidents for baseline and pilot runs. Track severity, elapsed time
+                and participants to measure responder-minutes to an agreed next check.
               </p>
-            </div>
-            <div className="card">
-              <h3>Quality</h3>
               <p>
-                No unsupported critical claim in 20 human-reviewed pilot reports. Correct abstention on incomplete
-                cases, with every citation inspectable.
+                The 20% improvement, 20-report quality sample, 30-second p95 and $0.05 model cost are proposed targets.
+                Approval waiting is separate from analysis latency; compute, storage and retries belong in the full cost
+                model.
               </p>
-            </div>
-            <div className="card">
-              <h3>Performance and cost</h3>
               <p>
-                Provisional targets: analysis p95 under 30 seconds and model cost under $0.05 per run. Track approval
-                waiting separately; include compute, storage and retries in the full cost model.
+                The eight primary-model cases were collected in two batches under the same prompt and report contract
+                after the first attempt reached its budget. Offline tests prove orchestration; their timing and prices
+                are simulated.
               </p>
-            </div>
+            </Notes>
+            <a href={`${repoUrl}/blob/main/artifacts/README.md`}>Inspect the recorded results ↗</a>
           </div>
-          <p className="note">
-            Use real run accounting to calibrate these gates. Fake Gateway tests establish orchestration only; their
-            timing and prices are not production measurements.
-          </p>
-        </Reveal>
-      </section>
+        </section>
 
-      <section className="section" id="rollout" data-present="true">
-        <Reveal>
-          <Intro n="05 / ROLLOUT" title="Start with one on-call rotation">
-            The proposed pilot starts with sanitized incidents, then introduces a limited set of customer telemetry.
-            Responders continue using their existing incident process while evaluating Relay.
-          </Intro>
-          <div className="rollout">
-            <div className="rollout-line" aria-hidden="true" />
-            {rollout.map(([n, title, text]) => (
-              <div key={n}>
-                <span>{n}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </div>
-            ))}
+        <section className="section visual-slide" id="rollout" data-present="true" data-title="Rollout">
+          <Heading n="05 / ROLLOUT" title="Introduce Relay one rotation at a time.">
+            Keep a tested path back while the pilot proves its value.
+          </Heading>
+          <RolloutVisual />
+          <div className="slide-bottom">
+            <Notes>
+              <p>
+                <strong>Preview:</strong> synthetic data and isolated credentials. <strong>Validate:</strong> regression
+                checks, live evaluations and responder review. <strong>Canary:</strong> limited rotation access
+                alongside the current process. <strong>Cutover:</strong> expand after the agreed gates.{" "}
+                <strong>Rollback:</strong> restore the previous deployment or revoke pilot access.
+              </p>
+              <p>
+                A real workflow started on deployment A and completed after promotion to B. It stayed pinned to A. Its
+                report and evidence hash survived rollback and restoration. The cohort diagram is a proposed rollout,
+                not a claim of configured percentage traffic splitting.
+              </p>
+              <p>
+                CI runs tests and builds. Hosted validation and promotion currently use the CLI; the optional GitHub
+                preview integration is not configured.
+              </p>
+            </Notes>
+            <a href={`${repoUrl}/blob/main/artifacts/deployment-rollback.json`}>Promotion & rollback evidence ↗</a>
           </div>
-          <div className="card highlight" style={{ marginTop: 24 }}>
-            <h3>Choose the pilot's primary outcome</h3>
-            <p>
-              Which would justify a pilot: fewer people on each bridge, an earlier evidence-backed customer update, or
-              less time to assign the next check? Choose one primary business measure before expanding scope.
-            </p>
-          </div>
-        </Reveal>
-      </section>
+        </section>
 
-      <section className="section" id="risks">
-        <Reveal>
-          <Intro n="APPENDIX / LIMITATIONS & ALTERNATIVES" title="Production requirements and alternatives" />
-          <div className="cols-2">
-            <div className="card">
-              <h3>Report accuracy and approval</h3>
-              <p>
-                Schema, retrieved-citation, owner and policy checks reject known failures. They cannot prove that a
-                natural-language conclusion is true. The demo approval records a reviewer decision, never a production
-                action.
-              </p>
-            </div>
-            <div className="card">
-              <h3>Data residency</h3>
-              <p>
-                A Bedrock allow-list does not pin inference to us-east-1. Account for Gateway routing, model processing,
-                workflow state, cache, logs and the index. If a strict boundary cannot be met, change the design or
-                decline the data flow.
-              </p>
-              <a href="https://vercel.com/docs/ai-gateway/models-and-providers/provider-options">
-                Provider routing documentation ↗
-              </a>
-            </div>
-            <div className="card">
-              <h3>Operational limits</h3>
-              <p>
-                Local files are for a single developer process. Hosted runs require Postgres. A reserved but unconfirmed
-                start is not automatically dispatched again; investigate it before creating a new request. A model retry
-                can be billed twice. Configure spend limits and per-user controls for a pilot.
-              </p>
-            </div>
-            <div className="card">
-              <h3>Alternatives</h3>
-              <p>
-                Use the existing observability vendor's workflow when it already joins the necessary sources. An
-                AWS-native agent and Step Functions may fit a strict AWS boundary. Relay fits when a tailored cross-tool
-                experience and Vercel delivery workflow justify another application to operate.
-              </p>
-            </div>
+        <section className="section deck-appendix" id="notes">
+          <Heading n="REFERENCE" title="Technical notes and evidence">
+            Details for the discussion, available without crowding the walkthrough.
+          </Heading>
+          <div className="appendix-links">
+            <a className="btn" href={demoUrl}>
+              Live demo ↗
+            </a>
+            <a className="btn" href={repoUrl}>
+              GitHub ↗
+            </a>
+            <Link className="btn" href="/proposal?present=1#overview">
+              Present six screens
+            </Link>
           </div>
-        </Reveal>
-      </section>
-
-      <section className="section" id="tooling">
-        <Reveal>
-          <Intro n="APPENDIX / TOOLING & VALIDATION" title="Development tools and test results">
-            I used Codex for the initial build and Fable for a substantial redesign. The review that followed addressed
-            citation provenance, approval ordering, evaluation inputs and persistence. The repository includes the
-            tests, live evaluation results and deployment checks.
-          </Intro>
-          <div className="cols-2">
-            <div className="card">
-              <h3>What the checks cover</h3>
-              <ul>
-                <li>
-                  Regression tests reject unknown citations and owners, missing reads, and unsafe incomplete-evidence
-                  actions.
-                </li>
-                <li>
-                  Eight model cases include missing path data, unlabeled uncertainty, misleading policy timing and
-                  injected log instructions.
-                </li>
-                <li>
-                  The workflow smoke suite covers healthy runs, abstention, retry, approval/decline, reconnect and a
-                  full outage. Offline simulation is labeled separately.
-                </li>
-                <li>
-                  Live evaluation validates reports and proposed actions against the exact tool transcript. Human review
-                  remains a separate step.
-                </li>
-              </ul>
+          <details>
+            <summary>Architecture trade-offs and production requirements</summary>
+            <div className="appendix-body">
+              <p>
+                Next.js separates the static shell, cached catalog and request-time run state. Refresh invalidates an
+                incident's cache; each report retains its own source snapshot. Workflows manages execution and approval
+                waits, while Postgres retains the report index beyond workflow execution retention.
+              </p>
+              <p>
+                A fixed retrieval pipeline plus one model call is a simpler alternative worth comparing: all three reads
+                are mandatory. The agent adds conditional tool ordering and an optional proposal, at the cost of more
+                model steps.
+              </p>
+              <p>
+                SSO, verified service-owner permissions, data retention and network access need customer agreement. A
+                provider allow-list alone does not establish regional residency. The evidence, prompts, cache, logs,
+                Workflow state, database and model processing all need review.
+              </p>
+              <p>
+                Use the existing observability vendor's workflow if it already joins the required sources. An AWS-native
+                design may suit a strict AWS boundary.
+              </p>
+              <a href={`${repoUrl}/blob/main/docs/decisions.md`}>Full decision record ↗</a>
             </div>
-            <div className="card">
-              <h3>Latest live evaluation</h3>
+          </details>
+          <details id="tooling">
+            <summary>Development tools and validation</summary>
+            <div className="appendix-body">
+              <p>
+                Codex assisted the initial implementation and repairs; Fable supplied a substantial rebuild. Both
+                histories are preserved. Review addressed evidence provenance, approval ordering, misleading evaluation
+                inputs, persistence and report wording.
+              </p>
+              <p>
+                Regression tests cover unknown citations and owners, missing reads, incomplete-evidence actions and
+                duplicate starts. Hosted scenarios cover healthy runs, abstention, retry, approval, decline, pause and
+                full outage.
+              </p>
+              <p>
+                Automated checks do not prove every natural-language conclusion. Review the sources, uncertainty and
+                action status before sharing a customer update.
+              </p>
+              <a href={`${repoUrl}/blob/main/docs/repair-verification.md`}>Repairs and verification ↗</a>
+            </div>
+          </details>
+          <details>
+            <summary>
+              Live model evaluations{" "}
+              {evaluation ? `· ${passed}/${evaluation.cases} primary cases passed` : "· unavailable"}
+            </summary>
+            <div className="appendix-body">
               {evaluation ? (
                 <>
                   <p>
-                    {evaluation.model} · {evaluation.cases} cases · {evaluation.failures - budgetBlocked} failed checks
-                    {budgetBlocked > 0 && ` · ${budgetBlocked} blocked by budget`} ·{" "}
-                    {new Date(evaluation.evaluatedAt).toISOString().slice(0, 10)}
+                    {evaluation.model} · {new Date(evaluation.evaluatedAt).toISOString().slice(0, 10)} · automated
+                    checks
                   </p>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Case</th>
-                        <th>Result</th>
-                        <th>Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {evaluation.results.map((r) => (
-                        <tr key={r.name}>
-                          <td>{r.name}</td>
-                          <td>
-                            {r.error
-                              ? /budget exceeded/i.test(r.error)
-                                ? "Budget blocked"
-                                : "Failed"
-                              : r.assessmentPassed && !r.regressionFailures?.length
-                                ? "Checks passed"
-                                : "Review needed"}
-                          </td>
-                          <td>{r.totalCostUsd ? `$${Number(r.totalCostUsd).toFixed(4)}` : "—"}</td>
+                  <div className="eval-table-wrap">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Case</th>
+                          <th>Result</th>
+                          <th>Model cost</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <p className="note">
-                    Automated checks are not a human sign-off. Source review caught an unsupported status code even
-                    after an earlier automated pass; that regression now has its own runtime guard. See the artifacts
-                    for the failed attempts as well as the latest results.
-                  </p>
+                      </thead>
+                      <tbody>
+                        {evaluation.results.map((result) => (
+                          <tr key={result.name}>
+                            <td>{result.name}</td>
+                            <td>
+                              {result.error
+                                ? "Failed / blocked"
+                                : result.assessmentPassed && !result.regressionFailures?.length
+                                  ? "Passed"
+                                  : "Review needed"}
+                            </td>
+                            <td>{result.totalCostUsd ? `$${Number(result.totalCostUsd).toFixed(4)}` : "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </>
               ) : (
+                <p>Live results are unavailable in this build.</p>
+              )}
+              {candidate && (
                 <p>
-                  Fresh live-model results for this revision are pending. Historical results and simulated runs are not
-                  evidence that this agent passes.
+                  Automatic fallback is disabled: {candidate.model} failed {candidate.failures} of {candidate.cases}{" "}
+                  candidate cases. Explicit comparison and provider-outage drills remain available; successful routing
+                  does not qualify report quality.
                 </p>
               )}
+              <a href={`${repoUrl}/blob/main/artifacts/README.md`}>Current results and earlier failures ↗</a>
             </div>
-          </div>
-          {candidate && (
-            <div className="card" style={{ marginTop: 24 }}>
-              <h3>Why automatic model fallback is disabled</h3>
-              <p>
-                The earlier candidate evaluation for {candidate.model} had {candidate.failures} failure(s) in{" "}
-                {candidate.cases} cases. Normal runs therefore have automatic cross-model fallback disabled. Explicit
-                comparison and outage drills can test the candidate; rejected reports are withheld. A successful Gateway
-                routing probe does not qualify a model for a pilot.
-              </p>
+          </details>
+          <details>
+            <summary>Product feedback from building Relay</summary>
+            <div className="appendix-body">
+              <ul>
+                <li>Durable steps and approval hooks made retry and pause behavior straightforward to demonstrate.</li>
+                <li>
+                  A side-effect database registration failed in the hosted Workflow bundle; an explicit import fixed it.
+                  A reference example would help.
+                </li>
+                <li>
+                  Gateway's actual fallback model was in nested routing metadata, while the response named the requested
+                  model. A typed accounting helper would make this easier to use correctly.
+                </li>
+                <li>
+                  A reference app combining idempotent starts, retained evidence, report storage and deployment
+                  versioning would reduce integration work.
+                </li>
+              </ul>
+              <a href={`${repoUrl}/blob/main/docs/product-feedback.md`}>Detailed product feedback ↗</a>
             </div>
-          )}
-          <div className="card" style={{ marginTop: 24 }}>
-            <h3>Product feedback from this build</h3>
-            <p>
-              Durable steps and hooks made retry and approval behavior concrete. Gateway's routing and cost metadata
-              were useful, but the actual fallback model appeared in nested routing metadata while the response still
-              named the requested model. A typed accounting helper would help. A reference application combining
-              idempotent starts, retained evidence, a report index and deployment versioning would also reduce
-              integration work.
-            </p>
-          </div>
-        </Reveal>
-      </section>
-      <footer className="proposal-foot">
-        <span>Relay · technical exercise with Vercel · fictional customer and synthetic telemetry</span>
-        <span>
-          <a href="https://workflow-sdk.dev/docs/foundations/versioning">Workflow versioning</a> ·{" "}
-          <a href="https://vercel.com/docs/fluid-compute">Compute and billing</a>
-        </span>
-      </footer>
-    </main>
+          </details>
+        </section>
+        <footer className="proposal-foot">
+          <span>Relay · technical exercise with Vercel · synthetic scenario</span>
+          <a href={repoUrl}>Source & development history ↗</a>
+        </footer>
+      </main>
+    </PresentationMotion>
   );
 }
