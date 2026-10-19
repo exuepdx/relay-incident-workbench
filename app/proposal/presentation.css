@@ -1288,6 +1288,20 @@
   .visual-proposal.presenting .estate-stack {
     height: 78px;
   }
+  .visual-proposal.presenting .estate-stack > div {
+    width: 90px;
+    height: 55px;
+    left: 20px;
+  }
+  .visual-proposal.presenting .estate-stack > div:nth-child(1) {
+    top: 25px;
+  }
+  .visual-proposal.presenting .estate-stack > div:nth-child(2) {
+    top: 13px;
+  }
+  .visual-proposal.presenting .estate-stack > div:nth-child(3) {
+    top: 1px;
+  }
   .visual-proposal.presenting .architecture-layer {
     padding-top: 10px;
     padding-bottom: 10px;
