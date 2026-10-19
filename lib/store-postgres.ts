@@ -29,8 +29,11 @@ class PostgresStore implements Store {
         model text,
         cost_usd text,
         title text,
-        result jsonb
-      )`.then(() => undefined);
+        result jsonb,
+        approval jsonb
+      )`
+      .then(() => this.sql`ALTER TABLE investigations ADD COLUMN IF NOT EXISTS approval jsonb`)
+      .then(() => undefined);
     return this.ready;
   }
 
@@ -46,6 +49,7 @@ class PostgresStore implements Store {
       costUsd: r.cost_usd ?? null,
       title: r.title ?? null,
       result: r.result ?? null,
+      approval: r.approval ?? null,
     });
   }
 
@@ -53,8 +57,8 @@ class PostgresStore implements Store {
     await this.init();
     const r = investigationRecordSchema.parse(record);
     await this.sql`
-      INSERT INTO investigations (run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title, result)
-      VALUES (${r.runId}, ${r.incidentId}, ${r.status}, ${r.fault}, ${r.createdAt}, ${r.completedAt}, ${r.model}, ${r.costUsd}, ${r.title}, ${this.sql.json(r.result as never)})
+      INSERT INTO investigations (run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title, result, approval)
+      VALUES (${r.runId}, ${r.incidentId}, ${r.status}, ${r.fault}, ${r.createdAt}, ${r.completedAt}, ${r.model}, ${r.costUsd}, ${r.title}, ${this.sql.json(r.result as never)}, ${this.sql.json((r.approval ?? null) as never)})
       ON CONFLICT (run_id) DO NOTHING`;
   }
 
@@ -65,7 +69,7 @@ class PostgresStore implements Store {
     const r = investigationRecordSchema.parse({ ...current, ...patch });
     await this.sql`
       UPDATE investigations SET status = ${r.status}, completed_at = ${r.completedAt}, model = ${r.model},
-        cost_usd = ${r.costUsd}, title = ${r.title}, result = ${this.sql.json(r.result as never)}
+        cost_usd = ${r.costUsd}, title = ${r.title}, result = ${this.sql.json(r.result as never)}, approval = ${this.sql.json((r.approval ?? null) as never)}
       WHERE run_id = ${runId}`;
   }
 
@@ -79,10 +83,12 @@ class PostgresStore implements Store {
     await this.init();
     const rows = incidentId
       ? await this
-          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations WHERE incident_id = ${incidentId} ORDER BY created_at DESC LIMIT ${limit}`
+          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title, approval FROM investigations WHERE incident_id = ${incidentId} ORDER BY created_at DESC LIMIT ${limit}`
       : await this
-          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title FROM investigations ORDER BY created_at DESC LIMIT ${limit}`;
-    return rows.map((r) => this.row({ ...r, result: null }));
+          .sql`SELECT run_id, incident_id, status, fault, created_at, completed_at, model, cost_usd, title, approval FROM investigations ORDER BY created_at DESC LIMIT ${limit}`;
+    return rows.map((r) =>
+      this.row({ ...r, result: null, approval: r.approval ? { ...r.approval, token: undefined } : null }),
+    );
   }
 }
 

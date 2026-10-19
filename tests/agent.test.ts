@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { summarizeSteps, totals } from "../lib/gateway";
-import { buildTools, toolNames } from "../lib/tools";
+import { acknowledgeProposal, buildTools, readToolNames } from "../lib/tools";
 
 test("accounting reduces gateway metadata into served model, cost, and fallback use", () => {
   const steps = summarizeSteps([
@@ -58,14 +58,15 @@ test("accounting reduces gateway metadata into served model, cost, and fallback 
   assert.equal(sum.fallbackUsed, true);
 });
 
-test("the tool set exposes exactly three read-only tools with no free-form input", async () => {
+test("the read tools take no free-form input and call the customer API executors", async () => {
   const calls: string[] = [];
   const tools = buildTools({
     getServiceMetrics: async () => (calls.push("m"), { incidentId: "INC-0241", kind: "metric", evidence: [] }),
     getSlowTraces: async () => (calls.push("t"), { incidentId: "INC-0241", kind: "trace", evidence: [] }),
     getRecentChanges: async () => (calls.push("c"), { incidentId: "INC-0241", kind: "change", evidence: [] }),
+    proposeMitigation: acknowledgeProposal,
   });
-  assert.deepEqual(Object.keys(tools).sort(), [...toolNames].sort());
-  for (const name of toolNames) await tools[name].execute?.({}, { toolCallId: "x", messages: [] } as never);
+  assert.deepEqual(Object.keys(tools).sort(), [...readToolNames, "proposeMitigation"].sort());
+  for (const name of readToolNames) await tools[name].execute?.({}, { toolCallId: "x", messages: [] } as never);
   assert.deepEqual(calls.sort(), ["c", "m", "t"]);
 });

@@ -55,6 +55,35 @@ export function ReportView({ result, runId }: { result: InvestigationResult; run
         <Icon name="info" size={16} />
         <span>{report.uncertainty}</span>
       </div>
+      {result.approval && (
+        <div className={`approval outcome ${result.approval.decision}`}>
+          <div className="approval-head">
+            <span
+              className={`chip ${result.approval.decision === "approved" ? "green" : result.approval.decision === "declined" ? "red" : "amber"}`}
+            >
+              <i /> {result.approval.decision}
+              {result.approval.by ? ` by ${result.approval.by}` : ""}
+            </span>
+            <span className="eyebrow">Proposed mitigation · {result.approval.proposal.owner}</span>
+          </div>
+          <h4
+            style={{
+              textTransform: "none",
+              letterSpacing: 0,
+              color: "var(--ink)",
+              fontSize: "var(--text-base)",
+              marginTop: 4,
+            }}
+          >
+            {result.approval.proposal.action}
+          </h4>
+          <p>{result.approval.proposal.rationale}</p>
+          <p className="muted" style={{ fontSize: "var(--text-xs)" }}>
+            Recorded {new Date(result.approval.decidedAt).toLocaleString()}. Nothing was executed; the decision is part
+            of the record.
+          </p>
+        </div>
+      )}
       <h4>Recommended next steps</h4>
       <ol className="next-steps">
         {report.nextSteps.map((s) => (

@@ -5,7 +5,7 @@ import { config } from "../lib/config";
 import { briefing, instructions } from "../lib/agent";
 import { gatewayOptions, resolveModel, summarizeSteps, totals } from "../lib/gateway";
 import { reportSchema, validateReport } from "../lib/contracts";
-import { buildTools } from "../lib/tools";
+import { buildTools, readToolNames } from "../lib/tools";
 import { caseExecutors, evaluationCases, evaluationRegressions } from "../lib/evaluation-cases";
 
 /**

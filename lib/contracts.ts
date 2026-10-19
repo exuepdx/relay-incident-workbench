@@ -114,12 +114,50 @@ export const investigationInputSchema = z
     /**
      * Demo controls. `transient` makes the first telemetry call fail with 503,
      * `outage` makes every call fail, `provider-outage` routes the primary
-     * model to a provider that does not serve it so Gateway falls back.
+     * model to a provider that does not serve it so Gateway falls back, and
+     * `pause` holds the run before the model phase so a redeploy can land.
      */
-    fault: z.enum(["none", "transient", "outage", "provider-outage"]).default("none"),
+    fault: z.enum(["none", "transient", "outage", "provider-outage", "pause"]).default("none"),
+    /** Optional model override from the comparison allow-list (validated by the route). */
+    model: z
+      .string()
+      .regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/)
+      .optional(),
   })
   .strict();
 export type InvestigationInput = z.infer<typeof investigationInputSchema>;
+
+/**
+ * The agent's only write-shaped tool. It records a request; it never acts.
+ * The workflow pauses on a hook until a service owner decides.
+ */
+export const mitigationProposalSchema = z.object({
+  action: z.string().min(10).max(200),
+  owner: z.string().min(2).max(80),
+  rationale: z.string().min(20).max(500),
+  expectedEffect: z.string().min(10).max(300),
+  citations: z
+    .array(z.string().regex(/^E[1-9][0-9]*$/))
+    .min(1)
+    .max(6),
+});
+export type MitigationProposal = z.infer<typeof mitigationProposalSchema>;
+
+export const approvalDecisionSchema = z.object({
+  decision: z.enum(["approved", "declined"]),
+  by: z.string().min(1).max(80),
+  note: z.string().max(300).optional(),
+});
+export type ApprovalDecision = z.infer<typeof approvalDecisionSchema>;
+
+export type ApprovalOutcome = {
+  proposal: MitigationProposal;
+  decision: "approved" | "declined" | "expired";
+  by: string | null;
+  note: string | null;
+  requestedAt: string;
+  decidedAt: string;
+};
 
 const finding = z.object({ text: z.string().min(1).max(600), citations: z.array(z.string()).min(1).max(6) });
 export const reportSchema = z.object({
@@ -157,6 +195,13 @@ export const progressEventSchema = z.discriminatedUnion("type", [
     ms: z.number().optional(),
     at: z.string(),
   }),
+  z.object({
+    type: z.literal("approval"),
+    status: z.enum(["requested", "approved", "declined", "expired"]),
+    detail: z.string(),
+    at: z.string(),
+  }),
+  z.object({ type: z.literal("pause"), status: z.enum(["started", "completed"]), seconds: z.number(), at: z.string() }),
 ]);
 export type ProgressEvent = z.infer<typeof progressEventSchema>;
 
@@ -189,6 +234,7 @@ export type InvestigationResult = {
   report: Report;
   evidence: Evidence[];
   accounting: Accounting;
+  approval?: ApprovalOutcome;
 };
 
 /** Stored index row for an investigation. */
@@ -203,6 +249,19 @@ export const investigationRecordSchema = z.object({
   costUsd: z.string().nullable(),
   title: z.string().nullable(),
   result: z.unknown().nullable(),
+  /** Pending or decided mitigation approval. The hook token never leaves the server. */
+  approval: z
+    .object({
+      status: z.enum(["pending", "approved", "declined", "expired"]),
+      token: z.string().optional(),
+      proposal: mitigationProposalSchema,
+      requestedAt: z.string(),
+      decidedAt: z.string().nullable().optional(),
+      by: z.string().nullable().optional(),
+      note: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 export type InvestigationRecord = z.infer<typeof investigationRecordSchema>;
 

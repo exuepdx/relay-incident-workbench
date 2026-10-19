@@ -32,6 +32,9 @@ export async function POST(request: Request) {
   if (input.data.fault !== "none" && !config.demoControls) {
     return Response.json({ error: "Demo controls are disabled in this environment." }, { status: 403 });
   }
+  if (input.data.model && input.data.model !== config.model && !config.comparisonModels.includes(input.data.model)) {
+    return Response.json({ error: "That model is not on the comparison allow-list." }, { status: 400 });
+  }
 
   try {
     const run = await start(investigate, [input.data], { region: config.region });
@@ -46,6 +49,7 @@ export async function POST(request: Request) {
       costUsd: null,
       title: null,
       result: null,
+      approval: null,
     });
     return Response.json({ runId: run.runId }, { status: 202, headers: noStore });
   } catch (error) {

@@ -1,6 +1,6 @@
 import type { Evidence, EvidenceList, Incident, Report } from "./contracts";
 import { incidentSchema } from "./contracts";
-import type { ToolExecutors } from "./tools";
+import { acknowledgeProposal, type ToolExecutors } from "./tools";
 import fixtures from "../customer-api/data/incidents.json";
 
 /**
@@ -126,6 +126,7 @@ export function caseExecutors(item: EvaluationCase): ToolExecutors {
     getServiceMetrics: async () => list("metric"),
     getSlowTraces: async () => list("trace"),
     getRecentChanges: async () => list("change"),
+    proposeMitigation: acknowledgeProposal,
   };
 }
 

@@ -77,7 +77,7 @@ export function summarizeSteps(steps: StepResult<ToolSet, any>[]): ModelStep[] {
   });
 }
 
-export function totals(modelSteps: ModelStep[]) {
+export function totals(modelSteps: ModelStep[], requested: string = config.model) {
   const sum = (pick: (s: ModelStep) => number | null) => modelSteps.reduce((acc, s) => acc + (pick(s) ?? 0), 0);
   const costs = modelSteps.map((s) => s.costUsd).filter((c): c is string => c !== null);
   const servedBy = modelSteps.at(-1)?.model ?? null;
@@ -87,7 +87,6 @@ export function totals(modelSteps: ModelStep[]) {
     totalCostUsd: costs.length ? costs.reduce((acc, c) => acc + Number(c), 0).toFixed(6) : null,
     servedBy,
     fallbackUsed:
-      modelSteps.some((s) => s.modelAttempts.some((a) => !a.success)) ||
-      (servedBy !== null && servedBy !== config.model),
+      modelSteps.some((s) => s.modelAttempts.some((a) => !a.success)) || (servedBy !== null && servedBy !== requested),
   };
 }

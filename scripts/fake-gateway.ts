@@ -113,6 +113,8 @@ createServer(async (req, res) => {
     .join("\n");
   const incidentId = /INC-\d{4}/.exec(userText)?.[0] ?? "INC-0244";
   const wanted = ["getServiceMetrics", "getSlowTraces", "getRecentChanges"].filter((t) => !called.has(t));
+  // The pool-contention incident earns a mitigation proposal (human approval path).
+  const wantsProposal = incidentId === "INC-0241" && !wanted.length && !called.has("proposeMitigation");
 
   let content: unknown[];
   let finish: string;
@@ -123,6 +125,23 @@ createServer(async (req, res) => {
       toolName,
       input: "{}",
     }));
+    finish = "tool-calls";
+  } else if (wantsProposal) {
+    content = [
+      {
+        type: "tool-call",
+        toolCallId: `call_${Date.now()}_p`,
+        toolName: "proposeMitigation",
+        input: JSON.stringify({
+          action: "Revert the inventory client connection pool maximum from 5 back to 20 (release 8f2c1d)",
+          owner: "Inventory Services",
+          rationale:
+            "Pool waits dominate the slow traces and pending requests rose from 0 to 84 after the pool maximum dropped from 20 to 5 at 14:12; database CPU stayed near baseline, so restoring the previous limit is the lowest-risk reversible change.",
+          expectedEffect: "db.pool.acquire waits fall back toward baseline and checkout p95 recovers; if not, the hypothesis is wrong and the change is reverted again.",
+          citations: ["E2", "E3", "E4"],
+        }),
+      },
+    ];
     finish = "tool-calls";
   } else {
     const available = new Set([...idsIn(toolResults.map((p) => p.output?.value)), ...idsIn(userText)]);

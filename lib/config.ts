@@ -20,6 +20,13 @@ export const config = {
   fallbackModels: list(process.env.AI_FALLBACK_MODELS).length
     ? list(process.env.AI_FALLBACK_MODELS)
     : ["anthropic/claude-sonnet-5", "google/gemini-2.5-flash"],
+  /**
+   * Models a reviewer may pick for a side-by-side comparison. The primary is
+   * always allowed; anything else must be listed here.
+   */
+  comparisonModels: list(process.env.AI_COMPARISON_MODELS).length
+    ? list(process.env.AI_COMPARISON_MODELS)
+    : ["anthropic/claude-sonnet-5", "google/gemini-2.5-flash"],
   /** Provider preference per model (e.g. ["bedrock", "anthropic"]). */
   providerOrder: list(process.env.AI_PROVIDER_ORDER),
   /** Hard allow-list of providers (e.g. ["bedrock"] for a data-placement constraint). */
@@ -44,6 +51,11 @@ export const config = {
 
   /** Where investigation runs live. Workflows pins the run to this region. */
   region: process.env.RELAY_REGION || "iad1",
+
+  /** How long a run waits for a service owner before the proposal expires. */
+  approvalTimeout: (process.env.APPROVAL_TIMEOUT || "15m") as `${number}${"s" | "m" | "h"}`,
+  /** The redeploy drill holds the run this long before the model phase. */
+  pauseSeconds: Number(process.env.DEMO_PAUSE_SECONDS || 30),
 
   /** Demo-only controls (fault injection, outage drill). */
   demoControls: process.env.DEMO_CONTROLS === "true" || process.env.NODE_ENV !== "production",

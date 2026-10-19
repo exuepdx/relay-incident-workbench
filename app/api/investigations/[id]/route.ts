@@ -15,7 +15,11 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   if (!validId(id)) return Response.json({ error: "Investigation not found" }, { status: 404 });
   const store = getStore();
-  const record = await store.get(id);
+  const stored = await store.get(id);
+  // The hook token stays server-side.
+  const record = stored
+    ? { ...stored, approval: stored.approval ? { ...stored.approval, token: undefined } : stored.approval }
+    : null;
   if (record?.status === "completed" && record.result) {
     return Response.json({ status: "completed", record, result: record.result }, { headers: noStore });
   }

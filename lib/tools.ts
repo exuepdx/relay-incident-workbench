@@ -1,17 +1,31 @@
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import { customerGet, type CustomerFetchOptions } from "./customer-client";
-import { evidenceListSchema, incidentSchema, type EvidenceList, type Incident } from "./contracts";
+import {
+  evidenceListSchema,
+  incidentSchema,
+  mitigationProposalSchema,
+  type EvidenceList,
+  type Incident,
+  type MitigationProposal,
+} from "./contracts";
 
 /**
  * The agent's tool boundary.
  *
  * Three read-only tools, each backed by one endpoint of the customer's
- * telemetry API. The model can choose which to call and in what order; it
- * cannot choose a URL, a query, or an incident other than the one under
- * investigation. In the workflow each execute is a durable, retried step.
+ * telemetry API, plus one write-shaped tool that only records a request:
+ * proposeMitigation. The model can choose which to call and in what order;
+ * it cannot choose a URL, a query, or an incident other than the one under
+ * investigation, and nothing it calls changes a system. In the workflow each
+ * execute is a durable, retried step, and a proposal pauses the run until a
+ * service owner decides.
  */
-export const toolSpecs = {
+export const readToolNames = ["getServiceMetrics", "getSlowTraces", "getRecentChanges"] as const;
+export type ReadToolName = (typeof readToolNames)[number];
+export type ToolName = ReadToolName | "proposeMitigation";
+
+export const toolSpecs: Record<ReadToolName, { path: "metrics" | "traces" | "changes"; description: string }> = {
   getServiceMetrics: {
     path: "metrics",
     description:
@@ -27,9 +41,12 @@ export const toolSpecs = {
     description:
       "Fetch releases, configuration, and network-policy changes near the incident window. Returns evidence items with ids you can cite.",
   },
-} as const;
-export type ToolName = keyof typeof toolSpecs;
-export const toolNames = Object.keys(toolSpecs) as ToolName[];
+};
+
+export const proposeMitigationDescription =
+  "Request one operational mitigation (for example a configuration revert) from the accountable service owner. This records a proposal for human approval; it executes nothing. Call it at most once, only when the evidence supports a specific, reversible action, and never for an insufficient-evidence assessment.";
+
+export type ProposalReceipt = { recorded: true; status: "awaiting-approval"; note: string };
 
 export function fetchIncident(incidentId: string, options?: CustomerFetchOptions): Promise<Incident> {
   return customerGet(`/incidents/${incidentId}`, incidentSchema, options);
@@ -48,17 +65,36 @@ export function summarizeEvidence(list: EvidenceList): string {
   return `${n} evidence item${n === 1 ? "" : "s"}: ${list.evidence.map((e) => e.id).join(", ")}`;
 }
 
-export type ToolExecutors = Record<ToolName, () => Promise<EvidenceList>>;
+export type ToolExecutors = {
+  getServiceMetrics: () => Promise<EvidenceList>;
+  getSlowTraces: () => Promise<EvidenceList>;
+  getRecentChanges: () => Promise<EvidenceList>;
+  proposeMitigation: (proposal: MitigationProposal) => Promise<ProposalReceipt>;
+};
 
 /** Build the AI SDK tool set from executors (workflow steps or plain functions). */
 export function buildTools(execute: ToolExecutors): ToolSet {
   const tools: ToolSet = {};
-  for (const name of toolNames) {
+  for (const name of readToolNames) {
     tools[name] = tool({
       description: toolSpecs[name].description,
       inputSchema: z.object({}),
       execute: async () => execute[name](),
     });
   }
+  tools.proposeMitigation = tool({
+    description: proposeMitigationDescription,
+    inputSchema: mitigationProposalSchema,
+    execute: async (proposal) => execute.proposeMitigation(proposal),
+  });
   return tools;
+}
+
+/** Plain receipt for executors outside the workflow (evals). */
+export async function acknowledgeProposal(proposal: MitigationProposal): Promise<ProposalReceipt> {
+  return {
+    recorded: true,
+    status: "awaiting-approval",
+    note: `Proposal recorded for ${proposal.owner}. It will not execute without their approval.`,
+  };
 }

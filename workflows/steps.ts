@@ -1,21 +1,24 @@
 import { FatalError, RetryableError, getStepMetadata, getWorkflowMetadata, getWritable } from "workflow";
 import { config } from "@/lib/config";
 import { CustomerApiError } from "@/lib/customer-client";
-import { fetchEvidence, fetchIncident, summarizeEvidence } from "@/lib/tools";
+import { fetchEvidence, fetchIncident, summarizeEvidence, type ProposalReceipt } from "@/lib/tools";
 import {
   validateReport,
   type Accounting,
+  type ApprovalDecision,
+  type ApprovalOutcome,
   type EvidenceList,
   type Incident,
   type InvestigationInput,
   type InvestigationResult,
+  type MitigationProposal,
   type ModelStep,
   type ProgressEvent,
 } from "@/lib/contracts";
 import { totals } from "@/lib/gateway";
 import { getStore } from "@/lib/store";
-import { installFakeGatewayRedirect } from "@/lib/fake-gateway";
 import "@/lib/store-postgres";
+import { installFakeGatewayRedirect } from "@/lib/fake-gateway";
 
 /**
  * Workflow steps. Each is durable: its result is persisted, retries are
@@ -38,7 +41,12 @@ async function emit(event: ProgressEvent) {
 export async function markRunStarted(input: InvestigationInput) {
   "use step";
   const at = now();
-  await emit({ type: "run", status: "started", at, detail: `${input.incidentId} · fault=${input.fault}` });
+  await emit({
+    type: "run",
+    status: "started",
+    at,
+    detail: `${input.incidentId} · fault=${input.fault}${input.model ? ` · model=${input.model}` : ""}`,
+  });
   return at;
 }
 
@@ -151,10 +159,83 @@ export async function fetchRegisterStep(input: InvestigationInput): Promise<Evid
 }
 fetchRegisterStep.maxRetries = config.telemetryRetries;
 
+/** The agent asked for a mitigation. Record it; it executes nothing. */
+export async function proposeMitigationStep(proposal: MitigationProposal): Promise<ProposalReceipt> {
+  "use step";
+  await emit({
+    type: "tool",
+    tool: "proposeMitigation",
+    status: "completed",
+    attempt: 1,
+    ms: 0,
+    summary: `${proposal.owner}: ${proposal.action}`,
+    at: now(),
+  });
+  return {
+    recorded: true,
+    status: "awaiting-approval",
+    note: `Proposal recorded for ${proposal.owner}. It will not execute without their approval.`,
+  };
+}
+proposeMitigationStep.maxRetries = 0;
+
 export async function modelPhase(status: "started" | "completed", model?: string, ms?: number) {
   "use step";
   installFakeGatewayRedirect(); // offline harness only; no-op otherwise
   await emit({ type: "model", status, model, ms, at: now() });
+}
+
+/** The redeploy drill: announce the hold; the workflow sleeps durably. */
+export async function holdPhase(status: "started" | "completed", seconds: number) {
+  "use step";
+  await emit({ type: "pause", status, seconds, at: now() });
+}
+
+/** Persist the pending approval so the API can resume the hook by run id. */
+export async function recordApprovalRequest(proposal: MitigationProposal, token: string) {
+  "use step";
+  const { workflowRunId } = getWorkflowMetadata();
+  const requestedAt = now();
+  await getStore().update(workflowRunId, { approval: { status: "pending", token, proposal, requestedAt } });
+  await emit({
+    type: "approval",
+    status: "requested",
+    detail: `${proposal.owner}: ${proposal.action}`,
+    at: requestedAt,
+  });
+  return requestedAt;
+}
+
+/** Persist the owner's decision (or expiry) and announce it. */
+export async function recordApprovalDecision(
+  proposal: MitigationProposal,
+  requestedAt: string,
+  decision: ApprovalDecision | null,
+): Promise<ApprovalOutcome> {
+  "use step";
+  const { workflowRunId } = getWorkflowMetadata();
+  const decidedAt = now();
+  const outcome: ApprovalOutcome = {
+    proposal,
+    decision: decision?.decision ?? "expired",
+    by: decision?.by ?? null,
+    note: decision?.note ?? null,
+    requestedAt,
+    decidedAt,
+  };
+  await getStore().update(workflowRunId, {
+    approval: { status: outcome.decision, proposal, requestedAt, decidedAt, by: outcome.by, note: outcome.note },
+  });
+  await emit({
+    type: "approval",
+    status: outcome.decision,
+    detail:
+      outcome.decision === "expired"
+        ? "No decision within the approval window; nothing was changed."
+        : `${outcome.decision} by ${outcome.by}${outcome.note ? ` · ${outcome.note}` : ""}`,
+    at: decidedAt,
+  });
+  return outcome;
 }
 
 /**
@@ -168,12 +249,18 @@ export async function finalizeStep(
   output: unknown,
   modelSteps: ModelStep[],
   startedAt: string,
+  approval: ApprovalOutcome | null,
 ): Promise<InvestigationResult> {
   "use step";
   const { workflowRunId } = getWorkflowMetadata();
   const store = getStore();
   const completedAt = now();
-  const accounting: Accounting = { startedAt, completedAt, modelSteps, ...totals(modelSteps) };
+  const accounting: Accounting = {
+    startedAt,
+    completedAt,
+    modelSteps,
+    ...totals(modelSteps, input.model ?? config.model),
+  };
   try {
     const report = validateReport(output, register.evidence, incident.reportPolicy);
     const result: InvestigationResult = {
@@ -183,6 +270,7 @@ export async function finalizeStep(
       report,
       evidence: register.evidence,
       accounting,
+      ...(approval ? { approval } : {}),
     };
     await store.update(workflowRunId, {
       status: "completed",

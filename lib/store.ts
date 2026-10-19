@@ -39,7 +39,7 @@ class MemoryStore implements Store {
       .filter((r) => !incidentId || r.incidentId === incidentId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, limit)
-      .map((r) => ({ ...r, result: null }));
+      .map((r) => ({ ...r, result: null, approval: r.approval ? { ...r.approval, token: undefined } : r.approval }));
   }
   protected persist() {}
 }

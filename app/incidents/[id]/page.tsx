@@ -10,6 +10,7 @@ import { DependencyMap } from "@/components/dependency-map";
 import { Investigator } from "@/components/investigator";
 import { SavedRuns } from "@/components/saved-runs";
 import { RefreshButton } from "@/components/refresh-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { SignalCanvas } from "@/components/signal-canvas";
 import { CountUp } from "@/components/motion";
 import { getIncident } from "@/lib/incidents";
@@ -46,6 +47,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
         }
       >
         <RefreshButton id={incident.id} />
+        <ThemeToggle />
       </Topbar>
       <main id="main" className="page">
         <div className="hero-band">
@@ -143,6 +145,7 @@ async function IncidentView({ params }: { params: Promise<{ id: string }> }) {
               demoControls={config.demoControls}
               model={config.model}
               fallbackModels={config.fallbackModels}
+              comparisonModels={config.comparisonModels}
             />
             <div style={{ height: 16 }} />
             <Suspense

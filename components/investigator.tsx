@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { InvestigationInput, InvestigationResult, ProgressEvent } from "@/lib/contracts";
+import type { InvestigationInput, InvestigationRecord, InvestigationResult, ProgressEvent } from "@/lib/contracts";
+import { ApprovalCard } from "./approval-card";
 import { Icon } from "./icons";
 import { ReportView } from "./report";
 import { RunTimeline, foldTimeline } from "./run-timeline";
@@ -23,12 +24,14 @@ export function Investigator({
   demoControls,
   model,
   fallbackModels,
+  comparisonModels,
 }: {
   incidentId: string;
   question: string;
   demoControls: boolean;
   model: string;
   fallbackModels: string[];
+  comparisonModels: string[];
 }) {
   const router = useRouter();
   const search = useSearchParams();
@@ -40,6 +43,8 @@ export function Investigator({
   const [auth, setAuth] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
   const [fault, setFault] = useState<Fault>("none");
+  const [chosenModel, setChosenModel] = useState(model);
+  const [approval, setApproval] = useState<NonNullable<InvestigationRecord["approval"]> | null>(null);
   const [streamNote, setStreamNote] = useState("");
   const generation = useRef(0);
   const streamAbort = useRef<AbortController | null>(null);
@@ -60,6 +65,7 @@ export function Investigator({
       setResult(null);
       setError("");
       setStreamNote("");
+      setApproval(null);
       // The stream replays persisted chunks and closes itself once the run is
       // terminal, so it is only aborted when the user leaves this run.
       streamAbort.current?.abort();
@@ -102,6 +108,8 @@ export function Investigator({
           const body = await response.json();
           if (ticket !== generation.current) return;
           if (!response.ok) throw new Error(body.error ?? "Could not read the run");
+          const pending = body.record?.approval?.status === "pending" ? body.record.approval : null;
+          setApproval((prev) => (pending ? pending : prev && prev.status === "pending" ? null : prev));
           if (body.status === "completed" && body.result) {
             setResult(body.result);
             setPhase("completed");
@@ -144,7 +152,7 @@ export function Investigator({
     const response = await fetch("/api/investigations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ incidentId, fault }),
+      body: JSON.stringify({ incidentId, fault, ...(chosenModel !== model ? { model: chosenModel } : {}) }),
     });
     const body = await response.json();
     if (!response.ok) {
@@ -177,6 +185,7 @@ export function Investigator({
     streamAbort.current?.abort();
     generation.current++;
     setPhase("idle");
+    setApproval(null);
     setRunId(null);
     setEvents([]);
     setResult(null);
@@ -237,9 +246,22 @@ export function Investigator({
             <button className="btn btn-primary btn-lg btn-block run" disabled={auth !== true} onClick={start}>
               <Icon name="spark" size={16} /> Run investigation <Icon name="arrow" size={16} />
             </button>
+            <div className="field model-pick">
+              <label htmlFor="model">Model</label>
+              <select id="model" value={chosenModel} onChange={(e) => setChosenModel(e.target.value)}>
+                <option value={model}>{model} · default</option>
+                {comparisonModels
+                  .filter((m) => m !== model)
+                  .map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+              </select>
+            </div>
             <p className="note">
-              {model} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}. Read-only.
-              About 15 seconds.
+              {chosenModel} via AI Gateway{fallbackModels.length ? `, falls back to ${fallbackModels[0]}` : ""}.
+              Read-only. About 15 seconds.
             </p>
             {demoControls && (
               <details className="controls">
@@ -253,6 +275,7 @@ export function Investigator({
                     <option value="transient">Telemetry API returns 503 once (step retries)</option>
                     <option value="outage">Telemetry API is down (run fails, no model call)</option>
                     <option value="provider-outage">Primary model unavailable (Gateway falls back)</option>
+                    <option value="pause">Hold before synthesis so you can redeploy mid-run</option>
                   </select>
                   <span className="help">
                     Faults are injected at the customer API or at Gateway routing, never in the agent.
@@ -266,6 +289,9 @@ export function Investigator({
         {phase !== "idle" && (
           <>
             <RunTimeline rows={rows} />
+            {approval?.status === "pending" && runId && (
+              <ApprovalCard runId={runId} proposal={approval.proposal} onDecided={() => setApproval(null)} />
+            )}
             {streamNote && <p className="note">{streamNote}</p>}
             {phase === "running" && (
               <p className="note">
@@ -287,6 +313,9 @@ export function Investigator({
           <>
             <hr style={{ border: 0, borderTop: "1px solid var(--border)", margin: "16px 0" }} />
             <ReportView result={result} runId={runId} />
+            <a className="btn btn-block" href={`/incidents/${incidentId}/compare?a=${runId}`} style={{ marginTop: 12 }}>
+              Compare with another model <Icon name="arrow" size={14} />
+            </a>
           </>
         )}
       </div>
