@@ -6,27 +6,19 @@
     "findings": [
       {
         "text": "From 14:15\u201314:30 UTC, checkout-api p95 rose 420ms\u21922840ms and API error rate 0.3%\u21926.8%, while request rate stayed near ~120 rps.",
-        "citations": [
-          "E1"
-        ]
+        "citations": ["E1"]
       },
       {
         "text": "In one representative checkout trace, most time is spent in inventory.reserve with db.pool.acquire taking 2190ms; 18 of 20 slow sampled traces show pool waits >1800ms.",
-        "citations": [
-          "E2"
-        ]
+        "citations": ["E2"]
       },
       {
         "text": "A release at 14:12 changed the inventory client connection pool max from 20 to 5; the latency increase starts at 14:15, which is temporally consistent but not proof.",
-        "citations": [
-          "E3"
-        ]
+        "citations": ["E3"]
       },
       {
         "text": "Database CPU stayed near baseline (36% vs 34%) and payment authorization p95 stayed near baseline (140ms vs 135ms), while pool pending requests increased from 0 to 84.",
-        "citations": [
-          "E4"
-        ]
+        "citations": ["E4"]
       }
     ],
     "nextSteps": [
@@ -44,29 +36,19 @@
     "findings": [
       {
         "text": "At 15:18 UTC, checkout p95 rose 460ms\u21923210ms and errors 0.4%\u21928.2%, with stable request rate; old and new release cohorts show similar impact.",
-        "citations": [
-          "E1"
-        ]
+        "citations": ["E1"]
       },
       {
         "text": "One representative trace shows payments.authorize 2880ms of a 3210ms checkout, recording upstream HTTP 504; 17 of 20 slow sampled traces show slow payment authorization.",
-        "citations": [
-          "E2"
-        ]
+        "citations": ["E2"]
       },
       {
         "text": "A 15:10 presentation-only deploy preceded the alert, but the symptoms also affect the old release cohort, which is not consistent with a new-code-only regression.",
-        "citations": [
-          "E3",
-          "E1"
-        ]
+        "citations": ["E3", "E1"]
       },
       {
         "text": "Inventory latency (~150ms vs 145ms baseline), DB CPU (33%), and pool pending (0) are within observed baselines in this window; provider-side incident confirmation is not available.",
-        "citations": [
-          "E4",
-          "E5"
-        ]
+        "citations": ["E4", "E5"]
       }
     ],
     "nextSteps": [
@@ -84,27 +66,19 @@
     "findings": [
       {
         "text": "Aggregate checkout metrics show p95 rising from 440ms to 1920ms and API error rate rising from 0.4% to 4.1%; only aggregate checkout metrics are available.",
-        "citations": [
-          "E1"
-        ]
+        "citations": ["E1"]
       },
       {
         "text": "Tracing is missing child spans for inventory, database, and payments due to a collector sampling/configuration fault, leaving only the root span and no dependency breakdown.",
-        "citations": [
-          "E2"
-        ]
+        "citations": ["E2"]
       },
       {
         "text": "A checkout release and a network-policy update both occurred at 16:12 UTC, but there are no per-cohort metrics or dependency measurements to distinguish their effects.",
-        "citations": [
-          "E3"
-        ]
+        "citations": ["E3"]
       },
       {
         "text": "No order-completion or revenue measurements are available, so impact cannot be translated into financial loss from this bundle.",
-        "citations": [
-          "E4"
-        ]
+        "citations": ["E4"]
       }
     ],
     "nextSteps": [
@@ -122,29 +96,19 @@
     "findings": [
       {
         "text": "At 17:14 UTC, checkout p95 increased 480ms\u21923,180ms and API error rate 0.4%\u21927.4%, while request rate stayed ~115 rps; both old/new checkout release cohorts show similar degradation.",
-        "citations": [
-          "E1",
-          "E5"
-        ]
+        "citations": ["E1", "E5"]
       },
       {
         "text": "In one representative trace, checkout is 3,180ms with inventory.reserve 2,810ms; tcp.connect to inventory-db is 2,450ms while the subsequent SELECT is 160ms and pool.acquire is 22ms.",
-        "citations": [
-          "E2"
-        ]
+        "citations": ["E2"]
       },
       {
         "text": "Across the slow-sampled set, 16 of 20 traces show database connection handshakes above 2,000ms; sampling does not establish population-wide prevalence.",
-        "citations": [
-          "E2"
-        ]
+        "citations": ["E2"]
       },
       {
         "text": "From 17:14 UTC, sampled flow records on the inventory subnet to inventory-db:5432 show 18% rejected connections vs 0.1% baseline; a firewall policy update on that path occurred at 17:11, without request-level linkage yet.",
-        "citations": [
-          "E3",
-          "E5"
-        ]
+        "citations": ["E3", "E5"]
       }
     ],
     "nextSteps": [
