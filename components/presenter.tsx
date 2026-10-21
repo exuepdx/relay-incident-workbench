@@ -42,13 +42,15 @@ export function Presenter() {
       });
     }
     sync();
-    // Resolve these mode-changing links after the new layout has been applied.
-    // In particular, the router cannot scroll to an appendix still hidden by CSS.
+    // Presentation mode changes every preceding section's height. Re-anchor any
+    // shared slide link after that layout change, not only the overview link.
+    // The appendix likewise cannot be targeted while presentation CSS hides it.
+    const hash = window.location.hash.slice(1);
     const destination =
-      !on && window.location.hash === "#notes"
+      !on && hash === "notes"
         ? "notes"
-        : on && window.location.hash === "#overview"
-          ? "overview"
+        : on && list.some((section) => section.id === hash)
+          ? hash
           : null;
     const anchorFrame = destination
       ? requestAnimationFrame(() =>
