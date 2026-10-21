@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Icon, Logo } from "@/components/icons";
 import { Hero } from "@/components/hero";
 import { Presenter } from "@/components/presenter";
+import { ArchitectureDecisions } from "@/components/architecture-decisions";
 import { MotionToggle, PresentationMotion } from "@/components/presentation-motion";
 import {
   ArchitectureVisual,
@@ -151,7 +152,7 @@ export default function Proposal() {
 
         <section className="section visual-slide" id="architecture" data-present="true" data-title="Architecture">
           <Heading n="02 / ARCHITECTURE" title="Connect the telemetry you already have.">
-            Vercel hosts the investigation; the customer's operational systems stay in place.
+            Connect and augment: keep the operational systems; add an investigation workflow on Vercel.
           </Heading>
           <ArchitectureVisual />
           <div className="slide-bottom">
@@ -176,8 +177,38 @@ export default function Proposal() {
           </div>
         </section>
 
+        <section className="section visual-slide" id="decisions" data-present="true" data-title="Design decisions">
+          <Heading n="03 / DESIGN DECISIONS" title="Three failure cases shaped the design.">
+            Three choices that protect investigation cost, evidence quality and reviewer decisions.
+          </Heading>
+          <ArchitectureDecisions />
+          <div className="slide-bottom">
+            <Notes>
+              <p>
+                These are implemented guards, shown as illustrations. Open the linked test or evaluation record to
+                inspect the evidence; replaying a diagram does not run a new test.
+              </p>
+              <p>
+                Duplicate-start protection applies to the same request key, not all investigations of the same incident.
+                Step retries can still add model cost. An unresolved reservation is deliberately not a second dispatch.
+              </p>
+              <p>
+                Incomplete evidence produces an abstention report with collection requests. Other invalid reports fail
+                validation. Neither path should expose a mitigation approval. A valid proposal can be reviewed, but
+                approval only records a decision and never changes a customer system.
+              </p>
+              <p>
+                The fallback candidate's failure is retained. A pilot can qualify another model, or compare a
+                deterministic retrieval pipeline plus synthesis if agent flexibility does not justify its additional
+                cost.
+              </p>
+            </Notes>
+            <a href={`${repoUrl}/blob/main/docs/decisions.md`}>Decision record & alternatives ↗</a>
+          </div>
+        </section>
+
         <section className="section visual-slide" id="demo" data-present="true" data-title="Investigation">
-          <Heading n="03 / INVESTIGATION" title="From telemetry to a reviewable report.">
+          <Heading n="04 / INVESTIGATION" title="From telemetry to a reviewable report.">
             Step through the workflow, then try the real incident.
           </Heading>
           <InvestigationVisual />
@@ -209,7 +240,7 @@ export default function Proposal() {
         </section>
 
         <section className="section visual-slide" id="measures" data-present="true" data-title="Pilot targets">
-          <Heading n="04 / PILOT TARGETS" title="Measure coordination, quality and cost.">
+          <Heading n="05 / PILOT TARGETS" title="Measure coordination, quality and cost.">
             Agree the baseline with one on-call rotation before expanding.
           </Heading>
           <PilotVisual cases={evaluation?.cases ?? 0} passed={passed} />
@@ -235,7 +266,7 @@ export default function Proposal() {
         </section>
 
         <section className="section visual-slide" id="rollout" data-present="true" data-title="Rollout">
-          <Heading n="05 / ROLLOUT" title="Introduce Relay one rotation at a time.">
+          <Heading n="06 / ROLLOUT" title="Introduce Relay one rotation at a time.">
             Keep a tested path back while the pilot proves its value.
           </Heading>
           <RolloutVisual />
@@ -273,7 +304,7 @@ export default function Proposal() {
               GitHub ↗
             </a>
             <Link className="btn" href="/proposal?present=1#overview">
-              Present six screens
+              Present seven screens
             </Link>
           </div>
           <details>

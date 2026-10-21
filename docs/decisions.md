@@ -4,6 +4,29 @@ These are the decisions in the current demo, with their costs and limits. The
 customer scenario is based on enterprise observability experience; Northstar's
 specific stack and incident data are fictional.
 
+## Vercel components and the working boundary
+
+| Component  | Responsibility in this implementation                                         | Source                                                                  |
+| ---------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Next.js    | Static shell, cached incident catalog, request-time investigation status      | [Catalog caching](../lib/incidents.ts)                                  |
+| Workflows  | Durable steps, retry, approval hooks and reconnectable execution              | [Investigation workflow](../workflows/investigate.ts)                   |
+| AI SDK     | Bounded tool definitions and structured report generation inside the workflow | [Tools](../lib/tools.ts), [agent workflow](../workflows/investigate.ts) |
+| AI Gateway | Model routing and actual served-model / cost accounting                       | [Gateway adapter](../lib/gateway.ts)                                    |
+
+These four components have distinct jobs; the three AI-stack components also meet
+the three-primitive minimum independently. Neon is external Postgres, not counted
+as a Vercel primitive.
+
+The customer's existing world is represented by the separately deployed
+`relay-telemetry-mock.vercel.app` service. Relay makes real authenticated HTTPS
+requests for metrics, traces and changes through the [customer client](../lib/customer-client.ts).
+It enforces a server-configured destination, a server-held bearer token, read-only
+requests, a timeout and response schemas. The [HTTP verification record](../artifacts/telemetry-deployment-verification.json)
+includes rejected unauthenticated requests and successful authenticated reads.
+The data is synthetic and the mock runs on Vercel; this is not an AWS deployment.
+Neon provides an additional external boundary for Relay's report storage, but it
+does not represent the customer's existing transaction database.
+
 ## Connect to existing telemetry
 
 Relay reads a scoped API instead of building another ingestion and alerting system.

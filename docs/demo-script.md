@@ -1,6 +1,6 @@
 # Relay: twelve-minute customer demonstration
 
-Use `/proposal?present=1`: six visual screens, arrows or visible controls to move,
+Use `/proposal?present=1`: seven visual screens, arrows or visible controls to move,
 Notes to open the reference section, and Escape to leave presentation mode.
 Motion can be paused from the navigation bar. Diagrams illustrate the design;
 they do not run the agent or consume model credits.
@@ -10,8 +10,9 @@ present invented timings or ROI as facts about the original customer.
 | Time        | Show                    | Explain                                                                                                                                                                                                            |
 | ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0:00–1:00   | Problem                 | Multiple teams join a retail outage bridge with different telemetry. The delay is agreeing on the affected dependency and next owner.                                                                              |
-| 1:00–2:30   | Architecture            | Connect the existing observability API; retain services and operational authority. Show evidence, prompts and state crossing into Vercel and the model.                                                            |
-| 2:30–6:00   | INC-0244                | Inspect trace E2 and flow evidence E3. Explain the curated map, Network Platform / Inventory Services handoff, and what would challenge the hypothesis. Run the agent and open a citation from its saved snapshot. |
+| 1:00–2:15   | Architecture            | Name Next.js, Workflows, AI SDK and AI Gateway. The separate authenticated telemetry mock represents the customer's API; Neon stores Relay reports. Show what crosses and what stays.                              |
+| 2:15–3:15   | Design decisions        | Replay Duplicate starts. Show the accepted cost, then briefly select Evidence before approval and Model fallback. Each decision links to its test or evaluation evidence.                                          |
+| 3:15–6:00   | INC-0244                | Inspect trace E2 and flow evidence E3. Explain the curated map, Network Platform / Inventory Services handoff, and what would challenge the hypothesis. Run the agent and open a citation from its saved snapshot. |
 | 6:00–8:00   | One resilience drill    | Inject a transient telemetry 503, observe the retry, and refresh. Show the same run reconnecting. Keep provider fallback and approval for questions unless separately rehearsed.                                   |
 | 8:00–9:00   | INC-0243                | Missing evidence means gathering measurements, not proposing an operational experiment. Explain code validation and its semantic limits.                                                                           |
 | 9:00–10:30  | Accounting and measures | Use a real run's cost and duration. Exclude human waiting when discussing inference latency. Coordination improvement is a proposed pilot target.                                                                  |
@@ -22,14 +23,25 @@ present invented timings or ROI as facts about the original customer.
 1. **Overview:** introduce the retail outage and the coordination problem.
 2. **The incident:** select Trace evidence to highlight the 2,450 ms connection
    wait, then Next owner. The dependency diagram does not prove a device-level cause.
-3. **Architecture:** switch from Hosted demo to Proposed customer pilot. Click
-   Workflows or AI Gateway to reveal one product decision at a time. Explain
-   selected evidence crossing the boundary and Workflow state remaining on Vercel.
-4. **Investigation:** step through Read → Draft → Validate → Review → Save.
+3. **Architecture:** name the four clickable Vercel primitives and their jobs.
+   Explain the actual HTTP boundary: server-held bearer token, read-only API,
+   schema-checked results. The realistic mock is a separate Vercel deployment,
+   not an AWS deployment. Neon is Relay's external report store, not the customer's
+   existing transaction database. Switch to Proposed customer pilot to show what
+   stays: EKS, RDS, Jenkins and observability. Selected evidence crosses into Vercel
+   and the model provider; Workflow state remains on Vercel.
+4. **Design decisions:** replay Duplicate starts: two requests with the same key,
+   one reservation, one investigation. Explain that an unresolved start stays
+   pending rather than risking another paid run. Select Evidence before approval:
+   missing coverage means collecting measurements, not approving a mitigation.
+   Select Model fallback: the alternate route worked but the report failed quality
+   checks, so automatic fallback is off. Name the availability cost. The diagrams
+   illustrate guards; linked artifacts are the actual verification evidence.
+5. **Investigation:** step through Read → Draft → Validate → Review → Save.
    Use Missing evidence to demonstrate abstention, then open the real workbench.
    Play sequence is optional; manual steps work with motion disabled.
-5. **Pilot targets:** distinguish proposed improvements from recorded test results.
-6. **Rollout:** select Cutover and Rollback. New-request routing changes while
+6. **Pilot targets:** distinguish proposed improvements from recorded test results.
+7. **Rollout:** select Cutover and Rollback. New-request routing changes while
    existing workflows retain their starting deployment and saved reports remain.
 
 Each screen has collapsed Discussion notes for technical detail. The Notes view

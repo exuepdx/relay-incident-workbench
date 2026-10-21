@@ -90,3 +90,31 @@ pause, keyboard slide navigation, cutover/rollback controls and notes navigation
 A hydration race between the motion provider and presenter boundary was fixed;
 a fresh browser load showed no errors. Animation stops offscreen and respects
 reduced-motion preferences. The demo script now follows the visual controls.
+
+## Architecture decisions presentation — 2026-10-20
+
+Added a seventh screen with three selectable decision diagrams: request-key
+reservation before dispatch, evidence validation before approval, and model
+qualification before enabling automatic fallback. Each shows the trigger, guard,
+outcome, alternative and accepted cost, with a link to its regression or evaluation
+evidence. Manual steps and optional replay explain the implementation without
+starting investigations. The fallback panel labels qualification as a release
+decision, not a runtime model-quality check.
+
+The architecture view names all four Vercel components, labels the authenticated
+HTTP boundary, and distinguishes the separately deployed mock from a proposed
+AWS customer estate. Neon is identified as Relay's report store. The decision
+record and twelve-minute demo script follow the same story.
+
+All 36 regression tests, application typecheck and the Webpack production build
+passed. Browser checks covered all decision choices, replay, manual keyboard
+activation without advancing the slide, motion-off behavior, seven screens at
+1280 × 720, and responsive layouts at 390px and 304px without horizontal overflow.
+No inference, workflow, persistence or authentication contracts changed, and no
+new paid inference was needed. The local 3D dependency logs an existing Three.js
+Clock deprecation warning; no browser errors were observed.
+
+The deployed telemetry boundary was also rechecked: unauthenticated incident
+access returned 401; authenticated metrics, traces and changes for INC-0244
+returned 200 and matched the consumer's evidence schema. These checks performed
+only reads of synthetic telemetry and made no model calls.
