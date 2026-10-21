@@ -1,34 +1,38 @@
 # Relay: twelve-minute customer demonstration
 
-Use `/proposal?present=1`: seven visual screens, arrows or visible controls to move,
+Use `/proposal?present=1`: nine visual screens, arrows or visible controls to move,
 Notes to open the reference section, and Escape to leave presentation mode.
 Motion can be paused from the navigation bar. Diagrams illustrate the design;
 they do not run the agent or consume model credits.
 The fictional stack illustrates an authentic enterprise incident pattern. Do not
 present invented timings or ROI as facts about the original customer.
 
-| Time        | Show                    | Explain                                                                                                                                                                                                            |
-| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0:00–1:00   | Problem                 | Multiple teams join a retail outage bridge with different telemetry. The delay is agreeing on the affected dependency and next owner.                                                                              |
-| 1:00–2:15   | Architecture            | Name Next.js, Workflows, AI SDK and AI Gateway. The separate authenticated telemetry mock represents the customer's API; Neon stores Relay reports. Show what crosses and what stays.                              |
-| 2:15–3:15   | Design decisions        | Replay Duplicate starts. Show the accepted cost, then briefly select Evidence before approval and Model fallback. Each decision links to its test or evaluation evidence.                                          |
-| 3:15–6:00   | INC-0244                | Inspect trace E2 and flow evidence E3. Explain the curated map, Network Platform / Inventory Services handoff, and what would challenge the hypothesis. Run the agent and open a citation from its saved snapshot. |
-| 6:00–8:00   | One resilience drill    | Inject a transient telemetry 503, observe the retry, and refresh. Show the same run reconnecting. Keep provider fallback and approval for questions unless separately rehearsed.                                   |
-| 8:00–9:00   | INC-0243                | Missing evidence means gathering measurements, not proposing an operational experiment. Explain code validation and its semantic limits.                                                                           |
-| 9:00–10:30  | Accounting and measures | Use a real run's cost and duration. Exclude human waiting when discussing inference latency. Coordination improvement is a proposed pilot target.                                                                  |
-| 10:30–12:00 | Rollout and discovery   | One rotation, evidence review, spend gate, cutover, rollback. Ask which business measure would justify expansion.                                                                                                  |
+| Time        | Show                 | Explain                                                                                                                                                              |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00–0:50   | Customer problem     | Northstar is fictional; the enterprise coordination problem is familiar. Name the scenario stack, degraded checkout and responder-time cost.                         |
+| 0:50–2:00   | Architecture         | Switch Current state → Target pilot → Hosted demo. Name the four primitives and one trade-off; explain what stays and why.                                           |
+| 2:00–2:45   | Design decision      | Replay Duplicate starts and name its accepted cost. Keep the other two decisions available for questions.                                                            |
+| 2:45–6:00   | Live investigation   | Inspect E2/E3, run INC-0244, open a saved citation and refresh the same run. Use one rehearsed retry drill if time permits.                                          |
+| 6:00–7:00   | Incomplete evidence  | Open the retained INC-0243 result. Show missing measurements and withheld diagnosis; explain the validation limits.                                                  |
+| 7:00–8:00   | Success measures     | Responder-minutes, report quality, analysis p95 and model cost. Distinguish proposed targets from recorded demo checks.                                              |
+| 8:00–9:00   | Before kickoff       | Name the four visible limitations. Select the customer's highest concern and explain the required decision and owner.                                                |
+| 9:00–10:30  | Rollout              | Preview → validate → one rotation → cutover → rollback. Show retained state and the rehearsed deployment record.                                                     |
+| 10:30–12:00 | Build and validation | Codex desktop and Fable assisted implementation. Explain the eight-case live test set, regressions, hosted checks and the failed candidate that changed the release. |
 
 ## Visual walkthrough
 
 1. **Overview:** introduce the retail outage and the coordination problem.
 2. **The incident:** select Trace evidence to highlight the 2,450 ms connection
    wait, then Next owner. The dependency diagram does not prove a device-level cause.
-3. **Architecture:** name the four clickable Vercel primitives and their jobs.
+3. **Architecture:** begin with Current state: EKS, RDS, Jenkins and observability
+   feed a manual outage call. Target pilot adds a shared investigation while
+   retaining transaction authority, release controls and telemetry retention.
+   Name the four clickable Vercel primitives and their jobs.
    Explain the actual HTTP boundary: server-held bearer token, read-only API,
    schema-checked results. The realistic mock is a separate Vercel deployment,
    not an AWS deployment. Neon is Relay's external report store, not the customer's
-   existing transaction database. Switch to Proposed customer pilot to show what
-   stays: EKS, RDS, Jenkins and observability. Selected evidence crosses into Vercel
+   existing transaction database. Hosted demo shows what is actually deployed.
+   Selected evidence crosses into Vercel
    and the model provider; Workflow state remains on Vercel.
 4. **Design decisions:** replay Duplicate starts: two requests with the same key,
    one reservation, one investigation. Explain that an unresolved start stays
@@ -41,12 +45,45 @@ present invented timings or ROI as facts about the original customer.
    Use Missing evidence to demonstrate abstention, then open the real workbench.
    Play sequence is optional; manual steps work with motion disabled.
 6. **Pilot targets:** distinguish proposed improvements from recorded test results.
-7. **Rollout:** select Cutover and Rollback. New-request routing changes while
+7. **Before kickoff:** show identity, data boundary, evidence quality and operational
+   scope. Each limitation has a required decision and customer owner. These are
+   proposed gates, not completed production approvals.
+8. **Rollout:** select Cutover and Rollback. New-request routing changes while
    existing workflows retain their starting deployment and saved reports remain.
+9. **Build and validation:** show the engineering sequence: frame, implement,
+   challenge and release. Name Codex desktop, Fable, GitHub CI and Vercel CLI.
+   Select live model cases to explain the rubric: supporting evidence, appropriate
+   uncertainty and safe next checks. The failed comparison candidate explains
+   why automatic fallback remains disabled.
 
 Each screen has collapsed Discussion notes for technical detail. The Notes view
 includes trade-offs, production gaps, model evaluations, development tools and
 product feedback. Use those for questions rather than reading them aloud.
+
+## Presentation coverage
+
+| Customer-facing point                               | Main visual                                                                |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| Customer, current stack, pain, business consequence | Overview and incident dependency path                                      |
+| Current / target state, what stays and why          | Three-state architecture diagram                                           |
+| Vercel primitives, rationale and trade-offs         | Four selectable layers and the decision walkthrough                        |
+| Preview, validation, canary, cutover, rollback      | Five-stage rollout with deployments A / B and retained reports             |
+| Business and technical outcomes                     | Responder-minute bars, quality sample, p95 and cost targets                |
+| Limitations and kickoff risks                       | Four selectable readiness gates with an owner and action                   |
+| Development tools and AI validation                 | Engineering sequence, tool attribution, tests / live cases / hosted checks |
+
+## Describing the build
+
+Keep the story on the problem, design decisions and evidence. A concise opening:
+“I used my enterprise observability experience to frame the coordination problem.
+I developed Relay with Codex and Fable, keeping the investigation read-only and
+the customer systems in place. The implementation was checked with regression
+tests, a small live model test set and hosted failure scenarios. One candidate
+model failed the report checks, so automatic fallback stayed off.”
+
+Codex desktop was the implementation and repair workspace; Fable contributed a
+substantial rebuild. Explain the code and trade-offs when asked, with the real
+history available. Use the preserved history when explaining an implementation choice.
 
 ## Before presenting
 

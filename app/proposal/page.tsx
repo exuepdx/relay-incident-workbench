@@ -6,6 +6,7 @@ import { Icon, Logo } from "@/components/icons";
 import { Hero } from "@/components/hero";
 import { Presenter } from "@/components/presenter";
 import { ArchitectureDecisions } from "@/components/architecture-decisions";
+import { BuildValidationVisual, ReadinessVisual } from "@/components/presentation-context";
 import { MotionToggle, PresentationMotion } from "@/components/presentation-motion";
 import {
   ArchitectureVisual,
@@ -15,6 +16,7 @@ import {
   RolloutVisual,
 } from "@/components/proposal-visuals";
 import "./presentation.css";
+import "./context.css";
 
 const repoUrl = process.env.NEXT_PUBLIC_REPO_URL || "https://github.com/exuepdx/relay-incident-workbench";
 const demoUrl = process.env.NEXT_PUBLIC_DEMO_URL || "https://relay-incident-workbench.vercel.app";
@@ -126,7 +128,7 @@ export default function Proposal() {
 
         <section className="section visual-slide" id="problem" data-present="true" data-title="The incident">
           <Heading n="01 / THE INCIDENT" title="One checkout delay. Four teams involved.">
-            The investigation starts with a shared dependency path.
+            Northstar Commerce · scenario stack: EKS, RDS Postgres, Jenkins and existing observability.
           </Heading>
           <CascadeVisual durations={spans.slice(0, 4).map((span) => span.duration)} />
           <div className="slide-bottom">
@@ -152,7 +154,7 @@ export default function Proposal() {
 
         <section className="section visual-slide" id="architecture" data-present="true" data-title="Architecture">
           <Heading n="02 / ARCHITECTURE" title="Connect the telemetry you already have.">
-            Connect and augment: keep the operational systems; add an investigation workflow on Vercel.
+            Current state → target pilot → working demo. The operational stack stays; the investigation changes.
           </Heading>
           <ArchitectureVisual />
           <div className="slide-bottom">
@@ -173,7 +175,7 @@ export default function Proposal() {
                 pilot needs agreed redaction, retention and private connectivity where required.
               </p>
             </Notes>
-            <span>Click a layer to see its purpose and trade-off</span>
+            <span>Select a state, then a Vercel layer for its rationale and trade-off</span>
           </div>
         </section>
 
@@ -265,8 +267,35 @@ export default function Proposal() {
           </div>
         </section>
 
+        <section className="section visual-slide" id="readiness" data-present="true" data-title="Before kickoff">
+          <Heading n="06 / BEFORE KICKOFF" title="Agree these limits before connecting customer data.">
+            Four customer decisions separate the working demo from a production pilot.
+          </Heading>
+          <ReadinessVisual />
+          <div className="slide-bottom">
+            <Notes>
+              <p>
+                Start with sanitized historical incidents. The demo uses a shared reviewer code and synthetic data; it
+                does not prove enterprise identity, private network reachability, regional residency or operational
+                remediation.
+              </p>
+              <p>
+                The customer API remains the source of telemetry. A proposed production path is a narrow
+                customer-managed HTTPS API with service identity. A private-only estate requires an approved network
+                path before implementation; the public mock does not prove VPC connectivity.
+              </p>
+              <p>
+                Evaluate evidence coverage, source permissions, retention across caches, logs, Workflow state and
+                reports, plus model processing. Review cost under retries and failures. Retain the existing incident
+                process while these decisions are unresolved.
+              </p>
+            </Notes>
+            <a href={`${repoUrl}/blob/main/docs/decisions.md`}>Limitations & accepted trade-offs ↗</a>
+          </div>
+        </section>
+
         <section className="section visual-slide" id="rollout" data-present="true" data-title="Rollout">
-          <Heading n="06 / ROLLOUT" title="Introduce Relay one rotation at a time.">
+          <Heading n="07 / ROLLOUT" title="Introduce Relay one rotation at a time.">
             Keep a tested path back while the pilot proves its value.
           </Heading>
           <RolloutVisual />
@@ -292,6 +321,39 @@ export default function Proposal() {
           </div>
         </section>
 
+        <section className="section visual-slide" id="build" data-present="true" data-title="Build & validation">
+          <Heading n="08 / BUILD & VALIDATION" title="How the implementation was built and checked.">
+            Customer context drove the scope. Codex and Fable assisted the implementation; verification shaped the
+            release.
+          </Heading>
+          <BuildValidationVisual
+            passed={passed}
+            cases={evaluation?.cases ?? 0}
+            candidateFailures={candidate?.failures ?? null}
+          />
+          <div className="slide-bottom">
+            <Notes>
+              <p>
+                The development workspace was Codex desktop, with Fable supplying a substantial rebuild. GitHub
+                preserves both histories, subsequent repairs and CI checks; Vercel CLI handled hosted verification and
+                promotion.
+              </p>
+              <p>
+                The primary live test set has eight synthetic cases: baseline incidents, incomplete coverage, misleading
+                changes, ambiguous evidence and an injected log. Schema, citation, ownership, policy and wording checks
+                are combined with review of the recorded output. These checks do not prove every natural-language
+                inference.
+              </p>
+              <p>
+                Hosted scenarios exercise healthy runs, abstention, retry, approval, decline, durable pause and complete
+                outage. Additional checks cover duplicate starts, retained evidence and continuity across promotion and
+                rollback. Diagram animations are explanatory; they do not rerun these tests.
+              </p>
+            </Notes>
+            <a href={`${repoUrl}/blob/main/docs/repair-verification.md`}>Build history & verification evidence ↗</a>
+          </div>
+        </section>
+
         <section className="section deck-appendix" id="notes">
           <Heading n="REFERENCE" title="Technical notes and evidence">
             Details for the discussion, available without crowding the walkthrough.
@@ -304,7 +366,7 @@ export default function Proposal() {
               GitHub ↗
             </a>
             <Link className="btn" href="/proposal?present=1#overview">
-              Present seven screens
+              Present nine screens
             </Link>
           </div>
           <details>
