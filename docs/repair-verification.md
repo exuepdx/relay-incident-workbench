@@ -118,3 +118,8 @@ The deployed telemetry boundary was also rechecked: unauthenticated incident
 access returned 401; authenticated metrics, traces and changes for INC-0244
 returned 200 and matched the consumer's evidence schema. These checks performed
 only reads of synthetic telemetry and made no model calls.
+
+Final hosted review found a deep-link alignment issue: entering presentation mode
+changed the heights before the requested slide. The presenter now re-anchors any
+known slide after applying its layout, so a shared decision-slide URL includes the
+title. A fresh browser load verified the slide begins at the top of the viewport.
