@@ -618,6 +618,242 @@
   color: #a0b8c8;
   font-size: 11px;
 }
+.primitive-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b3cbd9;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.primitive-count b {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid #4b6a7d;
+  border-radius: 7px;
+  color: #d2edfc;
+  font: 14px var(--mono);
+}
+.boundary-proof {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #3b5a60;
+  font-size: 10px;
+  color: #c1d8ce;
+}
+.boundary-proof > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.boundary-proof p {
+  margin: 0;
+  flex: 1;
+  color: #a3b8c5;
+  line-height: 1.5;
+}
+.boundary-proof a {
+  white-space: nowrap;
+  color: #b3d7eb;
+}
+/* Decision sequences expose the failure, guard and accepted cost in one view. */
+.decision-title {
+  font-size: clamp(17px, 2vw, 23px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  margin: 22px 0 16px;
+}
+.decision-flow {
+  display: grid;
+  grid-template-columns: 1fr 50px 1.1fr 50px 1fr;
+  align-items: center;
+  min-height: 184px;
+  perspective: 900px;
+}
+.decision-input,
+.decision-guard,
+.decision-output {
+  min-width: 0;
+}
+.decision-input > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #3e596b;
+  border-radius: 7px;
+  background: #142533;
+  font-size: 12px;
+  color: #d1e3ee;
+  margin-top: 9px;
+  box-shadow: 3px 4px 0 #07121c;
+}
+.decision-input > div > svg {
+  flex-shrink: 0;
+  color: #9ecae2;
+}
+.decision-wire {
+  position: relative;
+  height: 1px;
+  background: #58788b;
+  margin: 0 6px;
+  opacity: 0.3;
+}
+.decision-wire::after {
+  content: "→";
+  position: absolute;
+  right: -2px;
+  top: -9px;
+  color: #b6d8e9;
+  font-size: 15px;
+}
+.decision-wire i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  top: -2px;
+  left: 5%;
+  border-radius: 50%;
+  background: #c4e9ff;
+  box-shadow: 0 0 12px #b2e2ff;
+}
+.decision-guard,
+.decision-output {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  text-align: center;
+  border: 1px solid #4d6f87;
+  border-radius: 11px;
+  padding: 15px;
+  background: linear-gradient(135deg, #284354, #101e29);
+  opacity: 0.4;
+  transition:
+    opacity 0.3s,
+    border-color 0.3s;
+}
+.decision-guard {
+  transform: rotateY(-7deg) rotateX(5deg);
+  box-shadow:
+    5px 6px 0 #08131c,
+    6px 7px 0 #3b576b;
+}
+.decision-chip {
+  display: grid;
+  place-items: center;
+  height: 48px;
+  width: 58px;
+  color: #b9e5fc;
+  border: 1px solid #63879d;
+  border-radius: 8px;
+  background: #27465c;
+  box-shadow: 3px 3px 0 #0c2232;
+}
+.decision-guard strong,
+.decision-output strong {
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.decision-guard small,
+.decision-output small {
+  color: #a9c2d1;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.decision-output {
+  border-color: #547f70;
+  background: linear-gradient(135deg, #24473b, #10251f);
+  min-height: 155px;
+}
+.decision-output > svg {
+  color: #b1e5ce;
+}
+.decision-output small {
+  color: #b1cfc1;
+}
+.decision-reached {
+  opacity: 1;
+}
+.decision-beats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 45px;
+  margin: 14px 0 8px;
+}
+.decision-beats > div {
+  display: flex;
+  gap: 6px;
+}
+.decision-beats button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #3d5a6c;
+  border-radius: 50%;
+  color: #a4c3d7;
+  background: #11202c;
+  font: 11px var(--mono);
+  cursor: pointer;
+}
+.decision-beats button[aria-pressed="true"] {
+  color: #e7f5ff;
+  background: #31536a;
+  border-color: #8db7d0;
+}
+.decision-beats p {
+  margin: 0;
+  color: #c9dde9;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.decision-tradeoffs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  padding: 14px 0;
+  border-top: 1px solid #2f4755;
+}
+.decision-tradeoffs > div + div {
+  padding-left: 22px;
+  border-left: 1px solid #2f4755;
+}
+.decision-tradeoffs strong {
+  display: block;
+  color: #d1e3ed;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+.decision-tradeoffs p {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #abc0ce;
+  margin: 6px 0 0;
+}
+.decision-proof {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: #95aebf;
+}
+.decision-proof a {
+  color: #bbdff4;
+}
+.deck-diagram[data-motion="true"] .decision-wire.decision-reached i {
+  animation: deck-travel 1.8s ease-in-out infinite;
+}
 /* A controlled illustration of execution, separate from the live agent. */
 .diagram-toolbar {
   display: flex;
@@ -1285,8 +1521,33 @@
     padding-top: 12px;
     padding-bottom: 12px;
   }
+  .visual-proposal.presenting .architecture-layout {
+    margin-top: 12px;
+  }
+  .visual-proposal.presenting .architecture-estate h3 {
+    margin: 6px 0;
+  }
   .visual-proposal.presenting .estate-stack {
     height: 78px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  .visual-proposal.presenting .api-port {
+    margin: 8px 0 6px;
+  }
+  .visual-proposal.presenting .architecture-relay {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .visual-proposal.presenting .architecture-external {
+    gap: 8px;
+  }
+  .visual-proposal.presenting .external-service {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .visual-proposal.presenting .external-service h3 {
+    margin: 4px 0;
   }
   .visual-proposal.presenting .estate-stack > div {
     width: 90px;
@@ -1307,7 +1568,30 @@
     padding-bottom: 10px;
   }
   .visual-proposal.presenting .architecture-detail {
-    margin-top: 14px;
+    margin-top: 8px;
+  }
+  .visual-proposal.presenting .decision-title {
+    margin: 16px 0 12px;
+  }
+  .visual-proposal.presenting .decision-flow {
+    min-height: 156px;
+  }
+  .visual-proposal.presenting .decision-guard {
+    padding: 10px 14px;
+    gap: 7px;
+  }
+  .visual-proposal.presenting .decision-chip {
+    width: 50px;
+    height: 40px;
+  }
+  .visual-proposal.presenting .decision-output {
+    min-height: 145px;
+  }
+  .visual-proposal.presenting .decision-beats {
+    margin: 8px 0 4px;
+  }
+  .visual-proposal.presenting .decision-tradeoffs {
+    padding: 10px 0;
   }
   .visual-proposal.presenting .diagram-caption {
     margin-top: 10px;
@@ -1516,6 +1800,90 @@
   }
   .architecture-detail small {
     line-height: 1.5;
+  }
+  .primitive-count {
+    align-self: flex-start;
+  }
+  .architecture-bridge {
+    display: block;
+    padding: 10px;
+    border: 1px dashed #44646b;
+    border-radius: 6px;
+    font-size: 10px;
+  }
+  .architecture-bridge > div {
+    display: none;
+  }
+  .architecture-bridge > span + span {
+    margin-left: 20px;
+  }
+  .boundary-proof {
+    flex-wrap: wrap;
+  }
+  .boundary-proof p {
+    flex-basis: 100%;
+    order: 3;
+  }
+  .boundary-proof a {
+    margin-left: auto;
+  }
+  .decision-title {
+    margin: 18px 0;
+    font-size: 20px;
+  }
+  .decision-flow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .decision-input {
+    padding: 0 12px;
+  }
+  .decision-wire {
+    width: 1px;
+    height: 24px;
+    margin: 0 auto;
+  }
+  .decision-wire::after {
+    content: "↓";
+    top: 10px;
+    right: -5px;
+  }
+  .decision-wire i {
+    display: none;
+  }
+  .decision-guard {
+    margin: 0 10px;
+  }
+  .decision-output {
+    min-height: 145px;
+    margin: 0 12px;
+  }
+  .decision-beats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 20px 0 14px;
+  }
+  .decision-beats button {
+    width: 38px;
+    height: 38px;
+  }
+  .decision-beats p {
+    font-size: 12px;
+    min-height: 54px;
+  }
+  .decision-tradeoffs {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .decision-tradeoffs > div + div {
+    border: 0;
+    padding: 0;
+  }
+  .decision-proof {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
   .diagram-toolbar {
     align-items: stretch;

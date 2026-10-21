@@ -112,7 +112,7 @@ export function Presenter() {
       </button>
       <span className="presenter-position" role="status" aria-live="polite">
         <span>
-          {index + 1} / {titles.length || 6}
+          {index + 1} / {titles.length || 7}
         </span>
         <small>{titles[index] || "Overview"}</small>
       </span>

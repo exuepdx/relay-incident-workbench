@@ -112,29 +112,29 @@ const layers = [
     name: "Next.js",
     job: "View + cache",
     icon: "layers",
-    detail: "Static shell, cached incident context, live run status.",
-    tradeoff: "Cached context needs explicit refresh.",
+    detail: "Keep navigation fast: static shell, cached catalog, live run status.",
+    tradeoff: "Catalog freshness needs explicit refresh; investigations fetch fresh evidence.",
   },
   {
     name: "Workflows",
     job: "Retry + wait",
     icon: "clock",
-    detail: "Tool steps and approval waits preserve investigation progress.",
-    tradeoff: "Execution retention differs from report retention.",
+    detail: "Preserve progress through retries and approval waits; Postgres retains the report.",
+    tradeoff: "An additional database to operate. Workflow state still lives on Vercel.",
   },
   {
     name: "AI SDK",
     job: "Tools + report",
     icon: "tool",
-    detail: "Three bounded read tools produce a report with citations.",
-    tradeoff: "Valid citations still require judgment about the claim.",
+    detail: "Let the model order bounded reads and propose a report or optional mitigation.",
+    tradeoff: "Extra model steps and cost. Fixed retrieval plus synthesis is a simpler alternative.",
   },
   {
     name: "AI Gateway",
     job: "Models + cost",
     icon: "spark",
-    detail: "One model interface with routing and per-run accounting.",
-    tradeoff: "Fallback stays off until the candidate passes quality checks.",
+    detail: "Track the served model and actual inference cost through one interface.",
+    tradeoff: "Less outage coverage: automatic fallback is off after a candidate failed quality checks.",
   },
 ];
 
@@ -144,12 +144,17 @@ export function ArchitectureVisual() {
   const { ref, animated } = useDiagramMotion();
   return (
     <div ref={ref} className="deck-diagram architecture-visual" data-motion={animated}>
-      <Choices
-        label="Architecture scope"
-        options={["Hosted demo", "Proposed customer pilot"]}
-        value={pilot}
-        onChange={setPilot}
-      />
+      <div className="diagram-toolbar">
+        <Choices
+          label="Architecture scope"
+          options={["Hosted demo", "Proposed customer pilot"]}
+          value={pilot}
+          onChange={setPilot}
+        />
+        <span className="primitive-count">
+          <b>4</b> Vercel primitives
+        </span>
+      </div>
       <div className="architecture-layout">
         <div className="architecture-estate">
           <span className="diagram-eyebrow">{pilot ? "Customer cloud" : "Separate Vercel project"}</span>
@@ -175,15 +180,19 @@ export function ArchitectureVisual() {
           <small>
             {pilot
               ? "Services, transaction data and alerting stay here."
-              : "A real deployment serving canned incident data."}
+              : "Customer API mock · separate deployment · bearer-token auth."}
           </small>
         </div>
-        <div className="architecture-bridge" aria-hidden="true">
-          <span>HTTPS</span>
+        <div
+          className="architecture-bridge"
+          role="img"
+          aria-label="Relay sends authenticated HTTPS reads to the separate API; selected evidence returns across the boundary."
+        >
+          <span>← GET</span>
           <div>
             <i />
           </div>
-          <span>Scoped token</span>
+          <span>Evidence →</span>
         </div>
         <div className="architecture-relay">
           <span className="diagram-eyebrow">Vercel · Relay application</span>
@@ -229,8 +238,22 @@ export function ArchitectureVisual() {
         <span>{layers[selected].detail}</span>
         <small>Trade-off: {layers[selected].tradeoff}</small>
       </div>
+      <div className="boundary-proof">
+        <span>
+          <Icon name="lock" size={13} /> {pilot ? "Proposed boundary" : "Working HTTP boundary"}
+        </span>
+        <p>
+          {pilot
+            ? "Agree redaction, retention and private connectivity before connecting customer data."
+            : "HTTPS + server-held token → schema-checked evidence. No writes to customer systems."}
+        </p>
+        <a href="https://github.com/exuepdx/relay-incident-workbench/blob/main/artifacts/telemetry-deployment-verification.json">
+          HTTP checks ↗
+        </a>
+      </div>
       <p className="diagram-caption">
-        Selected evidence crosses into Vercel and the model provider. Workflow state remains on Vercel.
+        {pilot ? "Pilot design, not a deployed AWS integration. " : "The mock runs on Vercel, not AWS. "}Selected
+        evidence enters Vercel and the model provider; Workflow state stays on Vercel.
       </p>
     </div>
   );
