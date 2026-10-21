@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
 import { useDiagramMotion, usePresentationMotion } from "./presentation-motion";
+import { CurrentStateVisual } from "./presentation-context";
 
 function Choices({
   label,
@@ -33,7 +34,7 @@ export function CascadeVisual({ durations }: { durations: number[] }) {
     [
       "Customer impact",
       "Several teams join the outage call",
-      "Checkout, inventory, database and network teams each have a different view.",
+      "Checkout stays degraded while teams correlate separate evidence. Responder time grows and recovery is delayed.",
     ],
     [
       "Trace evidence",
@@ -139,7 +140,8 @@ const layers = [
 ];
 
 export function ArchitectureVisual() {
-  const [pilot, setPilot] = useState(0);
+  const [scope, setScope] = useState(0);
+  const pilot = scope === 1;
   const [selected, setSelected] = useState(1);
   const { ref, animated } = useDiagramMotion();
   return (
@@ -147,114 +149,130 @@ export function ArchitectureVisual() {
       <div className="diagram-toolbar">
         <Choices
           label="Architecture scope"
-          options={["Hosted demo", "Proposed customer pilot"]}
-          value={pilot}
-          onChange={setPilot}
+          options={["Current state", "Target pilot", "Hosted demo"]}
+          value={scope}
+          onChange={setScope}
         />
         <span className="primitive-count">
-          <b>4</b> Vercel primitives
+          <b>4</b> Vercel primitives{scope === 0 ? " in target" : ""}
         </span>
       </div>
-      <div className="architecture-layout">
-        <div className="architecture-estate">
-          <span className="diagram-eyebrow">{pilot ? "Customer cloud" : "Separate Vercel project"}</span>
-          <h3>{pilot ? "Existing systems" : "Synthetic telemetry"}</h3>
-          <div className="estate-stack" aria-hidden="true">
-            <div />
-            <div />
-            <div>
-              <Icon name="server" size={35} />
+      {scope === 0 ? (
+        <>
+          <CurrentStateVisual />
+          <p className="current-state-summary">
+            <strong>What changes with Relay:</strong> one reviewable investigation, linked evidence and an explicit next
+            owner.
+          </p>
+          <p className="diagram-caption">
+            Illustrative customer estate. Select Target pilot to see the proposed addition, or Hosted demo for the
+            deployed implementation.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="architecture-layout">
+            <div className="architecture-estate">
+              <span className="diagram-eyebrow">{pilot ? "Customer cloud" : "Separate Vercel project"}</span>
+              <h3>{pilot ? "Existing systems" : "Synthetic telemetry"}</h3>
+              <div className="estate-stack" aria-hidden="true">
+                <div />
+                <div />
+                <div>
+                  <Icon name="server" size={35} />
+                </div>
+              </div>
+              <div className="estate-labels">
+                {(pilot
+                  ? ["EKS services", "RDS Postgres", "Jenkins + observability"]
+                  : ["Metrics", "Traces", "Recent changes"]
+                ).map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
+              </div>
+              <div className="api-port">
+                <Icon name="lock" size={15} /> Read-only API
+              </div>
+              <small>
+                {pilot
+                  ? "Services, transaction data and alerting stay here."
+                  : "Customer API mock · separate deployment · bearer-token auth."}
+              </small>
+            </div>
+            <div
+              className="architecture-bridge"
+              role="img"
+              aria-label="Relay sends authenticated HTTPS reads to the separate API; selected evidence returns across the boundary."
+            >
+              <span>← GET</span>
+              <div>
+                <i />
+              </div>
+              <span>Evidence →</span>
+            </div>
+            <div className="architecture-relay">
+              <span className="diagram-eyebrow">Vercel · Relay application</span>
+              <div
+                className="layer-stack"
+                role="group"
+                aria-label="Explore the four Vercel primitives"
+                data-deck-interactive
+              >
+                {layers.map((layer, index) => (
+                  <button
+                    key={layer.name}
+                    aria-pressed={selected === index}
+                    onClick={() => setSelected(index)}
+                    className={`architecture-layer ${selected === index ? "layer-selected" : ""}`}
+                  >
+                    <Icon name={layer.icon} size={22} />
+                    <strong>{layer.name}</strong>
+                    <span>{layer.job}</span>
+                    <b aria-hidden="true">0{index + 1}</b>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="architecture-external">
+              <span className="diagram-eyebrow">External services</span>
+              <div className="external-service">
+                <Icon name="spark" size={24} />
+                <h3>Model provider</h3>
+                <span>Evidence + inference</span>
+                <small>via AI Gateway</small>
+              </div>
+              <div className="external-service">
+                <Icon name="database" size={24} />
+                <h3>{pilot ? "Customer Postgres" : "Neon Postgres"}</h3>
+                <span>Reports + approvals</span>
+                <small>via Workflow steps</small>
+              </div>
             </div>
           </div>
-          <div className="estate-labels">
-            {(pilot
-              ? ["EKS services", "RDS Postgres", "Jenkins + observability"]
-              : ["Metrics", "Traces", "Recent changes"]
-            ).map((label) => (
-              <span key={label}>{label}</span>
-            ))}
+          <div className="architecture-detail" aria-live="polite">
+            <strong>{layers[selected].name}</strong>
+            <span>{layers[selected].detail}</span>
+            <small>Trade-off: {layers[selected].tradeoff}</small>
           </div>
-          <div className="api-port">
-            <Icon name="lock" size={15} /> Read-only API
+          <div className="boundary-proof">
+            <span>
+              <Icon name="lock" size={13} /> {pilot ? "Why these systems stay" : "Working HTTP boundary"}
+            </span>
+            <p>
+              {pilot
+                ? "Preserve transaction authority, release controls and existing telemetry retention."
+                : "HTTPS + server-held token → schema-checked evidence. No writes to customer systems."}
+            </p>
+            <a href="https://github.com/exuepdx/relay-incident-workbench/blob/main/artifacts/telemetry-deployment-verification.json">
+              HTTP checks ↗
+            </a>
           </div>
-          <small>
-            {pilot
-              ? "Services, transaction data and alerting stay here."
-              : "Customer API mock · separate deployment · bearer-token auth."}
-          </small>
-        </div>
-        <div
-          className="architecture-bridge"
-          role="img"
-          aria-label="Relay sends authenticated HTTPS reads to the separate API; selected evidence returns across the boundary."
-        >
-          <span>← GET</span>
-          <div>
-            <i />
-          </div>
-          <span>Evidence →</span>
-        </div>
-        <div className="architecture-relay">
-          <span className="diagram-eyebrow">Vercel · Relay application</span>
-          <div
-            className="layer-stack"
-            role="group"
-            aria-label="Explore the four Vercel primitives"
-            data-deck-interactive
-          >
-            {layers.map((layer, index) => (
-              <button
-                key={layer.name}
-                aria-pressed={selected === index}
-                onClick={() => setSelected(index)}
-                className={`architecture-layer ${selected === index ? "layer-selected" : ""}`}
-              >
-                <Icon name={layer.icon} size={22} />
-                <strong>{layer.name}</strong>
-                <span>{layer.job}</span>
-                <b aria-hidden="true">0{index + 1}</b>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="architecture-external">
-          <span className="diagram-eyebrow">External services</span>
-          <div className="external-service">
-            <Icon name="spark" size={24} />
-            <h3>Model provider</h3>
-            <span>Evidence + inference</span>
-            <small>via AI Gateway</small>
-          </div>
-          <div className="external-service">
-            <Icon name="database" size={24} />
-            <h3>{pilot ? "Customer Postgres" : "Neon Postgres"}</h3>
-            <span>Reports + approvals</span>
-            <small>via Workflow steps</small>
-          </div>
-        </div>
-      </div>
-      <div className="architecture-detail" aria-live="polite">
-        <strong>{layers[selected].name}</strong>
-        <span>{layers[selected].detail}</span>
-        <small>Trade-off: {layers[selected].tradeoff}</small>
-      </div>
-      <div className="boundary-proof">
-        <span>
-          <Icon name="lock" size={13} /> {pilot ? "Proposed boundary" : "Working HTTP boundary"}
-        </span>
-        <p>
-          {pilot
-            ? "Agree redaction, retention and private connectivity before connecting customer data."
-            : "HTTPS + server-held token → schema-checked evidence. No writes to customer systems."}
-        </p>
-        <a href="https://github.com/exuepdx/relay-incident-workbench/blob/main/artifacts/telemetry-deployment-verification.json">
-          HTTP checks ↗
-        </a>
-      </div>
-      <p className="diagram-caption">
-        {pilot ? "Pilot design, not a deployed AWS integration. " : "The mock runs on Vercel, not AWS. "}Selected
-        evidence enters Vercel and the model provider; Workflow state stays on Vercel.
-      </p>
+          <p className="diagram-caption">
+            {pilot ? "Pilot design, not a deployed AWS integration. " : "The mock runs on Vercel, not AWS. "}Selected
+            evidence enters Vercel and the model provider; Workflow state stays on Vercel.
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -438,7 +456,7 @@ export function PilotVisual({ cases, passed }: { cases: number; passed: number }
     <div ref={ref} className="deck-diagram pilot-visual" data-motion={animated}>
       <div className="pilot-targets">
         <div className="pilot-card">
-          <span className="diagram-eyebrow">Coordination target</span>
+          <span className="diagram-eyebrow">Business target</span>
           <div className="pilot-number">
             −20<span>%</span>
           </div>
@@ -471,7 +489,7 @@ export function PilotVisual({ cases, passed }: { cases: number; passed: number }
           <p>Human review, including incomplete cases.</p>
         </div>
         <div className="pilot-card">
-          <span className="diagram-eyebrow">Performance targets</span>
+          <span className="diagram-eyebrow">Technical targets</span>
           <div className="performance-target">
             <Icon name="clock" size={21} />
             <strong>

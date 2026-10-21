@@ -123,3 +123,26 @@ Final hosted review found a deep-link alignment issue: entering presentation mod
 changed the heights before the requested slide. The presenter now re-anchors any
 known slide after applying its layout, so a shared decision-slide URL includes the
 title. A fresh browser load verified the slide begins at the top of the viewport.
+
+## Customer presentation coverage — 2026-10-20
+
+The main walkthrough now has nine visual screens. The incident names the fictional
+customer, scenario stack and coordination cost. Architecture switches between the
+current manual investigation, proposed target and actual hosted demo, with explicit
+reasons to retain transaction authority, release controls and telemetry retention.
+The new kickoff screen makes identity, data handling, evidence quality and operational
+scope visible, with a customer decision and owner for each. The build screen names
+Codex desktop, Fable, GitHub CI and Vercel CLI, then exposes regression, live model
+and hosted verification evidence. Tool attribution reflects the actual development
+history; the narrative focuses on decisions and outcomes rather than prompts.
+
+The revised twelve-minute script maps every customer-facing topic to a main visual.
+Business and technical targets remain proposed. Recorded evaluation counts come
+from the existing artifacts; no live model calls were added for presentation work.
+
+Local checks passed: 36 regression tests, application typecheck and Webpack production build. Browser review
+covered all three architecture states, four kickoff panels, three validation views,
+keyboard activation without changing slides, paused animation and 390px / 304px
+layouts without horizontal overflow. All nine slides fit at 1280 × 720; no browser
+errors were observed. The production build and hosted checks are required before
+promotion, with the saved report's evidence hash compared across release.

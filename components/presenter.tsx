@@ -47,11 +47,7 @@ export function Presenter() {
     // The appendix likewise cannot be targeted while presentation CSS hides it.
     const hash = window.location.hash.slice(1);
     const destination =
-      !on && hash === "notes"
-        ? "notes"
-        : on && list.some((section) => section.id === hash)
-          ? hash
-          : null;
+      !on && hash === "notes" ? "notes" : on && list.some((section) => section.id === hash) ? hash : null;
     const anchorFrame = destination
       ? requestAnimationFrame(() =>
           document.getElementById(destination)?.scrollIntoView({ block: "start", behavior: "instant" }),
@@ -114,7 +110,7 @@ export function Presenter() {
       </button>
       <span className="presenter-position" role="status" aria-live="polite">
         <span>
-          {index + 1} / {titles.length || 7}
+          {index + 1} / {titles.length || 9}
         </span>
         <small>{titles[index] || "Overview"}</small>
       </span>
